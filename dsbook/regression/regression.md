@@ -36,29 +36,33 @@ To fit a linear model, we can use the LinearRegression estimator from scikit-lea
 
 ```{code-cell} ipython3
 from scipy.optimize import minimize
+import numpy as np
 
-# Define loss function: sum of squared residuals
-def loss(params, x, y):
+# Define a generic loss function for both linear and polynomial models
+def loss(params, model_function, x, y):
+    return np.sum((y - model_function(x, params))**2)
+
+# Define the linear model function
+def linear_model(x, params):
     slope, intercept = params
-    return np.sum((y - (slope * x + intercept))**2)
+    return slope * x + intercept
 
 # Minimize the loss function
-initial_guess = [0, 0]
-result = minimize(loss, initial_guess, args=(x, y))
-
+initial_guess_linear = [0, 0]
+result_linear = minimize(loss, initial_guess_linear, args=(linear_model, x, y))
 # Optimized parameters
-slope, intercept = result.x
+slope, intercept = result_linear.x
 
 # Print the optimized slope and intercept
 print(f"Optimized slope: {slope}, Optimized intercept: {intercept}")
 
 # Generate prediction line
 xfit = np.linspace(0, 10, 1000)
-yfit = slope * xfit + intercept
+yfit_linear = linear_model(xfit, (slope, intercept))
 
 # Plot data and model
 sns.scatterplot(x=x, y=y)
-plt.plot(xfit, yfit, color='r')
+plt.plot(xfit, yfit_linear, color='r')
 plt.show()
 ```
 
@@ -69,8 +73,14 @@ Linear regression can be extended to handle more complex relationships by transf
 
 ```{code-cell} ipython3
 from sklearn.preprocessing import PolynomialFeatures
-from scipy.optimize import minimize
-import numpy as np
+
+
+# Define the polynomial model function
+def polynomial_model(x, params, degree=7):
+    poly = PolynomialFeatures(degree=degree)
+    x_poly = poly.fit_transform(x[:, np.newaxis])
+    return np.dot(x_poly, params)
+
 
 # Generate random data
 rng = np.random.RandomState(1)
@@ -80,27 +90,17 @@ y_non_linear = np.sin(x) + 0.1 * rng.randn(50)
 # Polynomial basis function for x
 poly = PolynomialFeatures(degree=7)
 x_poly = poly.fit_transform(x[:, np.newaxis])
-
-# Define loss function for polynomial regression
-def poly_loss(params, x_poly, y):
-    return np.sum((y - np.dot(x_poly, params))**2)
-
-# Initial guess for polynomial coefficients
 initial_guess_poly = np.zeros(x_poly.shape[1])
 
-# Minimize loss
-result_poly = minimize(poly_loss, initial_guess_poly, args=(x_poly, y_non_linear))
+result_poly = minimize(loss, initial_guess_poly, args=(polynomial_model, x, y_non_linear))
 
-# Predicted polynomial coefficients
-poly_coeffs = result_poly.x
+poly_params = result_poly.x
 
-# Generate polynomial fit
-xfit = np.linspace(0, 10, 1000)
-xfit_poly = poly.transform(xfit[:, np.newaxis])
-yfit_poly = np.dot(xfit_poly, poly_coeffs)
+# Generate fit lines
+yfit_poly = polynomial_model(xfit, poly_params)
 
-# Plot the polynomial fit
 sns.scatterplot(x=x, y=y_non_linear)
 plt.plot(xfit, yfit_poly, color='r')
+plt.title("Polynomial Regression Fit")
 plt.show()
 ```
