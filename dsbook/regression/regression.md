@@ -4,7 +4,7 @@ kernelspec:
   name: python3
 ---
 
-# Linear Regression
+# Nonlinear Regression
 
 Linear regression is one of the simplest and most widely used models for supervised learning. In this chapter, we will explore the linear regression model and show how it can be used.
 
@@ -30,51 +30,17 @@ plt.show()
 
 The linear regression model assumes that the relationship between two variables is linear.
 
-## Fitting the Model
 
-To fit a linear model, we can use the optimize function from scipy. To do so we need to define a loss function, i.e. a function that we want to minimize in order to get a fit. A set of parameters that minimize the loss for a function is our definition of optimality.  
+### Polynomial Kernels as Basis Functions
 
-```{code-cell} ipython3
-from scipy.optimize import minimize
-import numpy as np
+In the previous sections, we explored linear regression and saw that the goal is to minimize a **loss function** (such as the sum of squared residuals) to obtain the best-fit model. This concept is central to regression tasks, regardless of whether the model is linear or non-linear.
 
-# Define a generic loss function for both linear and polynomial models
-def loss(params, model_function, x, y):
-    return np.sum((y - model_function(x, params))**2)
+One powerful approach for non-linear regression is to use **polynomial kernels**. Polynomial regression can be thought of as applying a kernel transformation to the data by creating higher-order polynomial terms, such as \(x^2\), \(x^3\), and so on. These terms allow us to capture more complex patterns in the data.
 
-# Define the linear model function
-def linear_model(x, params):
-    slope, intercept = params
-    return slope * x + intercept
+For example, instead of fitting a linear model \(y = a x + b\), we can fit a polynomial of degree \(n\), which effectively transforms the input space into a higher-dimensional space where the relationship between \(x\) and \(y\) may be linear, even if the relationship appears non-linear in the original space.
 
-def minimize_loss(loss, model, x, y, num_params):
-    initial_params = np.random.randn(num_params)
-    return minimize(loss, initial_params, args=(model, x, y))
+In fact, **polynomial kernels** are a type of kernel function used in many machine learning algorithms. By using polynomial kernels, we transform the original data into polynomial space, allowing us to fit complex functions to the data while still using the same optimization techniques as in linear regression.
 
-# Minimize the loss function
-initial_guess_linear = [0, 0]
-result_linear = minimize_loss(loss, linear_model, x, y_linear, 2)
-
-# Optimized parameters
-slope, intercept = result_linear.x
-
-# Print the optimized slope and intercept
-print(f"Optimized slope: {slope}, Optimized intercept: {intercept}")
-
-# Generate prediction line
-xfit = np.linspace(0, 1.0, 1000)
-yfit_linear = linear_model(xfit, (slope, intercept))
-
-# Plot data and model
-sns.scatterplot(x=x, y=y_linear)
-plt.plot(xfit, yfit_linear, color='r')
-plt.show()
-```
-
-This model fits a line to the data and makes predictions based on this line.
-
-Polynomial Regression
-Linear regression can be extended to handle more complex relationships by transforming the input data. Here, we demonstrate polynomial regression.
 
 ```{code-cell} ipython3
 # Define the polynomial model function
@@ -98,6 +64,15 @@ plt.plot(xfit, yfit_poly, color='r')
 plt.title("Polynomial Regression Fit")
 plt.show()
 ```
+### Gaussian Kernels
+
+We can further extend this concept by introducing other types of kernel functions, such as **Gaussian kernels**. These kernels, also known as **radial basis functions (RBF)**, allow us to capture localized, non-linear behavior in the data. In essence, Gaussian kernels provide a more flexible model that can handle highly non-linear patterns.
+
+### Unifying Loss Minimization Across Models
+
+What is essential in all these models—whether linear, polynomial, or Gaussian—is that we continue to use the same framework of **minimizing a loss function** to find the best-fit parameters. The kernel-based approach simply transforms the input space, allowing us to apply non-linear transformations without changing the fundamental concept of minimizing error.
+
+In the next chapter, we will explore **more advanced loss functions** and **regularization techniques**, which help control model complexity and prevent overfitting, particularly important in high-dimensional kernel-transformed spaces.
 
 ```{code-cell} ipython3
 
@@ -129,3 +104,5 @@ plt.plot(xfit, yfit_gauss, color='r')
 plt.title("Gaussian Bases Fit To Nonlinear data")
 plt.show()
 ```
+
+By focusing on the unified concept of **loss minimization**, we can see that even complex, non-linear models follow the same principles as basic linear regression—only the structure of the model and the basis functions (kernels) change.
