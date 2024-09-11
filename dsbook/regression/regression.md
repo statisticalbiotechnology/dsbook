@@ -19,20 +19,20 @@ import numpy as np
 sns.set(style="whitegrid")
 
 # Generating random data
-rng = np.random.RandomState(1)
-x = 10 * rng.rand(50)
-y = 2 * x - 5 + rng.randn(50)
+rng = np.random.RandomState(4711)
+x = rng.rand(50)
+y_linear = 2 * x - 3 + 0.2*rng.randn(50)
 
 # Scatter plot with seaborn
-sns.scatterplot(x=x, y=y)
+sns.scatterplot(x=x, y=y_linear)
 plt.show()
 ```
 
-The linear regression model assumes that the relationship between two variables is approximately linear.
+The linear regression model assumes that the relationship between two variables is linear.
 
-# Fitting the Model
+## Fitting the Model
 
-To fit a linear model, we can use the LinearRegression estimator from scikit-learn.
+To fit a linear model, we can use the optimize function from scipy. To do so we need to define a loss function, i.e. a function that we want to minimize in order to get a fit. A set of parameters that minimize the loss for a function is our definition of optimality.  
 
 ```{code-cell} ipython3
 from scipy.optimize import minimize
@@ -47,9 +47,14 @@ def linear_model(x, params):
     slope, intercept = params
     return slope * x + intercept
 
+def minimize_loss(loss, model, x, y, num_params):
+    initial_params = np.random.randn(num_params)
+    return minimize(loss, initial_params, args=(model, x, y))
+
 # Minimize the loss function
 initial_guess_linear = [0, 0]
-result_linear = minimize(loss, initial_guess_linear, args=(linear_model, x, y))
+result_linear = minimize_loss(loss, linear_model, x, y_linear, 2)
+
 # Optimized parameters
 slope, intercept = result_linear.x
 
@@ -57,11 +62,11 @@ slope, intercept = result_linear.x
 print(f"Optimized slope: {slope}, Optimized intercept: {intercept}")
 
 # Generate prediction line
-xfit = np.linspace(0, 10, 1000)
+xfit = np.linspace(0, 1.0, 1000)
 yfit_linear = linear_model(xfit, (slope, intercept))
 
 # Plot data and model
-sns.scatterplot(x=x, y=y)
+sns.scatterplot(x=x, y=y_linear)
 plt.plot(xfit, yfit_linear, color='r')
 plt.show()
 ```
@@ -72,27 +77,16 @@ Polynomial Regression
 Linear regression can be extended to handle more complex relationships by transforming the input data. Here, we demonstrate polynomial regression.
 
 ```{code-cell} ipython3
-from sklearn.preprocessing import PolynomialFeatures
-
-
 # Define the polynomial model function
 def polynomial_model(x, params, degree=7):
-    poly = PolynomialFeatures(degree=degree)
-    x_poly = poly.fit_transform(x[:, np.newaxis])
+    x_poly = np.vstack([x**i for i in range(degree + 1)]).T
     return np.dot(x_poly, params)
 
-
-# Generate random data
-rng = np.random.RandomState(1)
-x = 10 * rng.rand(50)
-y_non_linear = np.sin(x) + 0.1 * rng.randn(50)
+# Generate random data (usingf same x as previous example)
+y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(50)
 
 # Polynomial basis function for x
-poly = PolynomialFeatures(degree=7)
-x_poly = poly.fit_transform(x[:, np.newaxis])
-initial_guess_poly = np.zeros(x_poly.shape[1])
-
-result_poly = minimize(loss, initial_guess_poly, args=(polynomial_model, x, y_non_linear))
+result_poly = minimize_loss(loss, polynomial_model, x, y_non_linear,8)
 
 poly_params = result_poly.x
 
@@ -102,5 +96,36 @@ yfit_poly = polynomial_model(xfit, poly_params)
 sns.scatterplot(x=x, y=y_non_linear)
 plt.plot(xfit, yfit_poly, color='r')
 plt.title("Polynomial Regression Fit")
+plt.show()
+```
+
+```{code-cell} ipython3
+
+# Define a Gaussian basis function
+def gaussian_basis(x, centers, width):
+    return np.exp(-0.5 * ((x[:, np.newaxis] - centers[np.newaxis, :]) / width)**2)
+
+# Define the Gaussian model
+def gaussian_model(x, params):
+    # Split the params into weighths, centers and common width of the bases
+    N = len(params)//2
+    weights = params[:N]
+    centers = params[N:2*N]
+    width = params[-1]
+    # Calculate the values of each basis for each x 
+    basis = gaussian_basis(x, centers, width)
+    return np.dot(basis, weights)
+
+N = 15  # Number of Gaussian bases to fit to our data
+
+result_gaussian = minimize_loss(loss, gaussian_model, x, y_non_linear, N*2+1)
+gaussian_params = result_gaussian.x
+
+yfit_gauss = gaussian_model(xfit, gaussian_params)
+
+# Plot the gausian fit
+sns.scatterplot(x=x, y=y_non_linear)
+plt.plot(xfit, yfit_gauss, color='r')
+plt.title("Gaussian Bases Fit To Nonlinear data")
 plt.show()
 ```
