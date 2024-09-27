@@ -6,6 +6,8 @@ root: intro
 chapters:
 - file: regression/linear.md
 - file: regression/regression.md
+- file: regression/regularization.md
+- file: regression/significance.md
 - file: markdown
 - file: notebooks
 - file: markdown-notebooks
