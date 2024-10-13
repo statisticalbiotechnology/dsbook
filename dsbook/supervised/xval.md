@@ -56,9 +56,9 @@ plt.show()
 ```{mermaid}
 flowchart TB
     subgraph Dataset [Dataset]
-      A["    Subset 1    "]
-      B["    Subset 2    "]
-      C["    Subset 3    "]
+      A["    Fold 1    "]
+      B["    Fold 2    "]
+      C["    Fold 3    "]
     end
 
     subgraph Mod1 [Model 1]
@@ -77,15 +77,15 @@ flowchart TB
     %% Fold 1
     A --> T1
     B --> T1
-    C --> V1
+    C -. Test .-> V1
 
     %% Fold 2
     A --> T2
+    B -. Test .-> V2
     C --> T2
-    B --> V2
 
     %% Fold 3
-    A --> V3
+    A -. Test .-> V3
     B --> T3
     C --> T3
 ```
