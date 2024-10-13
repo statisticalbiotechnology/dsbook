@@ -3,3 +3,4 @@ matplotlib
 seaborn
 conda-forge::scikit-learn
 conda-forge::numpy
+sphinxcontrib-mermaid
