@@ -72,12 +72,23 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
+
 sns.set_style("whitegrid")
 
-# Generate a simple dataset
+# Generate a simple dataset from two separate distributions
 np.random.seed(0)
-X = np.random.randn(100, 2)
-y = np.sign(X[:, 0] + X[:, 1])  # Simple linear boundary
+
+# Class +1 examples: centered at (0.5, 0.5)
+X_pos = np.random.randn(50, 2) + 0.5
+y_pos = np.ones(50)
+
+# Class -1 examples: centered at (-0.5, -0.5)
+X_neg = np.random.randn(50, 2) - 0.5
+y_neg = -np.ones(50)
+
+# Combine the datasets
+X = np.vstack([X_pos, X_neg])
+y = np.hstack([y_pos, y_neg])
 
 # Sigmoid function
 def sigmoid(z):
@@ -107,16 +118,22 @@ probability = sigmoid(z)
 # Create a plot with the data points and decision boundary
 plt.figure(figsize=(8, 6))
 
+# Plot the probability gradient
+contour_plot = plt.contourf(x1_grid, x2_grid, probability, levels=50, cmap='coolwarm', alpha=0.7)
+
 # Scatter plot of the dataset with class labels
 sns.scatterplot(x=X[:, 0], y=X[:, 1], hue=y, palette="coolwarm", s=60, edgecolor='k')
 
-# Plot the decision boundary where probability = 0.5
-plt.contour(x1_grid, x2_grid, probability, levels=[0.5], colors='black', linestyles='--')
 
-plt.title("Logistic Regression with Decision Boundary (p = 0.5)")
+# Add the decision boundary (p = 0.5)
+# plt.contour(x1_grid, x2_grid, probability, levels=[0.5], colors='black', linestyles='--')
+
 plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
 plt.grid(True)
+# Add colorbar showing the predicted probability
+plt.colorbar(contour_plot, label="Predicted Probability (Class +1)")
+
 plt.show()
 ```
 
