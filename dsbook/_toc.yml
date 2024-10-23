@@ -3,13 +3,19 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: regression/linear.md
-- file: regression/regression.md
-- file: regression/regularization.md
-- file: regression/significance.md
-- file: regression/multireg.md
-- file: supervised/xval.md
-- file: markdown
-- file: notebooks
-- file: markdown-notebooks
+parts:
+  - caption: Machine Learning
+    numbered: True
+    chapters:
+    - file: ml.md
+    - file: supervised/linear.md
+    - file: supervised/regression.md
+    - file: supervised/regularization.md
+    - file: supervised/multireg.md
+    - file: supervised/classify.md
+    - file: supervised/svm.ipynb
+    - file: supervised/xval.md
+  - caption: Statistics
+    numbered: True
+    chapters:
+    - file: statistics/significance.md

@@ -4,11 +4,20 @@ kernelspec:
   name: python3
 ---
 
-# Nonlinear Regression
+# Non-Linear Regression with Kernel Methods
 
-Linear regression is one of the simplest and most widely used models for supervised learning. In this chapter, we will explore the linear regression model and show how it can be used.
+Linear regression is one of the simplest and most widely used models for supervised learning. In this chapter, we will explore how to expand the linear regression model to model non-linear data, by expanding our data into multiple features with *kernel functions*.
 
-## Simple Linear Regression
+## Polynomial Kernels as Basis Functions
+
+In the previous sections, we explored linear regression and saw that the goal is to minimize a **loss function** (such as the sum of squared residuals) to obtain the best-fit model. This concept is central to regression tasks, regardless of whether the model is linear or non-linear.
+
+One powerful approach for non-linear regression is to use **polynomial basis functions**. Polynomial regression can be thought of as applying a kernel transformation to the data by creating higher-order polynomial terms, such as $x^2$, $x^3$, and so on. These terms allow us to capture more complex patterns in the data.
+
+For example, instead of fitting a linear model $y = a x + b$, we can fit a polynomial of degree $n$, which effectively transforms the input space into a higher-dimensional space where the relationship between $x$ and $y$ may be linear, even if the relationship appears non-linear in the original space.
+
+In fact, **polynomial kernels**  can be used to implicitly transform the data without explicitly computing the higher-dimensional features. In kernel-based models like Support Vector Machines (SVM) or kernel ridge regression, a polynomial kernel can be used to fit more complex functions to the data while still employing the same optimization techniques as in linear regression.
+
 
 ```{code-cell} ipython3
 import seaborn as sns
@@ -22,34 +31,13 @@ sns.set(style="whitegrid")
 rng = np.random.RandomState(4711)
 x = rng.rand(50)
 y_linear = 2 * x - 3 + 0.2*rng.randn(50)
+y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(50)
 
-# Scatter plot with seaborn
-sns.scatterplot(x=x, y=y_linear)
-plt.show()
-```
-
-The linear regression model assumes that the relationship between two variables is linear.
-
-
-### Polynomial Kernels as Basis Functions
-
-In the previous sections, we explored linear regression and saw that the goal is to minimize a **loss function** (such as the sum of squared residuals) to obtain the best-fit model. This concept is central to regression tasks, regardless of whether the model is linear or non-linear.
-
-One powerful approach for non-linear regression is to use **polynomial kernels**. Polynomial regression can be thought of as applying a kernel transformation to the data by creating higher-order polynomial terms, such as \(x^2\), \(x^3\), and so on. These terms allow us to capture more complex patterns in the data.
-
-For example, instead of fitting a linear model \(y = a x + b\), we can fit a polynomial of degree \(n\), which effectively transforms the input space into a higher-dimensional space where the relationship between \(x\) and \(y\) may be linear, even if the relationship appears non-linear in the original space.
-
-In fact, **polynomial kernels** are a type of kernel function used in many machine learning algorithms. By using polynomial kernels, we transform the original data into polynomial space, allowing us to fit complex functions to the data while still using the same optimization techniques as in linear regression.
-
-
-```{code-cell} ipython3
 # Define the polynomial model function
 def polynomial_model(x, params, degree=7):
     x_poly = np.vstack([x**i for i in range(degree + 1)]).T
     return np.dot(x_poly, params)
 
-# Generate random data (usingf same x as previous example)
-y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(50)
 
 # Polynomial basis function for x
 result_poly = minimize_loss(loss, polynomial_model, x, y_non_linear,8)
@@ -64,6 +52,7 @@ plt.plot(xfit, yfit_poly, color='r')
 plt.title("Polynomial Regression Fit")
 plt.show()
 ```
+
 ### Gaussian Kernels
 
 We can further extend this concept by introducing other types of kernel functions, such as **Gaussian kernels**. These kernels, also known as **radial basis functions (RBF)**, allow us to capture localized, non-linear behavior in the data. In essence, Gaussian kernels provide a more flexible model that can handle highly non-linear patterns.

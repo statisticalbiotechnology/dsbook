@@ -4,11 +4,15 @@ kernelspec:
   name: python3
 ---
 
-# Multiple Regression
+# Multiple Regression Example
 
+In this example, we apply multiple regression to analyze the relationship between several proteins and a clinical variable, BMI (Body Mass Index). We perform Ridge Regression using regularization to prevent overfitting, and visualize how well the model predicts BMI from the selected protein features.
+
+## Data Loading and Preparation
+
+The first step involves loading and preparing data from the CPTAC (Clinical Proteomic Tumor Analysis Consortium) database for Lung Squamous Cell Carcinoma (LSCC). We retrieve proteomics data and a relevant clinical variable (BMI), then merge these datasets based on matching patient records.
 
 ```{code-cell} ipython3
-
 import pandas as pd
 import cptac
 import cptac.utils as ut
@@ -22,9 +26,15 @@ clin_and_prot = clinical.join(prot, how='inner').dropna(subset=[clin_var])
 
 relevant_prot = [('POLI', 'ENSP00000462664.1'), ('MYL4', 'ENSP00000347055.1'), ('NRP2', 'ENSP00000350432.5'), ('CFHR2', 'ENSP00000356385.4'), ('SMAD2', 'ENSP00000262160.6'), ('KIAA1328', 'ENSP00000280020.5')]
 variables_df = clin_and_prot.loc[:, [clin_var] + relevant_prot ].dropna()
-
 ```
 
+* **Clinical Data**: We extract BMI as the clinical variable.
+* **Proteomics Data**: We use proteomic measurements from several proteins (POLI, MYL4, NRP2, CFHR2, SMAD2, and KIAA1328) as our independent variables.
+* **Data Joining**: The clinical and proteomics data are merged into a single dataframe and missing values are handled.
+
+## Defining the Ridge Regression Model
+
+Ridge regression adds a regularization term to penalize large coefficients, helping to control model complexity and reduce overfitting. The following steps define the ridge regression loss function and optimize it using the `scipy.optimize.minimize` function.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -68,6 +78,13 @@ print(f"Optimized coefficients: {coefficients}")
 print(f"Optimized intercept: {intercept}")
 ```
 
+* **Ridge Loss Function**: The loss function includes the sum of squared errors (SSE) and a regularization term (𝜆) applied to the coefficients.
+* **Optimization**: We initialize the coefficients and intercept to zero and use minimize to find the optimal values by minimizing the ridge loss function.
+
+## Visualization: Predicted vs Actual BMI
+
+After fitting the model, we calculate the predicted BMI values and plot them against the actual BMI values to evaluate the model's performance.
+
 ```{code-cell} ipython3
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -91,3 +108,9 @@ plt.grid(True)
 plt.show()
 
 ```
+
+* **Scatter Plot**: The plot compares the actual BMI values against the predicted values from the model. A red dashed line indicates the ideal scenario where predictions perfectly match the actual values.
+* **Visual Evaluation**: If the points lie close to the red line, the model’s predictions are accurate. Deviations from this line represent prediction errors.
+
+This example demonstrates how multiple regression can be extended with regularization to improve model generalization, particularly when working with clinical and proteomic datasets.
+
