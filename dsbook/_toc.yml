@@ -8,6 +8,7 @@ chapters:
 - file: regression/regression.md
 - file: regression/regularization.md
 - file: regression/significance.md
+- file: regression/multireg.md
 - file: markdown
 - file: notebooks
 - file: markdown-notebooks
