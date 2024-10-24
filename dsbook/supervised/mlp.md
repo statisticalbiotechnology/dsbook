@@ -25,32 +25,24 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 ## Example: Training an MLP on Artificial Data
 
-In this example, we'll generate artificial data from two distributions and train an MLP to classify them into two classes. We'll use the **`MLPClassifier`** from `sklearn` to simplify the process.
+In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes. We'll use the **`MLPClassifier`** from `sklearn` to simplify the process.
 
-```{code-cell} ipython3
+---
+
+```python
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_moons
 from sklearn.metrics import accuracy_score
 
 sns.set_style("whitegrid")
 
-# Generate artificial data
+# Generate non-linearly separable data
 np.random.seed(0)
-
-# Class +1 examples: centered at (2, 2)
-X_pos = np.random.randn(500, 2) + 2
-y_pos = np.ones(500)
-
-# Class -1 examples: centered at (-2, -2)
-X_neg = np.random.randn(500, 2) - 2
-y_neg = -np.ones(500)
-
-# Combine the datasets
-X = np.vstack([X_pos, X_neg])
-y = np.hstack([y_pos, y_neg])
+X, y = make_moons(n_samples=1000, noise=0.2, random_state=42)
 
 # Split the data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
@@ -76,15 +68,17 @@ Z = Z.reshape(xx.shape)
 plt.figure(figsize=(8, 6))
 plt.contourf(xx, yy, Z, alpha=0.8, cmap='coolwarm')
 sns.scatterplot(x=X[:, 0], y=X[:, 1], hue=y, palette="coolwarm", s=60, edgecolor='k')
-plt.title("MLP Decision Boundary")
+plt.title("MLP Decision Boundary on Non-Linearly Separable Data")
 plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
 plt.show()
 ```
 
+---
+
 ## Explanation
 
-1. **Artificial Data Generation**: We generate data from two Gaussian distributions: one centered at (2, 2) representing class +1, and another centered at (-2, -2) representing class -1.
+1. **Artificial Data Generation**: We generate data from two non-linearly separable distributions using the `make_moons` function, which creates two interleaving half-moon shapes representing the two classes.
 2. **Training the MLP**: We split the data into training and test sets and train an MLP with two hidden layers (one with 10 neurons and one with 5 neurons).
 3. **Evaluation**: After training, we evaluate the accuracy of the model on the test data and visualize the decision boundary of the MLP using a contour plot.
 
