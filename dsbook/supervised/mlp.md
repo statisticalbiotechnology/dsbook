@@ -27,9 +27,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes. We'll use the **`MLPClassifier`** from `sklearn` to simplify the process.
 
----
-
-```python
+```{code-cell} ipython3
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -73,8 +71,6 @@ plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
 plt.show()
 ```
-
----
 
 ## Explanation
 
