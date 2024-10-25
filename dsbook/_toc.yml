@@ -9,7 +9,6 @@ parts:
     chapters:
     - file: ml.md
     - file: supervised/linear.md
-    - file: supervised/regression.md
     - file: supervised/regularization.md
     - file: supervised/multireg.md
     - file: supervised/classify.md

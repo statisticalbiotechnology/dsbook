@@ -9,11 +9,48 @@ A **Multi-Layer Perceptron (MLP)** is a class of feedforward artificial neural n
 
 MLPs are widely used in supervised learning tasks such as classification and regression. They can model complex, non-linear relationships between input and output by stacking multiple layers of neurons.
 
+## Artificial Neuron
+
+An **artificial neuron** is a fundamental building block of neural networks. It is inspired by the biological neuron and functions as a mathematical model that takes multiple inputs, processes them, and produces an output. The artifical neuron makes a linear combination of its input that is forwarded to a non-linear activation function. This can be expressed as:
+
+$$ f(\mathbf{x};\mathbf{w}) = g(\sum_{i=1}^n w_i x_i + b) $$
+
+This expression can be broken down into these two steps:
+
+**Linear combination**: Each input is multiplied by a weight, and then all the weighted inputs are summed together. Additionally, a bias term is added to the sum. Mathematically, this can be represented as:
+
+$$ z = \sum_{i=1}^n w_i x_i + b $$
+   
+Where:
+   - $x_i$ are the inputs
+   - $w_i$ are the weights
+   - $b$ is the bias term
+
+2. **Activation Function**: The weighted sum is passed through an **activation function**, $g(x)$, to introduce non-linearity. Common activation functions include:
+
+   - **Sigmoid**: Maps the input to a value between 0 and 1.
+
+   - **ReLU (Rectified Linear Unit)**: Sets all negative values to zero and passes positive values unchanged.
+
+   - **Tanh**: Maps the input to a value between -1 and 1.
+
 ## Components of an MLP
 
-1. **Input Layer**: The input data is fed into this layer. The number of neurons in this layer corresponds to the number of features in the input data.
-2. **Hidden Layers**: These are the intermediate layers where neurons apply weights to the input and pass them through an activation function (e.g., ReLU, Sigmoid). Adding more hidden layers allows the network to capture more complex patterns in the data.
-3. **Output Layer**: This layer produces the final output of the network. In classification tasks, it typically uses a softmax or sigmoid function to output probabilities.
+The output of the activation function becomes the output of the neuron, which can then be used as input to other neurons.
+
+```{figure} ./img/mlp.svg
+:name: fig_mlp
+
+An example MLP. Each layer of the MLP consists of a set of artificial neurons, that receive input from the previous layer, process it, and pass the output to the next layer.  
+```
+
+1. **Input Layer**: The input layer consists of neurons that receive the raw data. Each neuron in the input layer represents a feature of the input data.
+
+2. **Hidden Layers**: Between the input and output layers are one or more **hidden layers**. Neurons in the hidden layers receive input from the previous layer, process it, and pass the output to the next layer. Adding more hidden layers allows the network to learn more complex relationships in the data.
+
+3. **Output Layer**: The output layer produces the final prediction or classification. The number of neurons in this layer depends on the type of task (e.g., a single neuron for binary classification or multiple neurons for multi-class classification).
+
+Neurons in each layer are **fully connected** to neurons in the subsequent layer, meaning each neuron receives input from all neurons in the previous layer. The strength of these connections is determined by the **weights**, which are adjusted during training to minimize the error between the predicted output and the actual output.
 
 ## Training an MLP
 
@@ -87,6 +124,3 @@ plt.show()
 ## Conclusion
 
 MLPs are powerful models for supervised learning tasks, particularly when dealing with non-linear data. They can model complex relationships by adding more hidden layers and neurons, but care must be taken to prevent overfitting. By training an MLP on artificial data, we've demonstrated how this model can learn to classify data points into two classes.
-
-In the next chapter, we'll explore **regularization techniques** and how they can be used to improve the generalization of neural networks.
-
