@@ -45,6 +45,14 @@ The **logistic loss** is used in logistic regression and is defined as:
 
 This loss function provides a smooth gradient and penalizes incorrect predictions by increasing the loss for large errors. Logistic regression aims to minimize this loss while interpreting $f(\mathbf{x}_i)$ as a probability.
 
+### Cross-entropy loss
+
+The probably most used **loss function** for classification **cross-entropy loss** for classification tasks. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
+
+```{math}
+\mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
+```
+
 ## Classification Example: Logistic Regression
 
 Let’s look at a simple example where we use the concepts of regression to perform a classification task. In logistic regression, we aim to model the probability that a given data point belongs to class $+1$ or class $-1$.

@@ -12,7 +12,6 @@ parts:
     - file: supervised/regularization.md
     - file: supervised/multireg.md
     - file: supervised/classify.md
-    - file: supervised/svm.ipynb
     - file: supervised/mlp.ipynb
     - file: supervised/xval.md
   - caption: Statistics

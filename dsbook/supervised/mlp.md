@@ -62,9 +62,137 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 ## Example: Training an MLP on Artificial Data
 
-In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes. We'll use the **`MLPClassifier`** from `sklearn` to simplify the process.
+In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes.
+
+```{code-cell}ipython3
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import make_moons
+from sklearn.metrics import accuracy_score
+
+sns.set_style("whitegrid")
+
+# Generate non-linearly separable data
+np.random.seed(0)
+X, y = make_moons(n_samples=1000, noise=0.2, random_state=42)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Convert y to a column vector
+y_train = y_train.reshape(-1, 1)
+y_test = y_test.reshape(-1, 1)
+
+# Define the sigmoid activation function
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# Derivative of the sigmoid function
+def sigmoid_derivative(z):
+    return sigmoid(z) * (1 - sigmoid(z))
+
+# Initialize parameters
+n_hidden_1 = 10
+n_hidden_2 = 5
+n_input = X_train.shape[1]
+n_output = 1
+
+np.random.seed(42)
+weights_1 = np.random.randn(n_input, n_hidden_1)
+bias_1 = np.zeros((1, n_hidden_1))
+weights_2 = np.random.randn(n_hidden_1, n_hidden_2)
+bias_2 = np.zeros((1, n_hidden_2))
+weights_out = np.random.randn(n_hidden_2, n_output)
+bias_out = np.zeros((1, n_output))
+
+# Training parameters
+learning_rate = 0.01
+n_epochs = 1000
+
+# Training loop
+for epoch in range(n_epochs):
+    # Forward pass
+    z1 = np.dot(X_train, weights_1) + bias_1
+    a1 = sigmoid(z1)
+    z2 = np.dot(a1, weights_2) + bias_2
+    a2 = sigmoid(z2)
+    z_out = np.dot(a2, weights_out) + bias_out
+    y_pred = sigmoid(z_out)
+
+    # Compute loss (binary cross-entropy)
+    loss = -np.mean(y_train * np.log(y_pred) + (1 - y_train) * np.log(1 - y_pred))
+
+    # Backward pass
+    d_loss_y_pred = -(y_train / y_pred) + ((1 - y_train) / (1 - y_pred))
+    d_y_pred_z_out = sigmoid_derivative(z_out)
+    d_loss_z_out = d_loss_y_pred * d_y_pred_z_out
+
+    d_loss_weights_out = np.dot(a2.T, d_loss_z_out)
+    d_loss_bias_out = np.sum(d_loss_z_out, axis=0, keepdims=True)
+
+    d_loss_a2 = np.dot(d_loss_z_out, weights_out.T)
+    d_a2_z2 = sigmoid_derivative(z2)
+    d_loss_z2 = d_loss_a2 * d_a2_z2
+
+    d_loss_weights_2 = np.dot(a1.T, d_loss_z2)
+    d_loss_bias_2 = np.sum(d_loss_z2, axis=0, keepdims=True)
+
+    d_loss_a1 = np.dot(d_loss_z2, weights_2.T)
+    d_a1_z1 = sigmoid_derivative(z1)
+    d_loss_z1 = d_loss_a1 * d_a1_z1
+
+    d_loss_weights_1 = np.dot(X_train.T, d_loss_z1)
+    d_loss_bias_1 = np.sum(d_loss_z1, axis=0, keepdims=True)
+
+    # Update weights and biases
+    weights_out -= learning_rate * d_loss_weights_out
+    bias_out -= learning_rate * d_loss_bias_out
+    weights_2 -= learning_rate * d_loss_weights_2
+    bias_2 -= learning_rate * d_loss_bias_2
+    weights_1 -= learning_rate * d_loss_weights_1
+    bias_1 -= learning_rate * d_loss_bias_1
+
+    # Print loss every 100 epochs
+    if epoch % 100 == 0:
+        print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# Predict the test set
+z1_test = np.dot(X_test, weights_1) + bias_1
+a1_test = sigmoid(z1_test)
+z2_test = np.dot(a1_test, weights_2) + bias_2
+a2_test = sigmoid(z2_test)
+z_out_test = np.dot(a2_test, weights_out) + bias_out
+y_pred_prob = sigmoid(z_out_test)
+y_pred = (y_pred_prob > 0.5).astype(int)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.2f}")
+
+# Plot the decision boundary
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1), np.arange(y_min, y_max, 0.1))
+Z = (sigmoid(np.dot(sigmoid(np.dot(sigmoid(np.dot(np.c_[xx.ravel(), yy.ravel()], weights_1) + bias_1), weights_2) + bias_2), weights_out) + bias_out) > 0.5).astype(int)
+Z = Z.reshape(xx.shape)
+
+plt.figure(figsize=(8, 6))
+plt.contourf(xx, yy, Z, alpha=0.8, cmap='coolwarm')
+sns.scatterplot(x=X[:, 0], y=X[:, 1], hue=y.ravel(), palette="coolwarm", s=60, edgecolor='k')
+plt.title("Manual MLP Decision Boundary on Non-Linearly Separable Data")
+plt.xlabel("Feature 1")
+plt.ylabel("Feature 2")
+plt.show()
+```
+
+We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process. However, then you would not have had the possibility to see the inner workings of the classifier.
+
 
 ```{code-cell} ipython3
+:tags: [hide-cell]
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
