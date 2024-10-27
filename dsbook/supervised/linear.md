@@ -51,7 +51,7 @@ from scipy.optimize import minimize
 sns.set(style="whitegrid")
 
 # Generating random data
-rng = np.random.RandomState(1)
+rng = np.random.RandomState(0)
 x = rng.rand(30)
 y_linear = 2 * x - 0.5 + 0.2*rng.randn(30)
 
@@ -130,7 +130,7 @@ import matplotlib.pyplot as plt
 sns.set(style="whitegrid")
 
 # Generating random data
-rng = np.random.RandomState(1) #Here we could give any number a a seed for the random number generator
+rng = np.random.RandomState(0) #Here we could give any number a a seed for the random number generator
 x = rng.rand(50)
 y_linear = 2 * x - 0.5 + 0.2*rng.randn(50)
 
@@ -229,7 +229,7 @@ import numpy as np
 sns.set(style="whitegrid")
 
 # Generating random data
-rng = np.random.RandomState(1)
+rng = np.random.RandomState(0)
 x = rng.rand(50)
 y_linear = 2 * x - 3 + 0.2*rng.randn(50)
 y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(50)

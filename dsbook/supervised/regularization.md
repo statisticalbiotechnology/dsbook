@@ -4,7 +4,7 @@ kernelspec:
   name: python3
 ---
 
-# Regularization in Linear Regression
+# Regularization
 
 ## Introduction to Regularization
 
@@ -43,39 +43,54 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Define the loss function for Ridge regression
-def ridge_loss(params, x, y, reg_param):
-    slope, intercept = params
-    predictions = slope * x + intercept
-    residual_sum_squares = np.sum((y - predictions) ** 2)
-    l2_penalty = reg_param * np.sum(slope**2)
+# Generate synthetic data
+rng = np.random.RandomState(1)
+N=20
+x = rng.rand(N)
+y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(N)
+y_non_linear = 4 * x**2 - 10 * x**4  + 6 * x**6 + 0.1 * rng.randn(N)
+
+# Define the polynomial model function
+def polynomial_model(x, params, degree=7):
+    x_poly = np.vstack([x**i for i in range(degree + 1)]).T
+    return np.dot(x_poly, params)
+
+def minimize_loss(loss, model, x, y, num_params):
+    initial_params = np.random.randn(num_params)
+    return minimize(loss, initial_params, args=(model, x, y))
+
+def rss_loss(params, model_function, X, y):
+    predictions = model_function(x, params)  # Predicted values
+    residual_sum_squares = np.sum((y - predictions) ** 2)  # RSS
+    return residual_sum_squares
+
+# Define ridge loss function
+def ridge_loss(params, model_function, X, y, alpha=0.1):
+    residual_sum_squares =  rss_loss(params, model_function, X, y)  # RSS
+    l2_penalty = alpha * np.sum(params**2)
     return residual_sum_squares + l2_penalty
 
-# Generate synthetic data
-rng = np.random.RandomState(42)
-x = rng.rand(50)
-y = 2 * x - 0.5 + 0.2 * rng.randn(50)
+# Optimize the parameters of our model using the lasso loss function
+result_poly_rss = minimize_loss(rss_loss, polynomial_model, x, y_non_linear,8)
+result_poly_ridge = minimize_loss(ridge_loss, polynomial_model, x, y_non_linear,8)
 
-# Minimize the Ridge loss function
-reg_param = 1.0  # Regularization parameter (λ)
-initial_params = np.random.randn(2)  # Initial guess for slope and intercept
-result_ridge = minimize(ridge_loss, initial_params, args=(x, y, reg_param))
+poly_params_rss = result_poly_rss.x
+poly_params_ridge = result_poly_ridge.x
 
-# Optimized slope and intercept
-slope_ridge, intercept_ridge = result_ridge.x
+# Generate fit lines
+xfit = np.linspace(np.min(x), np.max(x), 1000)
+yfit_poly_rss = polynomial_model(xfit, poly_params_rss)
+yfit_poly_ridge = polynomial_model(xfit, poly_params_ridge)
 
-# Generate predictions
-xfit = np.linspace(0, 1, 1000)
-yfit_ridge = slope_ridge * xfit + intercept_ridge
-
-# Plot results
-sns.scatterplot(x=x, y=y)
-plt.plot(xfit, yfit_ridge, color='g', label="Ridge")
+sns.scatterplot(x=x, y=y_non_linear, label="Data")
+plt.plot(xfit, yfit_poly_rss, color='r',label="RSS")
+plt.plot(xfit, yfit_poly_ridge, color='b',label="Ridge")
 plt.legend()
 plt.show()
 
-# Print optimized parameters
-print(f"Optimized slope (Ridge): {slope_ridge:.4f}, Optimized intercept: {intercept_ridge:.4f}")
+# Print coefficients to show sparsity
+print("Polynomial Coefficients (RSS):", poly_params_rss)
+print("Polynomial Coefficients (Ridge):", poly_params_ridge)
 ```
 
 In this example, `alpha` corresponds to $\lambda$ and controls the regularization strength. By tuning this parameter, we can adjust the model's complexity.
@@ -101,33 +116,34 @@ LASSO is particularly useful when we have many features, as it can identify and 
 The **scikit-learn** package provides a `Lasso` class for L1-regularized regression. Below is an example of LASSO applied to a dataset.
 
 ```{code-cell} ipython3
-# Define the loss function for LASSO regression
-def lasso_loss(params, x, y, reg_param):
-    slope, intercept = params
-    predictions = slope * x + intercept
-    residual_sum_squares = np.sum((y - predictions) ** 2)
-    l1_penalty = reg_param * np.sum(np.abs(slope))
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.optimize import minimize
+
+# Define LASSO loss function
+def lasso_loss(params, model_function, X, y, alpha=0.1):
+    residual_sum_squares =  rss_loss(params, model_function, X, y)  # RSS
+    l1_penalty = alpha * np.sum(np.abs(params))  # L1 regularization
     return residual_sum_squares + l1_penalty
 
-# Minimize the LASSO loss function
-reg_param_lasso = 0.1  # Regularization parameter (λ)
-initial_params_lasso = np.random.randn(2)  # Initial guess for slope and intercept
-result_lasso = minimize(lasso_loss, initial_params_lasso, args=(x, y, reg_param_lasso))
+# Optimize the parameters of our model using the lasso loss function
+result_poly_lasso = minimize_loss(lasso_loss, polynomial_model, x, y_non_linear,8)
 
-# Optimized slope and intercept
-slope_lasso, intercept_lasso = result_lasso.x
+poly_params_lasso = result_poly_lasso.x
 
-# Generate predictions
-yfit_lasso = slope_lasso * xfit + intercept_lasso
+# Generate fit lines
+yfit_poly_lasso = polynomial_model(xfit, poly_params_lasso)
 
-# Plot results
-sns.scatterplot(x=x, y=y)
-plt.plot(xfit, yfit_lasso, color='b', label="LASSO")
+sns.scatterplot(x=x, y=y_non_linear, label="Data")
+plt.plot(xfit, yfit_poly_rss, color='r',label="RSS")
+plt.plot(xfit, yfit_poly_lasso, color='b',label="LASSO")
 plt.legend()
 plt.show()
 
-# Print optimized parameters
-print(f"Optimized slope (LASSO): {slope_lasso:.4f}, Optimized intercept: {intercept_lasso:.4f}")
+# Print coefficients to show sparsity
+print("Polynomial Coefficients (RSS):", poly_params_rss)
+print("Polynomial Coefficients (LASSO):", poly_params_lasso)
 ```
 
 As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more coefficients will be set to zero, resulting in a simpler model.
@@ -163,14 +179,17 @@ The **scikit-learn** package also provides an `ElasticNet` class, which combines
 from sklearn.linear_model import ElasticNet
 
 # Fit Elastic Net model
-elastic_net_model = ElasticNet(alpha=0.1, l1_ratio=0.5)  # l1_ratio controls the balance between L1 and L2 regularization
-elastic_net_model.fit(x[:, np.newaxis], y)
+x_poly = np.vstack([x**i for i in range(8)]).T
+elastic_net_model = ElasticNet(alpha=0.005, l1_ratio=0.5)  # l1_ratio controls the balance between L1 and L2 regularization
+elastic_net_model.fit(x_poly, y_non_linear)
 
 # Predict and plot
-yfit_elastic_net = elastic_net_model.predict(xfit[:, np.newaxis])
+x_poly_fit = np.vstack([xfit**i for i in range(8)]).T
+yfit_elastic_net = elastic_net_model.predict(x_poly_fit)
 
-sns.scatterplot(x=x, y=y)
-plt.plot(xfit, yfit_elastic_net, color='m')
+sns.scatterplot(x=x, y=y_non_linear, label="data")
+plt.plot(xfit, yfit_elastic_net, color='m', label="elastic net")
+plt.legend()
 plt.show()
 ```
 
