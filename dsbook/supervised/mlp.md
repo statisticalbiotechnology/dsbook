@@ -249,6 +249,6 @@ plt.show()
 - **Activation Function**: Common activation functions include ReLU, sigmoid, and tanh. The choice of activation function affects how the model learns non-linear patterns.
 - **Learning Rate**: Adjusting the learning rate controls how quickly the model updates weights during training. A learning rate that's too high can lead to instability, while one that's too low can result in slow convergence.
 
-## Conclusion
+## A workbench for MLPs
 
-MLPs are powerful models for supervised learning tasks, particularly when dealing with non-linear data. They can model complex relationships by adding more hidden layers and neurons, but care must be taken to prevent overfitting. By training an MLP on artificial data, we've demonstrated how this model can learn to classify data points into two classes.
+TensorFlow provides a nice workbench for MLPs, wher you can investigate the influence of different selections of input features, architectures, and regularizartion on performance on differnt datatypes. [Try it out!](https://playground.tensorflow.org/)
