@@ -12,8 +12,9 @@ parts:
     - file: supervised/regularization.md
     - file: supervised/multireg.md
     - file: supervised/classify.md
-    - file: supervised/mlp.ipynb
-    - file: supervised/xval.md
+    - file: supervised/svm.md
+    - file: supervised/supervisedML.ipynb
+    - file: supervised/mlp.md
   - caption: Statistics
     numbered: True
     chapters:
