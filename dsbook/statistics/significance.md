@@ -4,9 +4,60 @@ kernelspec:
   name: python3
 ---
 
-# Assessing Significance Using Permutation Testing
+## Hypothesis Testing
 
-## Introduction
+Hypothesis testing is a statistical procedure used to determine if a sample data set provides sufficient evidence to reject a stated null hypothesis (*H₀*) in favor of an alternative hypothesis (*H₁*). This method is fundamental in science for drawing inferences about populations based on sample data. It allows researchers to make data-driven decisions and evaluate the likelihood that their observations are due to random chance or a genuine effect.
+
+### Null Hypothesis (*H₀*) and Alternative Hypothesis (*H₁*)
+
+In hypothesis testing, we begin by stating two competing hypotheses:
+- **Null Hypothesis (*H₀*)**: This is a statement suggesting there is no effect, relationship, or difference in the population. It represents the status quo or a baseline assumption. For example, in a clinical trial, *H₀* might state that a new drug has no effect compared to a placebo.
+- **Alternative Hypothesis (*H₁*)**: This hypothesis reflects what the researcher aims to prove. It suggests that there is an effect, a relationship, or a difference. In the clinical trial example, *H₁* would state that the new drug has a beneficial effect compared to the placebo.
+
+The purpose of hypothesis testing is to assess whether the data provides enough evidence to reject *H₀* in favor of *H₁*. This process involves comparing the observed data to what we would expect under *H₀*.
+
+### Test Statistics
+
+A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two groups. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under *H₀*, which typically assumes that there is no difference in means between the groups.
+
+### Sampling Distribution under the Null Hypothesis
+
+The **sampling distribution under the null hypothesis** is the distribution of the test statistic assuming that *H₀* is true. This distribution helps us understand the range of possible values the test statistic can take if the null hypothesis is correct. By comparing the observed test statistic to this distribution, we can determine how likely it is to observe such a value by random chance alone. This comparison is essential for calculating the *p* value.
+
+### Permutation Tests
+
+**Permutation tests** are non-parametric methods that utilize the exchangeability of the sample groups under the null hypothesis. They are particularly useful when there is no strong assumption about the underlying population distribution. Permutation tests are flexible and can be applied to various types of data.
+
+In a permutation test, the observed data points are rearranged or shuffled multiple times to create new permutations, and the test statistic is recalculated for each one. By examining the distribution of the test statistic across these permutations, we can approximate the sampling distribution and determine whether the observed value is extreme under *H₀*. This method is especially useful when sample sizes are small or when traditional parametric assumptions do not hold.
+
+### P Value
+
+The **p value** represents the probability of obtaining the observed data, or something more extreme, if the null hypothesis were true. It is used as a measure of evidence against *H₀*:
+- A smaller *p* value suggests that the observed data would be unlikely under *H₀*, providing stronger evidence against the null hypothesis.
+- For example, a *p* value of 0.03 means there is a 3% chance of observing the data (or something more extreme) if *H₀* is true. This small probability indicates that the data is not consistent with *H₀*, leading us to consider rejecting it.
+
+### Significance Level (α)
+
+The **significance level** (denoted as α) is a predetermined threshold that determines whether the *p* value is considered small enough to reject the null hypothesis. A common choice for α is 0.05, which means we are willing to accept a 5% chance of incorrectly rejecting *H₀* (Type I error):
+- If the *p* value is less than α, the results are considered **statistically significant**, and we reject *H₀*.
+- The choice of α depends on the context of the study and the consequences of making an error. For example, in medical research, a smaller α (e.g., 0.01) might be chosen to reduce the risk of false positives.
+
+### False Positives and False Negatives
+
+In hypothesis testing, two types of errors can occur:
+- **False Positive (Type I Error)**: Rejecting *H₀* when it is actually true. This error can lead to incorrect conclusions, such as believing a treatment is effective when it is not.
+- **False Negative (Type II Error)**: Failing to reject *H₀* when the alternative hypothesis is true. This error can result in missed discoveries, such as failing to detect a real effect or relationship.
+
+The balance between Type I and Type II errors is crucial in hypothesis testing. Researchers often need to consider the trade-offs between these errors when designing studies and choosing significance levels.
+
+### Limitations & Misinterpretations
+
+While hypothesis testing is powerful, it has its limitations and can be easily misinterpreted:
+- **P-values** provide the strength of evidence against *H₀*, but they do not indicate the size of the effect or its practical significance. A small *p* value might suggest a statistically significant result, but the actual effect size could be trivial.
+- A **p value** does not give the probability that either hypothesis is true. It only tells us how compatible the observed data is with *H₀*.
+- Results can be **statistically significant** without being **practically significant**, and vice versa. Thus, it is crucial to interpret the results in the context of the research question and the real-world implications. For instance, a medical treatment might show a statistically significant improvement, but the actual benefit to patients might be minimal.
+
+## Assessing Significance Using Permutation Testing
 
 In regression models, we often want to assess the significance of the model fit and individual coefficients. Instead of relying on classical statistical tests like the **F-test**, we can use **permutation testing** to evaluate significance. This approach involves creating a **null distribution** by permuting the dependent variable (the target) and calculating the corresponding loss values. We then compare the observed loss to this distribution to compute a **p-value**.
 
@@ -38,7 +89,7 @@ import matplotlib.pyplot as plt
 # Generate synthetic data
 rng = np.random.RandomState(42)
 x = rng.rand(50)
-y = 2 * x - 0.5 + 0.2 * rng.randn(50)
+y = 1.2 * x - 0.5 + 1.1 * rng.randn(50)
 
 # Define the linear model
 def linear_model(params, x):
