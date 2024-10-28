@@ -1,4 +1,5 @@
 **/_build
-**/__pychache__
+**/__pycache__
 **/*_tcga_pub2015
 *.tsv.gz
+dsbook/data/*
