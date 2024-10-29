@@ -13,6 +13,7 @@ In this example, we apply multiple regression to analyze the relationship betwee
 The first step involves loading and preparing data from the CPTAC (Clinical Proteomic Tumor Analysis Consortium) database for Lung Squamous Cell Carcinoma (LSCC). We retrieve proteomics data and a relevant clinical variable (BMI), then merge these datasets based on matching patient records.
 
 ```{code-cell} ipython3
+:tags: [hide-output]
 import pandas as pd
 import cptac
 import cptac.utils as ut

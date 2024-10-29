@@ -11,7 +11,7 @@ parts:
     - file: supervised/linear.md
     - file: supervised/regularization.md
     - file: supervised/multireg.md
-    - file: supervised/KNAP2.ipynb
+    - file: supervised/KPNA2.ipynb
     - file: supervised/classify.md
     - file: supervised/xval.md
     - file: supervised/svm.md
