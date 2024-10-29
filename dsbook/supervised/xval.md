@@ -4,54 +4,98 @@ kernelspec:
   name: python3
 ---
 
-# Cross Validation
+# Validation
 
-Cross validation is an essential technique in machine learning that ensures the reliability of a model's performance. It allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples. This is critical because machine learning models are often at risk of overfitting—that is, learning the peculiarities of the training dataset rather than the underlying pattern. Cross validation mitigates this by repeatedly testing the model on different segments of the data, giving a more realistic picture of its ability to generalize.
+## The Importance of Independent Validation Sets in Machine Learning
 
-The most common form of cross validation is *k-fold cross validation*. In k-fold cross validation, the data is split into *k* equally sized folds, or subsets. The model is trained on *k – 1* of these folds and tested on the remaining one, and this process is repeated *k* times—each time using a different fold as the test set. The final evaluation metric, such as accuracy or mean squared error, is then computed as the average across all *k* trials. This approach ensures that every observation in the dataset is used both for training and for validation, minimizing the chances of bias.
+In machine learning, the use of independent validation sets is crucial for evaluating model performance and avoiding one of the most common pitfalls: overfitting. Overfitting occurs when a model is trained to perform exceptionally well on the training data but fails to generalize to new, unseen data. This typically happens when the model is excessively complex for the given task or when it memorizes the noise and peculiarities of the training dataset instead of learning the underlying patterns.
 
-```{code-cell} python
-:caption: Illustration of 3-fold cross validation
-:label: 3-fold-xval
-:tags: [hide-input]
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
+An independent validation set helps to detect overfitting by providing a dataset that is separate from the training set, allowing for an unbiased evaluation of the model’s performance. To better understand the concept of overfitting, let’s consider an illustrative Python example using synthetic data.
+
+### Example of Overfitting
+
+Below, we create a small dataset of 10 data points, and we compare the performance of two polynomial regression models—a simple linear model and an overfitted higher-order polynomial model.
+
+```{code-cell}ipython3
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 
-# Define figure and axis
-fig, ax = plt.subplots(figsize=(10, 6))
+# Generating synthetic data
+np.random.seed(42)
+x = np.linspace(-3, 3, 10).reshape(-1, 1)
+y = 0.5 * x**2 + np.random.normal(0, 0.5, x.shape)
 
-# Data for illustration
-n_samples = 12
-k_folds = 3
-fold_size = n_samples // k_folds
+# Creating a linear regression model and a higher-order polynomial regression model
+linear_model = LinearRegression()
+quad_model = LinearRegression()
+poly_model = LinearRegression()
+quadratic_features = PolynomialFeatures(degree=2)
+polynomial_features = PolynomialFeatures(degree=8)
 
-# Create the illustration similar to the attached diagram
-for i in range(k_folds):
-    # Training subsets (in green)
-    for j in range(k_folds):
-        if j != i:
-            rect = patches.Rectangle((j * 1.5, k_folds - i - 1), 1, 1, linewidth=1, edgecolor='black', facecolor='#66b3ff')
-            ax.add_patch(rect)
-            ax.text(j * 1.5 + 0.5, k_folds - i - 0.5, f'Train {j + 1}', ha='center', va='center', fontsize=10, color='black')
-    
-    # Validation subset (in orange)
-    rect = patches.Rectangle((i * 1.5, k_folds - i - 1), 1, 1, linewidth=1, edgecolor='black', facecolor='#ff9999')
-    ax.add_patch(rect)
-    ax.text(i * 1.5 + 0.5, k_folds - i - 0.5, f'Validate {i + 1}', ha='center', va='center', fontsize=10, color='black')
+# Fitting the models
+linear_model.fit(x, y)
+x_quad = quadratic_features.fit_transform(x)
+quad_model.fit(x_quad, y)
+x_poly = polynomial_features.fit_transform(x)
+poly_model.fit(x_poly, y)
 
-# Adding labels and styling
-ax.set_xticks(np.arange(0, n_samples * 1.5, 1.5))
-ax.set_xticklabels([f'S{i+1}' for i in range(n_samples)], rotation=90)
-ax.set_xlim(-0.5, n_samples * 1.5 - 0.5)
-ax.set_ylim(-0.5, k_folds)
-ax.invert_yaxis()
-ax.set_xlabel('Data Samples')
-ax.set_title('3-Fold Cross Validation with Separate Models for Each Fold')
+# Predicting using the fitted models
+x_test = np.linspace(-3, 3, 100).reshape(-1, 1)
+y_linear_pred = linear_model.predict(x_test)
+y_quad_pred = quad_model.predict(quadratic_features.transform(x_test))
+y_poly_pred = poly_model.predict(polynomial_features.transform(x_test))
 
-plt.tight_layout()
+# Plotting the data
+plt.scatter(x, y, color='black', label='Data')
+plt.plot(x_test, y_linear_pred, label='Linear Model (Underfitting)', color='blue')
+plt.plot(x_test, y_quad_pred, label='Quadratic Model', color='green')
+plt.plot(x_test, y_poly_pred, label='High-Degree Model (Overfitting)', color='red')
+plt.legend()
+plt.xlabel("x")
+plt.ylabel("y")
 plt.show()
 ```
+
+In the above code, we create a simple quadratic dataset, and fit both a linear regression model, a second degree polynomial model and an eighth-degree polynomial model. 
+The linear model apears to miss an important trend in the data and is hence underfitting to the data.
+The eighth-degree model fits the training data almost perfectly, capturing all of the data points and the noise, but it is unlikely to perform well on new data—an example of overfitting.
+
+### Cross Validation to the Rescue
+
+To evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and for validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- stil using all available data.
+
+In **k-fold cross validation**, the dataset is split into `k` equally sized folds. The model is trained `k` times, each time using a different fold as the validation set and the remaining folds for training. The average of the validation metrics across all folds gives a more robust estimate of the model's performance compared to using a single validation set.
+
+### Illustration of Three-Fold Cross Validation
+
+Imagine we have a dataset with **six data points**, represented as `A`, `B`, `C`, `D`, `E`, `F`. In three-fold cross validation, we can split this dataset into three subsets, each containing **two data points**. For example:
+
+- **Fold 1**: Training on `[C, D, E, F]`, Validation on `[A, B]`
+- **Fold 2**: Training on `[A, B, E, F]`, Validation on `[C, D]`
+- **Fold 3**: Training on `[A, B, C, D]`, Validation on `[E, F]`
+
+Each fold is used for validation once, and the model is trained on the remaining data. This way, every data point contributes to both training and evaluation, reducing the risk of overfitting and improving the robustness of the performance estimate.
+
+Here is a code example illustrating three-fold cross validation with six data points:
+
+```{code-cell}ipython3
+from sklearn.model_selection import KFold
+
+# Example dataset with six data points
+x_example = np.array([[1], [2], [3], [4], [5], [6]])
+y_example = np.array([1, 4, 9, 16, 25, 36])
+
+# Setting up three-fold cross validation
+kf_example = KFold(n_splits=3, shuffle=True, random_state=42)
+
+for fold, (train_index, test_index) in enumerate(kf_example.split(x_example)):
+    print(f"Fold {fold + 1}: Training on {x_example[train_index].flatten()}, Validation on {x_example[test_index].flatten()}")
+```
+
+This code demonstrates how the dataset is split into three folds, with each fold being used for validation once while the remaining data points are used for training. This helps ensure that all data points are used for both training and validation, providing a comprehensive evaluation of the model's performance.
 
 ```{mermaid}
 flowchart TB
@@ -90,9 +134,38 @@ flowchart TB
     C --> T3
 ```
 
+### Cross Validation to detect overfitting
 
-Another popular approach is *leave-one-out cross validation (LOOCV)*. In LOOCV, the number of folds is equal to the number of samples in the dataset, meaning that each sample is used once as a validation set while the remaining samples are used for training. LOOCV is computationally expensive for large datasets but provides a very thorough validation, particularly useful when data is scarce.
+In the following code, we demonstrate how to use **scikit-learn's KFold cross validation** with three-fold cross validation for a simple linear regression model:
 
-Choosing the right form of cross validation depends on the nature of the problem and the available computational resources. A higher value for *k* can lead to a more accurate estimate of performance but comes at the cost of increased computation. Typically, values like *k = 5* or *k = 10* offer a good balance between accuracy and efficiency.
+```{code-cell}ipython3
+from sklearn.model_selection import KFold
+from sklearn.pipeline import make_pipeline
 
-Cross validation is especially useful when fine-tuning hyperparameters or selecting between different models. By using a consistent cross validation strategy, one can confidently compare models and select the one with the best generalization capabilities. This makes cross validation a fundamental building block in the pipeline of designing, training, and evaluating robust machine learning models.
+# Creating a pipeline for polynomial regression with degree 2 and 8
+pipeline_2 = make_pipeline(PolynomialFeatures(degree=2), LinearRegression())
+pipeline_8 = make_pipeline(PolynomialFeatures(degree=8), LinearRegression())
+
+# Setting up three-fold cross validation
+kf = KFold(n_splits=3, shuffle=True, random_state=42)
+scores_2, scores_8 = [], []
+
+for train_index, test_index in kf.split(x):
+    x_train, x_test = x[train_index], x[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+    # Fit and test second degree polynomia
+    pipeline_2.fit(x_train, y_train)
+    y_pred = pipeline_2.predict(x_test)
+    mse = mean_squared_error(y_test, y_pred)
+    scores_2.append(mse)
+    # Fit and test eith degree polynomia
+    pipeline_8.fit(x_train, y_train)
+    y_pred = pipeline_8.predict(x_test)
+    mse = mean_squared_error(y_test, y_pred)
+    scores_8.append(mse)
+
+# Calculating and printing the mean score
+print(f"Mean cross-validated MSE, for 2nd degree: {np.mean(scores_2):.2f} and for 8th degree: {np.mean(scores_8):.2f}")
+```
+
+In this code, we use `KFold` to split the dataset into three folds. The `for` loop iterates through each fold, training the model on the training set and evaluating it on the test set. The mean squared error (MSE) is calculated for each fold and averaged to give a more robust measure of model performance. By splitting the data into different training and validation sets multiple times, cross validation helps to detect overfitting and provides a more reliable measure of model generalizability.

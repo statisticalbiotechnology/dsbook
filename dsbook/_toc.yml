@@ -12,6 +12,7 @@ parts:
     - file: supervised/regularization.md
     - file: supervised/multireg.md
     - file: supervised/classify.md
+    - file: supervised/xval.md
     - file: supervised/svm.md
     - file: supervised/supervisedML.ipynb
     - file: supervised/mlp.md

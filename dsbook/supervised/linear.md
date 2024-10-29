@@ -104,13 +104,18 @@ Above is an illustration of the concept of residuals. Given the a model, $f(\mat
 To fit a function $f(\mathbf{x})$ to the data points $\{(\mathbf{x}_i, y_i)\}_i$, we minimize the sum of squared errors (SSE):
 
 ```{math}
-\mathcal{l}=\sum_i e_i^2 = \sum_i (y_i - f(\mathbf{x}_i) )^2
+\mathcal{l}_{\text{SSE}}=\sum_i^N e_i^2 = \sum_i^N (y_i - f(\mathbf{x}_i) )^2
 ```
 
-This process is known as **least squares**. $\mathcal{l}$ is known as a **loss function**. By minimizing the loss function, we find the best-fitting function for the data.
+This process is known as **least squares**. $\mathcal{l}$ is known as a **loss function**. The loss is an indicqtion of how well a regression fits the data. Different regression lines will have different losses. By minimizing the loss function, we find the function that best fits the data according to the selected loss function.
 
-If the errors $e_i$ follow a normal distribution, the **maximum likelihood estimation (MLE)** is equivalent to least squares minimization, making this approach optimal under these assumptions.
+If the errors $e_i$ follow a normal distribution, the **maximum likelihood estimation (MLE)** is [equivalent](https://stats.stackexchange.com/questions/143705/maximum-likelihood-method-vs-least-squares-method) to least squares minimization, making this approach optimal under these assumptions.
 
+Minimizing SSE is also equivalent to minimizing an even more popular loss function, the Mean Square Error, MSE.
+
+```{math}
+\mathcal{l}_{\text{MSE}}=\frac{1}{N}\sum_i^N e_i^2 = \frac{1}{N}\sum_i^N (y_i - f(\mathbf{x}_i) )^2
+```
 
 ### Fit a Linear Model to Data
 
@@ -292,7 +297,6 @@ yfit_gauss = gaussian_model(xfit, gaussian_params)
 # Plot the gausian fit
 sns.scatterplot(x=x, y=y_non_linear)
 plt.plot(xfit, yfit_gauss, color='r')
-plt.title("Gaussian Bases Fit To Nonlinear data")
 plt.show()
 ```
 
