@@ -78,12 +78,12 @@ f_x_wide = np.linspace(-3, 3, 200)
 
 # Recalculate logistic loss for the wider range of f(x) for y=1 and y=0
 logistic_loss_y1_wide = np.log(1 + np.exp(-f_x_wide))  # Logistic loss for y=1
-logistic_loss_y0_wide = np.log(1 + np.exp(f_x_wide))   # Logistic loss for y=0
+logistic_loss_y0_wide = np.log(1 + np.exp(f_x_wide))   # Logistic loss for y=-1
 
 # Plot the logistic loss for y=1 and y=0 over the wider range
 plt.figure(figsize=(10, 6))
 plt.plot(f_x_wide, logistic_loss_y1_wide, label="Logistic Loss (y=1)", linestyle='-', linewidth=2)
-plt.plot(f_x_wide, logistic_loss_y0_wide, label="Logistic Loss (y=0)", linestyle='--', linewidth=2)
+plt.plot(f_x_wide, logistic_loss_y0_wide, label="Logistic Loss (y=-1)", linestyle='--', linewidth=2)
 plt.xlabel("Predicted Value $f(\\mathbf{x})$")
 plt.ylabel("Logistic Loss")
 plt.legend()
