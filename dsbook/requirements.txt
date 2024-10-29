@@ -3,5 +3,6 @@ matplotlib
 seaborn
 scikit-learn
 numpy
+cptac
 sphinxcontrib-mermaid
 ipywidgets
