@@ -12,12 +12,12 @@ In this chapter, we'll explore how regression-based techniques can be adapted to
 
 ## The Concept of Classification with Regression
 
-In classification, the target variable $y_i$ represents the class label. For binary classification, we often use the labels $y_i = +1$ and $y_i = -1$ to represent the two different classes. The goal is to assign the correct class to new data points based on features $\mathbf{x}_i$.
+In classification, the target variable $y_i$ represents the class label. For binary classification, we often use the labels $y_i = +1$ and $y_i = 0$ (or $y_i = -1$) to represent the two different classes. The goal is to assign the correct class to new data points based on features $\mathbf{x}_i$.
 
 We can approach this problem similarly to regression by fitting a function $f(\mathbf{x})$, but instead of predicting a continuous variable, we focus on predicting whether $f(\mathbf{x})$ is positive or negative:
 
 - If $f(\mathbf{x}) > 0$, predict class $+1$.
-- If $f(\mathbf{x}) < 0$, predict class $-1$.
+- If $f(\mathbf{x}) < 0$, predict class $0$.
 
 This can be achieved by minimizing a **loss function**, which represents the error between the predicted values and the true class labels.
 
