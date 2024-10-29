@@ -4,7 +4,7 @@ Machine learning (ML) is a branch of artificial intelligence (AI) that enables c
 
 ## Supervised Learning
 
-In supervised learning, we are given a dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^N$, where $\mathbf{x}_i$ represents feature vectors (such as gene expressions or protein levels), and $y_i$ is the target, which could be a class label (e.g., disease vs. no disease) or a continuous value in regression tasks (e.g., protein concentration). The objective is to learn a function $f(\mathbf{x})$ that approximates the mapping from $\mathbf{x}_i$ to $y_i$, enabling accurate predictions on new, unseen data. Examples of supervised learning include classification models such as support vector machines and regression models like linear regression.
+In supervised learning, we are given a dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^N$, where $\mathbf{x}_i$ represents feature vectors (such as gene expressions or protein levels), and $y_i$ is the target, which could be a class label (e.g., disease vs. no disease) or a continuous value in regression tasks (e.g., protein concentration). The objective is to learn a function $f(\mathbf{x})$ that approximates the mapping from $\mathbf{x}_i$ to $y_i$, enabling accurate predictions on new, unseen data. This is frequently done by minimization of a loss function. Examples of supervised learning include classification models such as support vector machines and regression models like linear regression.
 
 ## Unsupervised Learning
 
@@ -16,7 +16,7 @@ Semi-supervised learning combines labeled and unlabeled data. We are provided wi
 
 ## Machine Supervised Learning
 
-In machine-supervised learning, systems are often trained or corrected by other automated systems rather than human supervisors. A popular choice in this context is the use of **autoencoders**, where for a given set $\{\mathbf{x}_i\}_{i=1}^N$, the system learns an encoder $e$ and a decoder $d$, trained such that the reconstruction satisfies $\mathbf{x}_i \approx d(e(\mathbf{x}_i))$. Autoencoders are particularly useful for dimensionality reduction and feature extraction, often applied in biotechnology to reduce complex data (e.g., genomic or proteomic data) into more manageable representations.
+In machine-supervised learning, systems are often trained or corrected by other automated systems rather than human supervisors. A popular choice in this context is the use of **autoencoders**, where for a given set $\{\mathbf{x}_i\}_{i=1}^N$, the system learns an encoder $e$ and a decoder $d$, trained such that the reconstruction approximates $\mathbf{x}_i \approx d(e(\mathbf{x}_i))$. Autoencoders are particularly useful for dimensionality reduction and feature extraction, often applied in biotechnology to reduce complex data (e.g., genomic or proteomic data) into more manageable representations.
 
 ## Generative vs. Discriminative Models
 

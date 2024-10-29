@@ -4,7 +4,7 @@ kernelspec:
   name: python3
 ---
 
-# Classification with Regression Concepts
+# Classification
 
 In regression, we typically aim to predict a continuous outcome (like a numerical value). However, we can extend the same concepts of regression to **classification tasks**, where the goal is to predict a discrete class label. By using specific target values (like $y = \pm 1$), we can transform regression into a method for classifying data.
 
@@ -23,7 +23,7 @@ This can be achieved by minimizing a **loss function**, which represents the err
 
 ## Classification Loss Functions
 
-When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications. Below are two common loss functions used in classification tasks:
+When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications propotional to how much the predictor insists on the incorrect prediction. Below are two common loss functions used in classification tasks:
 
 ### Hinge Loss (Used in Support Vector Machines)
 
@@ -35,6 +35,29 @@ The **hinge loss** is commonly used in support vector machines (SVMs) and is def
 
 This loss penalizes any data points where the predicted value $f(\mathbf{x}_i)$ does not match the true label $y_i$. If $y_i f(\mathbf{x}_i) \geq 1$, the prediction is correct and there is no penalty. If $y_i f(\mathbf{x}_i) < 1$, there is a penalty proportional to the misclassification.
 
+```{code-cell}ipython3
+:tags: [hide-input]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define a wider range for f(x) to span from -3 to +3
+f_x_wide = np.linspace(-3, 3, 200)
+
+# Calculate hinge loss for y=1 and y=0 over the range of f(x) from -3 to +3
+hinge_loss_y1 = np.maximum(0, 1 - f_x_wide)  # Hinge loss for y=1
+hinge_loss_y0 = np.maximum(0, 1 + f_x_wide)  # Hinge loss for y=0
+
+# Plot the hinge loss for y=1 and y=0 over the wider range
+plt.figure(figsize=(10, 6))
+plt.plot(f_x_wide, hinge_loss_y1, label="Hinge Loss (y=1)", linestyle='-', linewidth=2)
+plt.plot(f_x_wide, hinge_loss_y0, label="Hinge Loss (y=0)", linestyle='--', linewidth=2)
+plt.xlabel("Predicted Value $f(\\mathbf{x})$")
+plt.ylabel("Hinge Loss")
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
 ### Logistic Loss (Used in Logistic Regression)
 
 The **logistic loss** is used in logistic regression and is defined as:
@@ -45,12 +68,60 @@ The **logistic loss** is used in logistic regression and is defined as:
 
 This loss function provides a smooth gradient and penalizes incorrect predictions by increasing the loss for large errors. Logistic regression aims to minimize this loss while interpreting $f(\mathbf{x}_i)$ as a probability.
 
+```{code-cell}ipython3
+:tags: [hide-input]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define a wider range for f(x) to span from -3 to +3
+f_x_wide = np.linspace(-3, 3, 200)
+
+# Recalculate logistic loss for the wider range of f(x) for y=1 and y=0
+logistic_loss_y1_wide = np.log(1 + np.exp(-f_x_wide))  # Logistic loss for y=1
+logistic_loss_y0_wide = np.log(1 + np.exp(f_x_wide))   # Logistic loss for y=0
+
+# Plot the logistic loss for y=1 and y=0 over the wider range
+plt.figure(figsize=(10, 6))
+plt.plot(f_x_wide, logistic_loss_y1_wide, label="Logistic Loss (y=1)", linestyle='-', linewidth=2)
+plt.plot(f_x_wide, logistic_loss_y0_wide, label="Logistic Loss (y=0)", linestyle='--', linewidth=2)
+plt.xlabel("Predicted Value $f(\\mathbf{x})$")
+plt.ylabel("Logistic Loss")
+plt.legend()
+plt.grid(True)
+plt.show()
+```
+
+
 ### Cross-entropy loss
 
 The probably most used **loss function** for classification **cross-entropy loss** for classification tasks. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
 
 ```{math}
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
+```
+
+```{code-cell}ipython3
+:tags: [hide-input]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the range of f(x) values from near zero to near one to avoid log(0)
+f_x = np.linspace(0.01, 0.99, 100)
+
+# Compute cross-entropy loss for y=1 and y=0
+loss_y1 = -np.log(f_x)  # Cross-entropy loss when y=1
+loss_y0 = -np.log(1 - f_x)  # Cross-entropy loss when y=0
+
+# Plot the cross-entropy loss for y=1 and y=0
+plt.figure(figsize=(10, 6))
+plt.plot(f_x, loss_y1, label="Cross-Entropy Loss (y=1)", linestyle='-', linewidth=2)
+plt.plot(f_x, loss_y0, label="Cross-Entropy Loss (y=0)", linestyle='--', linewidth=2)
+plt.xlabel("Predicted Probability $f(\\mathbf{x})$")
+plt.ylabel("Cross-Entropy Loss")
+plt.legend()
+plt.grid(True)
+plt.show()
+
 ```
 
 ## Classification Example: Logistic Regression
