@@ -185,8 +185,24 @@ print(f"p-value for slope significance: {p_value_slope:.4f}")
 - The **permutation test for the slope** generates a null distribution of slopes by permuting the dependent variable and calculating the slope for each permuted dataset.
 - The **p-value** is computed by comparing the observed slope to this null distribution. If the p-value is small, it suggests that the slope is significantly different from zero, meaning the independent variable has a meaningful effect on the dependent variable.
 
-## Conclusion
+## t-tests
 
-Using **permutation testing**, we can assess the significance of regression models and individual coefficients in a flexible, non-parametric way. By generating a null distribution of losses (or coefficients) through random permutations, we can compute p-values and determine whether the observed model captures a meaningful relationship between the independent and dependent variables.
+When the population from which your samples are drawn is normally distributed, a **t-test** can be used to evaluate whether there is a significant difference between the means of two independent groups. Under these conditions, the sampling distribution of the difference in means follows a **t-distribution**, which allows us to calculate the probability (p-value) of observing a difference as large as (or larger than) the one obtained, assuming the null hypothesis is true.
 
-Permutation testing is a powerful alternative to traditional parametric tests like the **F-test** and **t-tests**, especially when the underlying assumptions of those tests may not hold.
+Below is a Python script demonstrating how to perform a t-test on two sample datasets using the SciPy library.
+
+```python
+import numpy as np
+from scipy.stats import ttest_ind
+
+# Generate synthetic data for two independent samples
+np.random.seed(42)
+sample1 = np.random.normal(loc=5.5, scale=1.2, size=30)  # Mean = 5.5, StdDev = 1.2
+sample2 = np.random.normal(loc=6.0, scale=1.3, size=30)  # Mean = 6.0, StdDev = 1.3
+
+# Perform a two-sample t-test
+t_stat, p_value = ttest_ind(sample1, sample2)
+
+print(f"T-statistic: {t_stat:.4f}")
+print(f"P-value: {p_value:.4f}")
+```
