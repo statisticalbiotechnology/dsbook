@@ -176,6 +176,81 @@ In this approach, we use the same underlying concept of minimizing a **loss func
 
 The concept of minimizing a loss function provides the foundation for generalizing regression to other types of models and fitting techniques, allowing us to tackle more complex relationships between variables.
 
+## Notes on Optimization
+
+The `scipy.optimize.minimize` uses a variant of Gradient descent to find an optimal set of parameters (a,b). Gradient Decent is an iterative optimization algorithm used in finding the minimum of a function. Here, we use it for finding the parameters that minimize the loss function.
+
+### Concept of Gradient Descent
+
+The basic idea of gradient descent is to update the parameters in the opposite direction of the gradient of the loss function with respect to the parameters. This is because the gradient points in the direction of the steepest ascent, and we want to go in the opposite direction to find the minimum.
+
+Here is an illustration of how gradient descent to find the optimal $a$ and $b$ for our linear regression model. We will also create a contour plot of the loss function as a function of $a$ and $b$ to visualize the optimization process.
+
+```{code-cell} ipython3
+:tags: [hide-input]
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Define the loss function that correctly handles broadcasting
+def compute_loss(a, b, x, y):
+    # Ensure a and b are expanded to match the dimensions of x and y
+    return np.sum((y - (a[..., np.newaxis] * x + b[..., np.newaxis]))**2, axis=-1)
+
+# Define the gradient of the loss function
+def compute_gradient(a, b, x, y):
+    grad_a = -2 * np.sum(x * (y - (a * x + b)))
+    grad_b = -2 * np.sum(y - (a * x + b))
+    return grad_a, grad_b
+
+# Gradient descent parameters
+learning_rate = 0.01
+n_iterations = 100
+
+# Initial guess
+a, b = 0.0, 0.0
+
+# Data
+rng = np.random.RandomState(0)
+x_ = np.array(rng.rand(30))
+y_ = np.array(2 * x_ - 0.5 + 0.2*rng.randn(30))
+
+# Store the steps
+steps_a = [a]
+steps_b = [b]
+
+# Gradient descent loop
+for i in range(n_iterations):
+    grad_a, grad_b = compute_gradient(a, b, x_, y_)
+    a -= learning_rate * grad_a
+    b -= learning_rate * grad_b
+    steps_a.append(a)
+    steps_b.append(b)
+
+# Create a grid for contour plot
+a_values = np.linspace(-0.5, 3.0, 100)
+b_values = np.linspace(-1, 0.5, 100)
+a_grid, b_grid = np.meshgrid(a_values, b_values)
+loss_grid = compute_loss(a_grid, b_grid, x_, y_)
+
+# Plotting the contour plot of the loss function
+plt.figure(figsize=(10, 6))
+plt.contourf(a_grid, b_grid, loss_grid, levels=50, cmap='viridis')
+plt.colorbar(label='Loss magnitude')
+plt.scatter(steps_a[:100], steps_b[:100], color='red', s=50, label='First 100 Steps')
+plt.plot(steps_a[:100], steps_b[:100], color='white', linestyle='--', linewidth=1)
+plt.scatter([slope], [intercept], color='white', label='Minimized Solution')
+plt.title('Contour plot of the loss function with Gradient Descent Steps')
+plt.xlabel('Slope (a)')
+plt.ylabel('Intercept (b)')
+plt.legend()
+plt.show()
+
+# Output the optimized parameters
+print(f"Optimized slope: {a}, Optimized intercept: {b}")
+```
+
+It should be noted that the `scipy.optimize.minimize` function uses a slightly more [advanced version](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm) of gradient than illustrated here.
+
 ## Scikit-learn
 
 It should be noted that the method described above, by explicitly defining an loss function and minimizing it with a direct call to an optimizer, is selected for explaining something about machine learning, and not the preferd practical approach to e.g. linear regression. Instead linear regression uses an **analytical solution** to the least squares problem, [a well-known method for deriving the optimal parameters](https://en.wikipedia.org/wiki/Least_squares#Solving_the_least_squares_problem). 
@@ -301,3 +376,4 @@ plt.show()
 ```
 
 By focusing on the unified concept of **loss minimization**, we can see that even complex, non-linear models follow the same principles as basic linear regression—only the structure of the model and the basis functions (kernels) change.
+
