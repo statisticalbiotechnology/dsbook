@@ -21,4 +21,6 @@ parts:
     numbered: True
     chapters:
     - file: statistics/significance.md
+    - file: statistics/testing.ipynb
     - file: statistics/multiple.md
+    - file: statistics/qvalue.ipynb
