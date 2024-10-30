@@ -2,6 +2,10 @@
 file_format: mystnb
 kernelspec:
   name: python3
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
 ---
 
 # Classification
