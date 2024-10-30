@@ -32,7 +32,7 @@ Where:
 
 ### Residuals
 
-In regression, the **residual** for each data point is the difference between the observed value \(y_i\) and the value predicted by the model \(f(\mathbf{x}_i)\). The residual for the \(i\)-th point can be written as:
+In regression, the **residual** for each data point is the difference between the observed value $y_i$ and the value predicted by the model $f(\mathbf{x}_i)$. The residual for the $i$-th point can be written as:
 
 ```{math}
 e_i = y_i - f(\mathbf{x}_i)
