@@ -107,7 +107,7 @@ To fit a function $f(\mathbf{x})$ to the data points $\{(\mathbf{x}_i, y_i)\}_i$
 \mathcal{l}_{\text{SSE}}=\sum_i^N e_i^2 = \sum_i^N (y_i - f(\mathbf{x}_i) )^2
 ```
 
-This process is known as **least squares**. $\mathcal{l}$ is known as a **loss function**. The loss is an indicqtion of how well a regression fits the data. Different regression lines will have different losses. By minimizing the loss function, we find the function that best fits the data according to the selected loss function.
+This process is known as **least squares**. $\mathcal{l}$ is known as a **loss function**. The loss is an indication of how well a regression fits the data. Different regression lines will have different losses. By minimizing the loss function, we find the function that best fits the data according to the selected loss function.
 
 If the errors $e_i$ follow a normal distribution, the **maximum likelihood estimation (MLE)** is [equivalent](https://stats.stackexchange.com/questions/143705/maximum-likelihood-method-vs-least-squares-method) to least squares minimization, making this approach optimal under these assumptions.
 
