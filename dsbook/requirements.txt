@@ -6,3 +6,4 @@ numpy
 cptac
 sphinxcontrib-mermaid
 ipywidgets
+jupytext
