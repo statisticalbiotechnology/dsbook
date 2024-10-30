@@ -224,5 +224,3 @@ In this example:
 ## Summary
 
 By extending the concepts of regression to classification, we can use similar techniques, such as minimizing a loss function, to build classification models. By using specific loss functions like **hinge loss** or **logistic loss**, we adapt regression methods to classify data. This approach demonstrates how foundational ideas from regression can be applied to a wide range of machine learning tasks.
-
-In the next chapter, we will explore **regularization techniques** in classification, which are essential for improving the generalization of models, particularly in high-dimensional data.
