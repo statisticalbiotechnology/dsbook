@@ -21,3 +21,4 @@ parts:
     numbered: True
     chapters:
     - file: statistics/significance.md
+    - file: statistics/multiple.md
