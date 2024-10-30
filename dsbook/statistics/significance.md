@@ -8,7 +8,9 @@ kernelspec:
 
 Hypothesis testing is a statistical procedure used to determine if a sample data set provides sufficient evidence to reject a stated null hypothesis (*H₀*) in favor of an alternative hypothesis (*H₁*). This method is fundamental in science for drawing inferences about populations based on sample data. It allows researchers to make data-driven decisions and evaluate the likelihood that their observations are due to random chance or a genuine effect.
 
-## Null Hypothesis (*H₀*) and Alternative Hypothesis (*H₁*)
+## Statistical hypothesis test
+
+### Null Hypothesis (*H₀*) and Alternative Hypothesis (*H₁*)
 
 In hypothesis testing, we begin by stating two competing hypotheses:
 - **Null Hypothesis (*H₀*)**: This is a statement suggesting there is no effect, relationship, or difference in the population. It represents the status quo or a baseline assumption. For example, in a clinical trial, *H₀* might state that a new drug has no effect compared to a placebo.
@@ -16,11 +18,11 @@ In hypothesis testing, we begin by stating two competing hypotheses:
 
 The purpose of hypothesis testing is to assess whether the data provides enough evidence to reject *H₀* in favor of *H₁*. This process involves comparing the observed data to what we would expect under *H₀*.
 
-## Test Statistics
+### Test Statistics
 
 A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two groups. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under *H₀*, which typically assumes that there is no difference in means between the groups.
 
-## Sampling Distribution under the Null Hypothesis
+### Sampling Distribution under the Null Hypothesis
 
 The **sampling distribution under the null hypothesis** is the distribution of the test statistic assuming that *H₀* is true. This distribution helps us understand the range of possible values the test statistic can take if the null hypothesis is correct. By comparing the observed test statistic to this distribution, we can determine how likely it is to observe such a value by random chance alone. This comparison is essential for calculating the *p* value.
 
@@ -30,13 +32,13 @@ The **$p$ value** represents the probability of obtaining the observed data, or 
 - A smaller $p$ value suggests that the observed data would be unlikely under *H₀*, providing stronger evidence against the null hypothesis.
 - For example, a $p$ value of 0.03 means there is a 3% chance of observing the data (or something more extreme) if *H₀* is true. This small probability indicates that the data is not consistent with *H₀*, leading us to consider rejecting it.
 
-## Significance Level (α)
+### Significance Level (α)
 
 The **significance level** (denoted as α) is a predetermined threshold that determines whether the *p* value is considered small enough to reject the null hypothesis. A common choice for α is 0.05, which means we are willing to accept a 5% chance of incorrectly rejecting *H₀* (Type I error):
 - If the *p* value is less than α, the results are considered **statistically significant**, and we reject *H₀*.
 - The choice of α depends on the context of the study and the consequences of making an error. For example, in medical research, a smaller α (e.g., 0.01) might be chosen to reduce the risk of false positives.
 
-## False Positives and False Negatives
+### False Positives and False Negatives
 
 In hypothesis testing, two types of errors can occur:
 - **False Positive (Type I Error)**: Rejecting *H₀* when it is actually true. This error can lead to incorrect conclusions, such as believing a treatment is effective when it is not.
@@ -44,7 +46,7 @@ In hypothesis testing, two types of errors can occur:
 
 The balance between Type I and Type II errors is crucial in hypothesis testing. Researchers often need to consider the trade-offs between these errors when designing studies and choosing significance levels.
 
-## Limitations & Misinterpretations
+### Limitations & Misinterpretations
 
 While hypothesis testing is powerful, it has its limitations and can be easily misinterpreted:
 - **$p$ values** provide the strength of evidence against *H₀*, but they do not indicate the size of the effect or its practical significance. A small $p$ value might suggest a statistically significant result, but the actual effect size could be trivial.
@@ -53,7 +55,7 @@ While hypothesis testing is powerful, it has its limitations and can be easily m
 
 ## Assessing Significance Using Permutation Testing
 
-In regression models, we often want to assess the significance of the model fit and individual coefficients. Instead of relying on classical statistical tests like the **F-test**, we can use **permutation testing** to evaluate significance. This approach involves creating a **null distribution** by permuting the dependent variable (the target) and calculating the corresponding loss values. We then compare the observed loss to this distribution to compute a **$p$ value**.
+We can use **permutation testing** to evaluate significance. This approach involves creating a **null distribution** by permuting the dependent variable (the target) and calculating the corresponding loss values. We then compare the observed loss to this distribution to compute a **$p$ value**.
 
 ### Why Permutation Testing?
 
@@ -69,6 +71,60 @@ In permutation testing, we test the null hypothesis that there is no relationshi
 2. **Permute** the dependent variable (shuffle **y**) and refit the model on the permuted data to calculate the loss under the null hypothesis.
 3. **Repeat** the permutation process many times to build a distribution of losses under the null hypothesis.
 4. Calculate the **$p$ value** by comparing the observed loss to this distribution.
+
+### Code Example: Permutation Test for Model Significance
+
+Below is an example of how to implement permutation testing for assessing the significance of differences between two samples.
+
+```{code-cell} ipython3
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Generate two normally distributed samples with slightly different means
+rng = np.random.RandomState(2)
+sample1 = rng.normal(loc=0.0, scale=1.0, size=10)
+sample2 = rng.normal(loc=0.4, scale=1.0, size=10)
+
+# Plot the samples using swarmplot
+data = {'value': np.concatenate([sample1, sample2]),
+        'group': ['Sample 1'] * len(sample1) + ['Sample 2'] * len(sample2)}
+
+sns.swarmplot(x='group', y='value', data=data)
+plt.title('Swarmplot of Two Samples')
+plt.show()
+
+# Permutation test for difference in means
+n_permutations = 1000
+observed_diff = np.abs(np.mean(sample1) - np.mean(sample2))
+
+combined = np.concatenate([sample1, sample2])
+permuted_diffs = []
+
+for _ in range(n_permutations):
+    permuted = rng.permutation(combined)
+    perm_sample1 = permuted[:len(sample1)]
+    perm_sample2 = permuted[len(sample1):]
+    permuted_diff = np.abs(np.mean(perm_sample1) - np.mean(perm_sample2))
+    permuted_diffs.append(permuted_diff)
+
+# Compute the p-value by comparing the observed difference to the null distribution
+permuted_diffs = np.array(permuted_diffs)
+p_value = np.mean(permuted_diffs >= observed_diff)
+
+# Plot the null distribution and observed difference
+plt.hist(permuted_diffs, bins=30, alpha=0.7, label="Permuted Differences")
+plt.axvline(observed_diff, color='r', linestyle='--', label=f"Observed Diff = {observed_diff:.2f}")
+plt.title(f"Permutation Test for Difference in Means (p-value = {p_value:.4f})")
+plt.xlabel("Difference in Means")
+plt.ylabel("Frequency")
+plt.legend()
+plt.show()
+
+print(f"Observed difference in means: {observed_diff:.4f}")
+print(f"p-value from permutation test: {p_value:.4f}")
+
+```
 
 ### Code Example: Permutation Test for Model Significance
 
@@ -126,83 +182,188 @@ print(f"Observed loss: {observed_loss:.4f}")
 print(f"p value from permutation test: {p_value:.4f}")
 ```
 
-### Explanation of the Code
-
-1. **Observed Loss**: The model is fit to the original data, and the observed loss is computed.
-2. **Permutation Procedure**: The dependent variable **y** is shuffled, and a new model is fit to the permuted data. The loss is calculated for each permuted model.
-3. **Null Distribution**: After performing many permutations (in this case, 1000), we have a distribution of losses under the null hypothesis.
-4. **$p$ value**: The $p$ value is computed as the proportion of permuted losses that are less than or equal to the observed loss. A small $p$ value indicates that the observed loss is significantly smaller than what we would expect under the null hypothesis, suggesting that the model is meaningful.
-
-## Interpreting the Results
-
-- If the **$p$ value** is small (typically less than 0.05), we reject the null hypothesis, concluding that the model is statistically significant and the relationship between the independent and dependent variables is unlikely to have occurred by chance.
-- If the $p$ value is large, we fail to reject the null hypothesis, suggesting that the model does not capture a meaningful relationship.
-
-## Permutation Test for Coefficients
-
-We can extend this approach to test the significance of individual coefficients. Instead of permuting the entire **y** variable, we could permute only one feature or generate a sampling distribution for each coefficient to assess its significance.
-
-Here’s how we can conduct a permutation test for the slope coefficient.
-
-### Code Example: Permutation Test for Slope Significance
-
-```{code-cell} ipython3
-# Define a function to compute the slope from the regression parameters
-def extract_slope(params):
-    return params[0]  # The slope is the first parameter in the model
-
-# Observed slope from the original data
-observed_slope = extract_slope(result.x)
-
-# Permutation test for slope significance
-permuted_slopes = []
-
-for _ in range(n_permutations):
-    y_permuted = np.random.permutation(y)
-    permuted_result = minimize(loss, initial_params, args=(x, y_permuted))
-    permuted_slope = extract_slope(permuted_result.x)
-    permuted_slopes.append(permuted_slope)
-
-# Compute the p-value by comparing the observed slope to the null distribution of slopes
-permuted_slopes = np.array(permuted_slopes)
-p_value_slope = np.mean(np.abs(permuted_slopes) >= np.abs(observed_slope))
-
-# Plot the null distribution of slopes and observed slope
-plt.hist(permuted_slopes, bins=30, alpha=0.7, label="Permuted Slopes")
-plt.axvline(observed_slope, color='r', linestyle='--', label=f"Observed Slope = {observed_slope:.2f}")
-plt.title(f"Permutation Test for Slope Significance (p-value = {p_value_slope:.4f})")
-plt.xlabel("Slope")
-plt.ylabel("Frequency")
-plt.legend()
-plt.show()
-
-print(f"Observed slope: {observed_slope:.4f}")
-print(f"p-value for slope significance: {p_value_slope:.4f}")
-```
-
-### Interpretation of Slope Permutation Test
-
-- The **permutation test for the slope** generates a null distribution of slopes by permuting the dependent variable and calculating the slope for each permuted dataset.
-- The **p-value** is computed by comparing the observed slope to this null distribution. If the p-value is small, it suggests that the slope is significantly different from zero, meaning the independent variable has a meaningful effect on the dependent variable.
-
 ## t-tests
 
 When the population from which your samples are drawn is normally distributed, a **t-test** can be used to evaluate whether there is a significant difference between the means of two independent groups. Under these conditions, the sampling distribution of the difference in means follows a **t-distribution**, which allows us to calculate the probability (p-value) of observing a difference as large as (or larger than) the one obtained, assuming the null hypothesis is true.
 
 Below is a Python script demonstrating how to perform a t-test on two sample datasets using the SciPy library.
 
-```python
+```{code-cell} ipython3
 import numpy as np
 from scipy.stats import ttest_ind
 
 # Generate synthetic data for two independent samples
-np.random.seed(42)
-sample1 = np.random.normal(loc=5.5, scale=1.2, size=30)  # Mean = 5.5, StdDev = 1.2
-sample2 = np.random.normal(loc=6.0, scale=1.3, size=30)  # Mean = 6.0, StdDev = 1.3
 
-# Perform a two-sample t-test
+# Perform a two-sample t-test (on the same sample we used previously)
 t_stat, p_value = ttest_ind(sample1, sample2)
 
-print(f"T-statistic: {t_stat:.4f}")
 print(f"P-value: {p_value:.4f}")
 ```
+
+
+When we assume normality, as in t-tests, we gain sensitivity, especially for smaller sample sizes. The t-test uses the properties of the t-distribution to calculate p-values, and this assumption provides more power to detect differences when data truly follow a normal distribution. For smaller sample sizes, this assumption becomes particularly advantageous because the t-test can yield lower p-values, allowing subtle differences to be detected more effectively. However, if the assumption of normality is violated, the accuracy of the p-values is compromised, which could lead to misleading conclusions. This sensitivity-robustness trade-off is especially important in small-sample scenarios.
+
+## One- vs Two-sided tests
+
+Here’s a brief explanation of the difference between one-sided and two-sided tests:
+
+A **one-sided test** is used when we want to determine if there is a difference in a specific direction (e.g., whether one group mean is greater than the other). In contrast, a **two-sided test** checks if there is any difference between the groups, regardless of direction (i.e., whether one mean is greater or less than the other). A two-sided test is more conservative because it tests for deviations in both directions, while a one-sided test focuses on a predetermined outcome.
+
+Here's how you could modify the permutation test to be one-sided for comparing `sample1` and `sample2`, checking if `sample2` has a larger mean:
+
+```python
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Generate two normally distributed samples with slightly different means
+rng = np.random.RandomState(42)
+sample1 = rng.normal(loc=0.0, scale=1.0, size=10)
+sample2 = rng.normal(loc=0.5, scale=1.0, size=10)
+
+# Plot the samples using swarmplot
+data = {'value': np.concatenate([sample1, sample2]),
+        'group': ['Sample 1'] * len(sample1) + ['Sample 2'] * len(sample2)}
+
+sns.swarmplot(x='group', y='value', data=data)
+plt.title('Swarmplot of Two Samples')
+plt.show()
+
+# One-sided permutation test for difference in means (Sample 2 > Sample 1)
+n_permutations = 1000
+observed_diff = np.mean(sample2) - np.mean(sample1)
+
+combined = np.concatenate([sample1, sample2])
+permuted_diffs = []
+
+for _ in range(n_permutations):
+    permuted = rng.permutation(combined)
+    perm_sample1 = permuted[:len(sample1)]
+    perm_sample2 = permuted[len(sample1):]
+    permuted_diff = np.mean(perm_sample2) - np.mean(perm_sample1)
+    permuted_diffs.append(permuted_diff)
+
+# Compute the p-value by comparing the observed difference to the null distribution (one-sided)
+permuted_diffs = np.array(permuted_diffs)
+p_value = np.mean(permuted_diffs >= observed_diff)
+
+# Plot the null distribution and observed difference
+plt.hist(permuted_diffs, bins=30, alpha=0.7, label="Permuted Differences")
+plt.axvline(observed_diff, color='r', linestyle='--', label=f"Observed Diff = {observed_diff:.2f}")
+plt.title(f"One-Sided Permutation Test for Difference in Means (p-value = {p_value:.4f})")
+plt.xlabel("Difference in Means")
+plt.ylabel("Frequency")
+plt.legend()
+plt.show()
+
+print(f"Observed difference in means: {observed_diff:.4f}")
+print(f"p-value from one-sided permutation test: {p_value:.4f}")
+```
+
+In this **one-sided permutation test**, we are specifically testing if `sample2` has a larger mean than `sample1`. The observed difference and permuted differences are not taken as absolute values, and the p-value is computed based on the proportion of permutations where `perm_sample2 - perm_sample1` is greater than or equal to the observed difference. This makes it a one-sided test focusing on whether `sample2` is greater than `sample1`.
+
+If you test the efficiency of a drug, you are usually interested in whether the drug has a positive effect on patients, without considering whether it could have a negative effect. In such cases, a one-sided test is appropriate. On the other hand, in differential gene expression analysis, you often want to investigate both upregulation and downregulation of genes between patient groups, making a two-sided test more suitable.
+
+## Overview of the workflow in frequentist testing procedures
+
+
+```{mermaid}
+graph TD
+    A(Population, μ ) --> B[Sample, X̄]
+    B --> C[Statistical Model, μ - X̄]
+    C -.->|Inference about 
+    population parameter μ | A
+```
+The diagram represents the process of statistical inference from a population to a sample and back. The key steps are:
+
+1. **Population (μ)**: The population contains all the members of interest, and we are interested in a particular population parameter, represented by μ. This could be a measure like the mean or proportion that describes the entire population.
+
+2. **Sample (X̄)**: We draw a sample from the population, and from this sample, we calculate a statistic, denoted as X̄. The statistic serves as an estimate of the population parameter. However, this estimate may include sampling errors, which result from the fact that the sample is only a subset of the full population, as well as measurement errors.
+
+3. **Statistical Model (μ - X̄)**: A statistical model is built to describe the relationship between the statistic (X̄) and the population parameter (μ). This model helps us quantify uncertainty, and potentially correct for errors or biases, and ultimately use sample information to make inferences about the population.
+
+4. **Inference about Population Parameter (μ)**: Using the statistical model, we then make inferences about the population parameter. The goal is to approximate or make probabilistic statements about the true value of μ, based on the information contained in the sample and the statistical modeling of the errors.
+
+Certainly! Here's a section about volcano plots and their interpretation:
+
+
+## Volcano Plots and Their Interpretation
+
+A **volcano plot** is a type of scatter plot commonly used in genomics, proteomics, and other fields of biology to display the results of differential expression or differential abundance analysis. The plot provides a clear visual summary of large datasets, making it easier to identify statistically significant changes between two experimental conditions.
+
+On a volcano plot:
+- The **x-axis** represents the **fold change** (often as a log2 value) between two groups, showing the magnitude of change in expression or abundance.
+- The **y-axis** represents the **statistical significance** (usually as the negative log10 of the p-value) of that change.
+
+Points that are:
+- **Farther to the left or right** indicate larger fold changes.
+- **Higher on the y-axis** indicate more significant p-values.
+
+Data points that fall at the extremes of both axes are of most interest, as they represent features (e.g., genes or proteins) that have both a large effect size (strong change) and high statistical confidence.
+
+The name "volcano plot" arises from the characteristic shape, where the data points resemble an erupting volcano. Features with statistically significant, biologically meaningful changes are generally those that lie far from the center, either on the left or right.
+
+### Example Script for Generating a Volcano Plot
+
+Here’s a Python script that generates random data to create a volcano plot:
+
+```{code-cell}ipython3
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
+
+# Parameters
+num_genes = 1000
+sample_size = 5
+mu, sigma = 4.0, 0.5
+
+# Random number generator
+rng = np.random.RandomState(42)
+
+# Generate data for each gene
+gene_data = []
+for i in range(num_genes):
+    # Sample an offset for each gene from a normal distribution
+    offset = rng.normal(0., 1.)
+    
+    # Generate two samples with the offset
+    sample1 = rng.normal(mu, sigma, sample_size)
+    sample2 = rng.normal(mu + offset, sigma, sample_size)
+    
+    # Calculate fold change as the difference in means (log2)
+    fold_change = np.log2(np.mean(sample2)) - np.log2(np.mean(sample1))
+    
+    # Perform a t-test to calculate p-value
+    _, p_value = ttest_ind(sample1, sample2, alternative='two-sided')
+    
+    # Store the gene data
+    gene_data.append([fold_change, p_value])
+
+# Create DataFrame
+data = pd.DataFrame(gene_data, columns=['FoldChange', 'PValue'])
+
+# Convert p-values to -log10(p-value)
+data['negLog10PValue'] = -np.log10(data['PValue'])
+
+# Create the volcano plot
+plt.figure(figsize=(10, 6))
+plt.scatter(data['FoldChange'], data['negLog10PValue'], alpha=0.6, edgecolors='w', linewidth=0.5)
+plt.axhline(-np.log10(0.05), color='red', linestyle='--', label='p-value = 0.05')
+plt.axvline(-1, color='blue', linestyle='--', label='Fold Change = -1')
+plt.axvline(1, color='blue', linestyle='--', label='Fold Change = 1')
+
+plt.xlabel('Log2 Fold Change')
+plt.ylabel('-Log10 p-value')
+plt.title('Volcano Plot of Simulated Gene Data')
+plt.legend()
+plt.show()
+```
+
+This script simulates random fold changes and p-values to illustrate a volcano plot:
+- The **x-axis** shows log2-transformed fold changes.
+- The **y-axis** shows the negative log10-transformed p-values.
+- The red horizontal line indicates a significance threshold (p-value = 0.05).
+- The blue vertical lines represent log2 fold changes of ±1, which could be used as an effect size threshold.
+
+This example shows how points that meet both criteria (large fold change and significant p-value) can be visually highlighted, making volcano plots a useful tool for identifying important differences in biological studies. Note that we have not corrected for multiple testing when performing these tests, something we will discuss in a separate chapter (and lecture).
+
