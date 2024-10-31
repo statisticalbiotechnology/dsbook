@@ -14,9 +14,9 @@ In unsupervised learning, we are given a dataset $\{\mathbf{x}_i\}_{i=1}^N$, whe
 
 Semi-supervised learning combines labeled and unlabeled data. We are provided with a dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^M$ where $M < N$, and a larger set of unlabeled data $\{\mathbf{x}_i\}_{i=M+1}^N$. The goal is to improve the prediction of the function $f(\mathbf{x})$ by using the structure of the unlabeled data to assist in training the model, particularly when labeled data is scarce but unlabeled data is abundant.
 
-## Machine Supervised Learning
+## Self-Supervised Learning
 
-In machine-supervised learning, systems are often trained or corrected by other automated systems rather than human supervisors. A popular choice in this context is the use of **autoencoders**, where for a given set $\{\mathbf{x}_i\}_{i=1}^N$, the system learns an encoder $e$ and a decoder $d$, trained such that the reconstruction approximates $\mathbf{x}_i \approx d(e(\mathbf{x}_i))$. Autoencoders are particularly useful for dimensionality reduction and feature extraction, often applied in biotechnology to reduce complex data (e.g., genomic or proteomic data) into more manageable representations.
+In self-supervised learning, systems are often trained or corrected by other automated systems rather than human supervisors. A popular choice in this context is the use of **autoencoders**, where for a given set $\{\mathbf{x}_i\}_{i=1}^N$, the system learns an encoder $e$ and a decoder $d$, trained such that the reconstruction approximates $\mathbf{x}_i \approx d(e(\mathbf{x}_i))$. Autoencoders are particularly useful for dimensionality reduction and feature extraction, often applied in biotechnology to reduce complex data (e.g., genomic or proteomic data) into more manageable representations.
 
 ## Generative vs. Discriminative Models
 
