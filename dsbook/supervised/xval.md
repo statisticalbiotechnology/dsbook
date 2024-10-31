@@ -10,7 +10,9 @@ kernelspec:
 
 In machine learning, the use of independent validation sets is crucial for evaluating model performance and avoiding one of the most common pitfalls: overfitting. Overfitting occurs when a model is trained to perform exceptionally well on the training data but fails to generalize to new, unseen data. This typically happens when the model is excessively complex for the given task or when it memorizes the noise and peculiarities of the training dataset instead of learning the underlying patterns.
 
-An independent validation set helps to detect overfitting by providing a dataset that is separate from the training set, allowing for an unbiased evaluation of the model’s performance. To better understand the concept of overfitting, let’s consider an illustrative Python example using synthetic data.
+An independent validation set helps to detect overfitting by providing a dataset that is separate from the training set, allowing for an unbiased evaluation of the model’s performance. Moreover, selecting the model that performs best on an independent validation set ensures that we are choosing a model that is most likely to generalize well to new data, rather than simply performing well on the training data.
+
+To split data into training and validation sets, scikit-learn provides a convenient method called `train_test_split`. This function allows us to easily partition the data into training and test sets, ensuring that we have separate data to evaluate the model before proceeding with more advanced validation techniques. By default, `train_test_split` uses 75% of the data for training and 25% for testing, but this can be adjusted using the `test_size` parameter.
 
 ### Example of Overfitting
 
@@ -22,11 +24,15 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
 
 # Generating synthetic data
 np.random.seed(42)
 x = np.linspace(-3, 3, 10).reshape(-1, 1)
 y = 0.5 * x**2 + np.random.normal(0, 0.5, x.shape)
+
+# Splitting the data into training and test sets
+x_train, x_val, y_train, y_val = train_test_split(x, y, test_size=0.3, random_state=42)
 
 # Creating a linear regression model and a higher-order polynomial regression model
 linear_model = LinearRegression()
@@ -36,20 +42,40 @@ quadratic_features = PolynomialFeatures(degree=2)
 polynomial_features = PolynomialFeatures(degree=8)
 
 # Fitting the models
-linear_model.fit(x, y)
-x_quad = quadratic_features.fit_transform(x)
-quad_model.fit(x_quad, y)
-x_poly = polynomial_features.fit_transform(x)
-poly_model.fit(x_poly, y)
+linear_model.fit(x_train, y_train)
+x_quad = quadratic_features.fit_transform(x_train)
+quad_model.fit(x_quad, y_train)
+x_poly = polynomial_features.fit_transform(x_train)
+poly_model.fit(x_poly, y_train)
 
 # Predicting using the fitted models
+y_linear_train_pred = linear_model.predict(x_train)
+y_linear_val_pred = linear_model.predict(x_val)
+y_quad_train_pred = quad_model.predict(quadratic_features.transform(x_train))
+y_quad_val_pred = quad_model.predict(quadratic_features.transform(x_val))
+y_poly_train_pred = poly_model.predict(polynomial_features.transform(x_train))
+y_poly_val_pred = poly_model.predict(polynomial_features.transform(x_val))
+
+# Calculating and printing train and validation errors for each model
+linear_train_error = mean_squared_error(y_train, y_linear_train_pred)
+linear_val_error = mean_squared_error(y_val, y_linear_val_pred)
+quad_train_error = mean_squared_error(y_train, y_quad_train_pred)
+quad_val_error = mean_squared_error(y_val, y_quad_val_pred)
+poly_train_error = mean_squared_error(y_train, y_poly_train_pred)
+poly_val_error = mean_squared_error(y_val, y_poly_val_pred)
+
+print(f"Linear Model - Train Error: {linear_train_error:.2f}, Validation Error: {linear_val_error:.2f}")
+print(f"Quadratic Model - Train Error: {quad_train_error:.2f}, Validation Error: {quad_val_error:.2f}")
+print(f"High-Degree Model - Train Error: {poly_train_error:.2f}, Validation Error: {poly_val_error:.2f}")
+
+# Plotting the data
 x_test = np.linspace(-3, 3, 100).reshape(-1, 1)
 y_linear_pred = linear_model.predict(x_test)
 y_quad_pred = quad_model.predict(quadratic_features.transform(x_test))
 y_poly_pred = poly_model.predict(polynomial_features.transform(x_test))
 
-# Plotting the data
-plt.scatter(x, y, color='black', label='Data')
+plt.scatter(x_train, y_train, color='black', label='Training Data')
+plt.scatter(x_val, y_val, color='gray', label='Validation Data')
 plt.plot(x_test, y_linear_pred, label='Linear Model (Underfitting)', color='blue')
 plt.plot(x_test, y_quad_pred, label='Quadratic Model', color='green')
 plt.plot(x_test, y_poly_pred, label='High-Degree Model (Overfitting)', color='red')
@@ -59,13 +85,11 @@ plt.ylabel("y")
 plt.show()
 ```
 
-In the above code, we create a simple quadratic dataset, and fit both a linear regression model, a second degree polynomial model and an eighth-degree polynomial model. 
-The linear model apears to miss an important trend in the data and is hence underfitting to the data.
-The eighth-degree model fits the training data almost perfectly, capturing all of the data points and the noise, but it is unlikely to perform well on new data—an example of overfitting.
+In the above code, we create a simple quadratic dataset, and fit both a linear regression model, a second-degree polynomial model, and an eighth-degree polynomial model. We also split the dataset into training and validation sets using `train_test_split`. The linear model appears to miss an important trend in the data and is hence underfitting. The eighth-degree model fits the training data almost perfectly, capturing all of the data points and the noise, but it is unlikely to perform well on new data—an example of overfitting.
 
 ### Cross Validation to the Rescue
 
-To evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and for validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- stil using all available data.
+A problem with reserving data for a separate validation set is that we have to reserve precious data for either training or testing. Idealy, one would like to train and test on as much data as possible. There is  To evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and for validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- stil using all available data.
 
 In **k-fold cross validation**, the dataset is split into `k` equally sized folds. The model is trained `k` times, each time using a different fold as the validation set and the remaining folds for training. The average of the validation metrics across all folds gives a more robust estimate of the model's performance compared to using a single validation set.
 
@@ -245,8 +269,8 @@ outer_cv = KFold(n_splits=5, shuffle=True, random_state=42)
 grid_search = GridSearchCV(model, param_grid, cv=inner_cv, scoring='neg_mean_squared_error')
 nested_scores = cross_val_score(grid_search, x, y, cv=outer_cv)
 
-print(f"Nested cross-validated MSE: {nested_scores.mean():.2f} (+/- {nested_scores.std():.2f})")
+print(f"Nested cross-validated MSE: {-nested_scores.mean():.2f} (+/- {nested_scores.std():.2f})")
 ```
 
-In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance.
+In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance. As you see from above, a feature of the cross validation is that it provides posibility to calculate variance estimates of performance figures, since you have calculated the error over a number of predictors for number of validation sets.
 
