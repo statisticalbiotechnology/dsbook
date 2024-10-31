@@ -54,14 +54,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 X, y_true = make_blobs(n_samples=300, centers=5, cluster_std=0.60, random_state=1)
-sns.scatterplot(x=X[:, 0], y=X[:, 1], s=50);
+sns.scatterplot(x=X[:, 0], y=X[:, 1], s=50)
 plt.show()
 
 # Function to perform one iteration of the k-Means EM step
 def plot_kmeans_step(X, centers, step_title):
     labels = pairwise_distances_argmin(X, centers)
     plt.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma')
-    sns.scatterplot(x=centers[:, 0], y=centers[:, 1], color='black', s=200, alpha=0.5);
+    sns.scatterplot(x=centers[:, 0], y=centers[:, 1], color='black', s=200, alpha=0.5)
     plt.title(step_title)
     plt.show()
     return labels
@@ -126,7 +126,7 @@ plt.show()
 
 ```{code-cell}ipython3
 # Parameters for the blobs
-n_samples = [200, 100, 100]  
+n_samples = [600, 100, 100]  
 centers = [(0, 0), (3, 3), (-3, 3)]  # Center coordinates
 cluster_std = [2., 0.5, 0.5]  # Standard deviations for each blob
 
@@ -169,7 +169,7 @@ import matplotlib.pyplot as plt
 
 X, y_true = make_blobs(n_samples=400, centers=4, cluster_std=0.60, random_state=0)
 X = X[:, ::-1]  # flip axes for better plotting
-plt.scatter(X[:, 0], X[:, 1], s=40);
+plt.scatter(X[:, 0], X[:, 1], s=40)
 plt.title("Generated Data with Four Clusters")
 plt.show()
 ```
