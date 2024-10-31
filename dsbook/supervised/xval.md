@@ -169,3 +169,84 @@ print(f"Mean cross-validated MSE, for 2nd degree: {np.mean(scores_2):.2f} and fo
 ```
 
 In this code, we use `KFold` to split the dataset into three folds. The `for` loop iterates through each fold, training the model on the training set and evaluating it on the test set. The mean squared error (MSE) is calculated for each fold and averaged to give a more robust measure of model performance. By splitting the data into different training and validation sets multiple times, cross validation helps to detect overfitting and provides a more reliable measure of model generalizability.
+
+## Hyperparameter Selection
+
+Hyperparameters are parameters of the machine learning model that are not learned from the training data but are instead set before training begins. Examples include the number of trees in a random forest, the learning rate in gradient descent, or the degree of regularization. Proper selection of hyperparameters is crucial to maximize a model’s performance, and two common methods for finding the best combination of hyperparameters are **grid search** and **nested cross validation**.
+
+### Grid Search for Hyperparameter Tuning
+
+Grid search is a brute-force method for finding the optimal hyperparameter values for a given model. It involves specifying a grid of hyperparameter values and then training and evaluating the model for each combination of parameters. The combination that yields the best performance on the validation set is selected as the final set of hyperparameters.
+
+Let’s consider an example where we are training a Lasso regression model, and we want to determine the optimal value for the hyperparameter, $\alpha$. Lasso regression is a linear model that includes L1 regularization, which helps to prevent overfitting by adding a penalty to the magnitude of the coefficients, effectively setting some of them to zero. With grid search, we define a range of possible values for “lambda” and iterate over each value, training and evaluating the model at each step.
+
+The following code demonstrates the use of **GridSearchCV** in scikit-learn to perform a grid search over the regularization parameter of a Lasso regression model:
+
+```{code-cell} ipython3
+import numpy as np
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import Lasso
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+
+# Generating synthetic data from a second order polynomial with Gaussian noise
+np.random.seed(42)
+x = np.linspace(-3, 3, 100).reshape(-1, 1)
+y = 0.5 * x**2 + np.random.normal(0, 0.5, x.shape)
+
+# Creating a pipeline for polynomial regression with Lasso regularization
+model = make_pipeline(PolynomialFeatures(degree=5), StandardScaler(), Lasso(max_iter=10000))
+
+# Defining the parameter grid
+param_grid = {'lasso__alpha': [0.01, 0.1, 1, 10, 100]}
+
+# Setting up GridSearchCV
+grid_search = GridSearchCV(model, param_grid, cv=3, scoring='neg_mean_squared_error')
+
+# Performing the grid search
+grid_search.fit(x, y)
+
+# Printing the best parameters
+print(f"Best hyperparameters: {grid_search.best_params_}")
+
+# Printing the coefficients for each value of alpha
+for i, estimator in enumerate(grid_search.cv_results_['params']):
+    alpha = estimator['lasso__alpha']
+    model.set_params(**estimator)
+    model.fit(x, y)
+    lasso = model.named_steps['lasso']
+    print(f"Alpha: {alpha}, Coefficients for model {i + 1}: {lasso.coef_}")
+```
+
+In the code above, we generate synthetic data from a second-order polynomial with Gaussian noise. We specify a grid of values for the regularization parameter $\alpha$. The `GridSearchCV` function performs cross validation for each value of $\alpha$ and returns the value that yields the best performance. Note that we set the parameter `cv=3` to perform three-fold cross validation, which helps to reduce bias and variance in the results.
+
+### Nested Cross Validation
+
+One limitation of the standard grid search approach is that it is prone to overfitting if the same validation set is used to both tune hyperparameters and evaluate model performance. To address this issue, **nested cross validation** is used.
+
+In nested cross validation, there are two loops:
+- The **outer loop** is used to split the data into training and testing sets, ensuring that the test set remains completely independent.
+- The **inner loop** is used to perform grid search on the training set, determining the best hyperparameters.
+
+The model is trained and validated using the inner loop, and its final performance is evaluated using the held-out data from the outer loop. This process is repeated multiple times, each time using different splits of the data, to ensure robustness and minimize the risk of overfitting.
+
+The following code demonstrates how nested cross validation can be performed using scikit-learn:
+
+```{code-cell} ipython3
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import KFold
+
+# Setting up the inner and outer cross validation loops
+inner_cv = KFold(n_splits=3, shuffle=True, random_state=42)
+outer_cv = KFold(n_splits=5, shuffle=True, random_state=42)
+
+# Using GridSearchCV within cross_val_score for nested cross validation
+grid_search = GridSearchCV(model, param_grid, cv=inner_cv, scoring='neg_mean_squared_error')
+nested_scores = cross_val_score(grid_search, x, y, cv=outer_cv)
+
+print(f"Nested cross-validated MSE: {nested_scores.mean():.2f} (+/- {nested_scores.std():.2f})")
+```
+
+In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance.
+
