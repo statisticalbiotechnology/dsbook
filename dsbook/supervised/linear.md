@@ -178,7 +178,7 @@ The concept of minimizing a loss function provides the foundation for generalizi
 
 ## Notes on Optimization
 
-The `scipy.optimize.minimize` uses a variant of Gradient descent to find an optimal set of parameters (a,b). Gradient Decent is an iterative optimization algorithm used in finding the minimum of a function. Here, we use it for finding the parameters that minimize the loss function.
+The `scipy.optimize.minimize` uses a variant of Gradient descent to find an optimal set of parameters (a,b). Gradient Descent is an iterative optimization algorithm used in finding the minimum of a function. Here, we use it for finding the parameters that minimize the loss function.
 
 ### Concept of Gradient Descent
 
