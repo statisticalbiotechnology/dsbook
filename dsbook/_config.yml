@@ -4,6 +4,7 @@
 title: Data Science for Biotechnology Students
 author: Lukas Käll
 logo: logo.webp
+copyright: "2024"
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html

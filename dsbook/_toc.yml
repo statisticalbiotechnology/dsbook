@@ -17,6 +17,7 @@ parts:
     - file: supervised/svm.md
     - file: supervised/supervisedML.ipynb
     - file: supervised/mlp.md
+    - file: unsupervised/cluster.md
   - caption: Statistics
     numbered: True
     chapters:
