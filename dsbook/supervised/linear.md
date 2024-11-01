@@ -251,6 +251,52 @@ print(f"Optimized slope: {a}, Optimized intercept: {b}")
 
 It should be noted that the `scipy.optimize.minimize` function uses a slightly more [advanced version](https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm) of gradient than illustrated here.
 
+````{note}
+### Mathematical Formulation of Gradient Descent
+
+To understand gradient descent mathematically, let’s start with a simple one-dimensional case. Suppose we have a function $f(\beta)$ and want to find its minimum. The derivative of $f$ with respect to $\beta$, denoted as $f'(\beta)$, gives the slope of the function at any point $\beta$. Gradient descent updates $\beta$ iteratively in the opposite direction of $f'(\beta)$ to move toward the minimum:
+
+```{math}
+\beta_{\text{new}} = \beta - \eta f'(\beta)
+```
+
+where $\eta$ is the step size (learning rate), a small positive scalar controlling the step size. This process continues until $f'(\beta) \approx 0$, indicating that we have reached a local minimum.
+
+#### Extending to Multiple Dimensions
+
+In higher dimensions, we consider a multivariable function $L(\boldsymbol{\beta})$, where $\boldsymbol{\beta} = \begin{bmatrix} \beta_1 \\ \beta_2 \\ \vdots \\ \beta_n \end{bmatrix}$ represents the coefficients of the model in column vector form, and $L$ is the loss function we aim to minimize. Instead of a single derivative, we use the **gradient**, denoted $\nabla L(\boldsymbol{\beta})$, which is a column vector of partial derivatives with respect to each coefficient:
+
+```{math}
+\nabla L(\boldsymbol{\beta}) = \begin{bmatrix} \frac{\partial L}{\partial \beta_1} \\ \frac{\partial L}{\partial \beta_2} \\ \vdots \\ \frac{\partial L}{\partial \beta_n} \end{bmatrix}
+```
+
+Each component $\frac{\partial L}{\partial \beta_i}$ represents the rate of change of $L$ with respect to $\beta_i$. The gradient $\nabla L(\boldsymbol{\beta})$ points in the direction of the steepest increase of $L$; therefore, moving in the opposite direction of $\nabla L(\boldsymbol{\beta})$ decreases $L$.
+
+The gradient descent update rule for multiple coefficients is:
+
+```{math}
+\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla L(\boldsymbol{\beta})
+```
+
+where $\eta$ is the step size, determining the update amount at each step.
+
+#### Applying Gradient Descent to Linear Regression
+
+In our linear regression model, we minimize a loss function, typically the sum of squared errors $L(a, b)$ for coefficients $a$ (slope) and $b$ (intercept). The gradient of $L$ with respect to $a$ and $b$ consists of the partial derivatives $\frac{\partial L}{\partial a}$ and $\frac{\partial L}{\partial b}$, which we can express in column vector form as:
+
+```{math}
+\nabla L(a, b) = \begin{bmatrix} \frac{\partial L}{\partial b} \\ \frac{\partial L}{\partial a} \end{bmatrix} = \begin{bmatrix} -2 \sum \left( y_i - (a x_i + b) \right) \\ -2 \sum x_i \left( y_i - (a x_i + b) \right) \end{bmatrix}
+```
+
+The updates for $a$ and $b$ are then:
+
+```{math}
+\begin{bmatrix} b_{\text{new}} \\ a_{\text{new}} \end{bmatrix} = \begin{bmatrix} b \\ a \end{bmatrix} - \eta \begin{bmatrix} \frac{\partial L}{\partial b} \\ \frac{\partial L}{\partial a} \end{bmatrix}
+```
+
+With each iteration, $a$ and $b$ are adjusted to reduce $L(a, b)$, bringing us closer to the minimum loss, which corresponds to the optimal coefficients for the model.
+````
+
 ## Scikit-learn
 
 It should be noted that the method described above, by explicitly defining an loss function and minimizing it with a direct call to an optimizer, is selected for explaining something about machine learning, and not the preferd practical approach to e.g. linear regression. Instead linear regression uses an **analytical solution** to the least squares problem, [a well-known method for deriving the optimal parameters](https://en.wikipedia.org/wiki/Least_squares#Solving_the_least_squares_problem). 
