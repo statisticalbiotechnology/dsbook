@@ -195,7 +195,11 @@ plt.show()
 
 By tuning both the `alpha` and `l1_ratio` parameters, we can control the balance between ridge and LASSO regularization.
 
-## Conclusion
 
-Regularization techniques such as **ridge regression**, **LASSO**, and **Elastic Net** are powerful tools for improving the generalization of linear regression models. By introducing a penalty for large coefficients, these methods prevent overfitting and can even perform feature selection in the case of LASSO. The choice of regularization depends on the nature of the problem and the dataset, but by understanding the trade-offs, we can choose the method that best fits our needs.
+## Why Does This Work?
 
+Regularization works by reducing the likelihood of overfitting through the addition of penalties for large model coefficients. In regression models, coefficients represent the strength and direction of the relationship between each feature and the target variable. When these coefficients grow large, it can indicate that the model is reacting too strongly to specific details or noise in the training data, which may not hold for new data. This is a sign of overfitting: the model has not only learned the true underlying patterns but has also fit itself to random fluctuations or specific data instances in the training set.
+
+By adding penalties (as in L1 and L2 regularization), we shrink the size of the coefficients. Smaller coefficients prevent the model from placing too much importance on any one feature unless it truly adds significant predictive value. In L2 regularization (Ridge), for example, coefficients are constrained by a penalty on their squared magnitudes, which promotes a smoother fit and reduces the model’s flexibility. L1 regularization (Lasso), on the other hand, may drive some coefficients all the way to zero, effectively performing feature selection and allowing the model to focus only on the most important predictors.
+
+This constraint on coefficient size simplifies the model, reducing its tendency to memorize the training data and helping it generalize better to unseen data. By focusing on essential relationships, regularization leads the model to capture the overall trend or signal in the data, rather than noise, enhancing its robustness and predictive power across different datasets.
