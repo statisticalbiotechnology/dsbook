@@ -20,7 +20,7 @@ The purpose of hypothesis testing is to assess whether the data provides enough 
 
 ### Test Statistics
 
-A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two groups. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under $H_0$, which typically assumes that there is no difference in means between the groups.
+A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two samples. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under $H_0$, which typically assumes that there is no difference in means between the groups.
 
 ### Sampling Distribution under the Null Hypothesis
 
@@ -244,22 +244,25 @@ for _ in range(n_permutations):
 
 # Compute the p-value by comparing the observed difference to the null distribution (one-sided)
 permuted_diffs = np.array(permuted_diffs)
-p_value = np.mean(permuted_diffs >= observed_diff)
+ge_p_value = np.mean(permuted_diffs >= observed_diff)
+le_p_value = np.mean(permuted_diffs <= observed_diff)
+two_p_value = np.mean(abs(permuted_diffs) <= abs(observed_diff))
 
 # Plot the null distribution and observed difference
 plt.hist(permuted_diffs, bins=30, alpha=0.7, label="Permuted Differences")
 plt.axvline(observed_diff, color='r', linestyle='--', label=f"Observed Diff = {observed_diff:.2f}")
-plt.title(f"One-Sided Permutation Test for Difference in Means (p-value = {p_value:.4f})")
 plt.xlabel("Difference in Means")
 plt.ylabel("Frequency")
 plt.legend()
 plt.show()
 
 print(f"Observed difference in means: {observed_diff:.4f}")
-print(f"p-value from one-sided permutation test: {p_value:.4f}")
+print(f"$p value from one-sided permutation test (diff>=0): {ge_p_value:.4f}")
+print(f"p-value from one-sided permutation test (diff<=0): {le_p_value:.4f}")
+print(f"p-value from one-sided permutation test (diff=0): {two_p_value:.4f}")
 ```
 
-In this **one-sided permutation test**, we are specifically testing if `sample2` has a larger mean than `sample1`. The observed difference and permuted differences are not taken as absolute values, and the p-value is computed based on the proportion of permutations where `perm_sample2 - perm_sample1` is greater than or equal to the observed difference. This makes it a one-sided test focusing on whether `sample2` is greater than `sample1`.
+In this **one-sided permutation test**, we are specifically testing if `sample2` has a larger mean than `sample1`. The observed difference and permuted differences are not taken as absolute values, and the p-value is computed based on the proportion of permutations where `perm_sample2 - perm_sample1` is greater than or equal to the observed difference. This makes it a one-sided test focusing on whether `sample2` is greater (or smaller) than `sample1`.
 
 If you test the efficiency of a drug, you are usually interested in whether the drug has a positive effect on patients, without considering whether it could have a negative effect. In such cases, a one-sided test is appropriate. On the other hand, in differential gene expression analysis, you often want to investigate both upregulation and downregulation of genes between patient groups, making a two-sided test more suitable.
 
