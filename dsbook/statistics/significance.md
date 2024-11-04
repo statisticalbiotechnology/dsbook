@@ -6,51 +6,51 @@ kernelspec:
 
 # Hypothesis Testing
 
-Hypothesis testing is a statistical procedure used to determine if a sample data set provides sufficient evidence to reject a stated null hypothesis (*H₀*) in favor of an alternative hypothesis (*H₁*). This method is fundamental in science for drawing inferences about populations based on sample data. It allows researchers to make data-driven decisions and evaluate the likelihood that their observations are due to random chance or a genuine effect.
+Hypothesis testing is a statistical procedure used to determine if a sample data set provides sufficient evidence to reject a stated null hypothesis ($H_0$) in favor of an alternative hypothesis ($H_1$). This method is fundamental in science for drawing inferences about populations based on sample data. It allows researchers to make data-driven decisions and evaluate the likelihood that their observations are due to random chance or a genuine effect.
 
 ## Statistical hypothesis test
 
-### Null Hypothesis (*H₀*) and Alternative Hypothesis (*H₁*)
+### Null Hypothesis ($H_0$) and Alternative Hypothesis ($H_1$)
 
-In hypothesis testing, we begin by stating two competing hypotheses:
-- **Null Hypothesis (*H₀*)**: This is a statement suggesting there is no effect, relationship, or difference in the population. It represents the status quo or a baseline assumption. For example, in a clinical trial, *H₀* might state that a new drug has no effect compared to a placebo.
-- **Alternative Hypothesis (*H₁*)**: This hypothesis reflects what the researcher aims to prove. It suggests that there is an effect, a relationship, or a difference. In the clinical trial example, *H₁* would state that the new drug has a beneficial effect compared to the placebo.
+In hypothesis testing, we begin by stating two competing hypotheses about population or a set of populations:
+- **Null Hypothesis ($H_0$)**: This is a statement suggesting there is no effect, relationship, or difference. It represents the status quo or a baseline assumption. For example, in a clinical trial, $H_0$ might state that a new drug has no effect compared to a placebo (i.e. the patients in placebo population are not different than the one in the population of treated patients).
+- **Alternative Hypothesis ($H_1$)**: This hypothesis reflects what the researcher aims to prove. It suggests that there is an effect, a relationship, or a difference. In the clinical trial example, $H_1$ would state that the new drug has a beneficial effect compared to the placebo.
 
-The purpose of hypothesis testing is to assess whether the data provides enough evidence to reject *H₀* in favor of *H₁*. This process involves comparing the observed data to what we would expect under *H₀*.
+The purpose of hypothesis testing is to assess whether the data provides enough evidence to reject $H_0$ in favor of $H_1$. This process involves comparing the observed data in a sample to what we would expect under $H_0$.
 
 ### Test Statistics
 
-A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two groups. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under *H₀*, which typically assumes that there is no difference in means between the groups.
+A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two groups. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under $H_0$, which typically assumes that there is no difference in means between the groups.
 
 ### Sampling Distribution under the Null Hypothesis
 
-The **sampling distribution under the null hypothesis** is the distribution of the test statistic assuming that *H₀* is true. This distribution helps us understand the range of possible values the test statistic can take if the null hypothesis is correct. By comparing the observed test statistic to this distribution, we can determine how likely it is to observe such a value by random chance alone. This comparison is essential for calculating the *p* value.
+The **sampling distribution under the null hypothesis** is the distribution of the test statistic assuming that $H_0$ is true. This distribution helps us understand the range of possible values the test statistic can take if the null hypothesis is correct. By comparing the observed test statistic to this distribution, we can determine how likely it is to observe such a value by random chance alone. This comparison is essential for calculating the *p* value.
 
 ## $p$ value
 
-The **$p$ value** represents the probability of obtaining the observed data, or something more extreme, if the null hypothesis were true. It is used as a measure of evidence against *H₀*:
-- A smaller $p$ value suggests that the observed data would be unlikely under *H₀*, providing stronger evidence against the null hypothesis.
-- For example, a $p$ value of 0.03 means there is a 3% chance of observing the data (or something more extreme) if *H₀* is true. This small probability indicates that the data is not consistent with *H₀*, leading us to consider rejecting it.
+The **$p$ value** represents the probability of obtaining the observed data, or something more extreme, if the null hypothesis were true. It is used as a measure of evidence against $H_0$:
+- A smaller $p$ value suggests that the observed data would be unlikely under $H_0$, providing stronger evidence against the null hypothesis.
+- For example, a $p$ value of 0.03 means there is a 3% chance of observing the data (or something more extreme) if $H_0$ is true. This small probability indicates that the data is not consistent with $H_0$, leading us to consider rejecting it.
 
-### Significance Level (α)
+### Significance Level ($\alpha$)
 
-The **significance level** (denoted as α) is a predetermined threshold that determines whether the *p* value is considered small enough to reject the null hypothesis. A common choice for α is 0.05, which means we are willing to accept a 5% chance of incorrectly rejecting *H₀* (Type I error):
-- If the *p* value is less than α, the results are considered **statistically significant**, and we reject *H₀*.
-- The choice of α depends on the context of the study and the consequences of making an error. For example, in medical research, a smaller α (e.g., 0.01) might be chosen to reduce the risk of false positives.
+The **significance level** (denoted as $\alpha$) is a predetermined threshold that determines whether the *p* value is considered small enough to reject the null hypothesis. A common choice for $\alpha$ is 0.05, which means we are willing to accept a 5% chance of incorrectly rejecting $H_0$ (Type I error):
+- If the *p* value is less than $\alpha$, the results are considered **statistically significant**, and we reject $H_0$.
+- The choice of $\alpha$ depends on the context of the study and the consequences of making an error. For example, in medical research, a smaller $\alpha$ (e.g., 0.01) might be chosen to reduce the risk of false positives.
 
 ### False Positives and False Negatives
 
 In hypothesis testing, two types of errors can occur:
-- **False Positive (Type I Error)**: Rejecting *H₀* when it is actually true. This error can lead to incorrect conclusions, such as believing a treatment is effective when it is not.
-- **False Negative (Type II Error)**: Failing to reject *H₀* when the alternative hypothesis is true. This error can result in missed discoveries, such as failing to detect a real effect or relationship.
+- **False Positive (Type I Error)**: Rejecting $H_0$ when it is actually true. This error can lead to incorrect conclusions, such as believing a treatment is effective when it is not.
+- **False Negative (Type II Error)**: Failing to reject $H_0$ when the alternative hypothesis is true. This error can result in missed discoveries, such as failing to detect a real effect or relationship.
 
 The balance between Type I and Type II errors is crucial in hypothesis testing. Researchers often need to consider the trade-offs between these errors when designing studies and choosing significance levels.
 
 ### Limitations & Misinterpretations
 
 While hypothesis testing is powerful, it has its limitations and can be easily misinterpreted:
-- **$p$ values** provide the strength of evidence against *H₀*, but they do not indicate the size of the effect or its practical significance. A small $p$ value might suggest a statistically significant result, but the actual effect size could be trivial.
-- A **$p$ value** does not give the probability that either hypothesis is true. It only tells us how compatible the observed data is with *H₀*.
+- **$p$ values** provide the strength of evidence against $H_0$, but they do not indicate the size of the effect or its practical significance. A small $p$ value might suggest a statistically significant result, but the actual effect size could be trivial.
+- A **$p$ value** does not give the probability that either hypothesis is true. It only tells us how compatible the observed data is with $H_0$.
 - Results can be **statistically significant** without being **practically significant**, and vice versa. Thus, it is crucial to interpret the results in the context of the research question and the real-world implications. For instance, a medical treatment might show a statistically significant improvement, but the actual benefit to patients might be minimal.
 
 ## Assessing Significance Using Permutation Testing
@@ -59,7 +59,7 @@ We can use **permutation testing** to evaluate significance. This approach invol
 
 ### Why Permutation Testing?
 
-Permutation testing is non-parametric, meaning it doesn’t assume a specific distribution of the residuals or the coefficients. This makes it a powerful and flexible method, especially in cases where the assumptions of parametric tests (e.g., normality) might not hold.
+Permutation testing is non-parametric, meaning it doesn’t assume a specific distribution of the residuals or the coefficients. This makes it a powerful and flexible method, especially in cases where the assumptions of parametric tests (e.g., normality) might not hold. Further, we here use it as a pedagogic tool, to understand how frequentist hypothesis testing actually works.
 
 ## Permutation Testing for Model Significance
 
@@ -72,7 +72,7 @@ In permutation testing, we test the null hypothesis that there is no relationshi
 3. **Repeat** the permutation process many times to build a distribution of losses under the null hypothesis.
 4. Calculate the **$p$ value** by comparing the observed loss to this distribution.
 
-### Code Example: Permutation Test for Model Significance
+### Code Example: Permutation Test for comparing means of two poulations
 
 Below is an example of how to implement permutation testing for assessing the significance of differences between two samples.
 
@@ -91,7 +91,6 @@ data = {'value': np.concatenate([sample1, sample2]),
         'group': ['Sample 1'] * len(sample1) + ['Sample 2'] * len(sample2)}
 
 sns.swarmplot(x='group', y='value', data=data)
-plt.title('Swarmplot of Two Samples')
 plt.show()
 
 # Permutation test for difference in means
@@ -126,9 +125,9 @@ print(f"p-value from permutation test: {p_value:.4f}")
 
 ```
 
-### Code Example: Permutation Test for Model Significance
+### Permutation Test for Model Significance
 
-Below is an example of how to implement permutation testing for assessing the significance of a regression model.
+Below is an example of how to implement permutation testing for assessing the significance of a regression model. Here we use the SSE of the model as a test statistics.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -173,7 +172,7 @@ p_value = np.mean(permuted_losses <= observed_loss)
 plt.hist(permuted_losses, bins=30, alpha=0.7, label="Permuted Losses")
 plt.axvline(observed_loss, color='r', linestyle='--', label=f"Observed Loss = {observed_loss:.2f}")
 plt.title(f"Permutation Test for Model Significance (p-value = {p_value:.4f})")
-plt.xlabel("Loss")
+plt.xlabel("SSE Loss")
 plt.ylabel("Frequency")
 plt.legend()
 plt.show()
@@ -211,7 +210,7 @@ A **one-sided test** is used when we want to determine if there is a difference 
 
 Here's how you could modify the permutation test to be one-sided for comparing `sample1` and `sample2`, checking if `sample2` has a larger mean:
 
-```python
+```{code-cell} ipython3
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -266,7 +265,6 @@ If you test the efficiency of a drug, you are usually interested in whether the 
 
 ## Overview of the workflow in frequentist testing procedures
 
-
 ```{mermaid}
 graph TD
     A(Population, μ ) --> B[Sample, X̄]
@@ -274,15 +272,16 @@ graph TD
     C -.->|Inference about 
     population parameter μ | A
 ```
+
 The diagram represents the process of statistical inference from a population to a sample and back. The key steps are:
 
-1. **Population (μ)**: The population contains all the members of interest, and we are interested in a particular population parameter, represented by μ. This could be a measure like the mean or proportion that describes the entire population.
+1. **Population**: The population contains all the members of interest, and we are interested in a particular population parameter, here represented by μ. This could be a measure like the mean or proportion that describes the entire population.
 
-2. **Sample (X̄)**: We draw a sample from the population, and from this sample, we calculate a statistic, denoted as X̄. The statistic serves as an estimate of the population parameter. However, this estimate may include sampling errors, which result from the fact that the sample is only a subset of the full population, as well as measurement errors.
+2. **Sample**: We draw a sample from the population, and from this sample, we calculate a statistic, here denoted as X̄. The statistic serves as an estimate of the population parameter. However, this estimate may include sampling errors, which result from the fact that the sample is only a subset of the full population, as well as measurement errors.
 
-3. **Statistical Model (μ - X̄)**: A statistical model is built to describe the relationship between the statistic (X̄) and the population parameter (μ). This model helps us quantify uncertainty, and potentially correct for errors or biases, and ultimately use sample information to make inferences about the population.
+3. **Statistical Model**: A statistical model is built to describe the relationship between the statistic (X̄) and the population parameter (μ). This model helps us quantify uncertainty, and potentially correct for errors or biases, and ultimately use sample information to make inferences about the population.
 
-4. **Inference about Population Parameter (μ)**: Using the statistical model, we then make inferences about the population parameter. The goal is to approximate or make probabilistic statements about the true value of μ, based on the information contained in the sample and the statistical modeling of the errors.
+4. **Inference about Population Parameter**: Using the statistical model, we then make inferences about the population parameter. The goal is to make a statements about the true value of the population parameter (μ), based on the information contained in the sample and the statistical modeling of the errors.
 
 ## Volcano Plots and Their Interpretation
 
