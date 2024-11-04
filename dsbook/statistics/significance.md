@@ -284,9 +284,6 @@ The diagram represents the process of statistical inference from a population to
 
 4. **Inference about Population Parameter (μ)**: Using the statistical model, we then make inferences about the population parameter. The goal is to approximate or make probabilistic statements about the true value of μ, based on the information contained in the sample and the statistical modeling of the errors.
 
-Certainly! Here's a section about volcano plots and their interpretation:
-
-
 ## Volcano Plots and Their Interpretation
 
 A **volcano plot** is a type of scatter plot commonly used in genomics, proteomics, and other fields of biology to display the results of differential expression or differential abundance analysis. The plot provides a clear visual summary of large datasets, making it easier to identify statistically significant changes between two experimental conditions.
