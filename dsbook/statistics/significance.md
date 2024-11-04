@@ -214,6 +214,7 @@ Here's how you could modify the permutation test to be one-sided for comparing `
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from IPython.display import display, Markdown, Math
 
 # Generate two normally distributed samples with slightly different means
 rng = np.random.RandomState(42)
@@ -246,7 +247,7 @@ for _ in range(n_permutations):
 permuted_diffs = np.array(permuted_diffs)
 ge_p_value = np.mean(permuted_diffs >= observed_diff)
 le_p_value = np.mean(permuted_diffs <= observed_diff)
-two_p_value = np.mean(abs(permuted_diffs) <= abs(observed_diff))
+two_p_value = np.mean(abs(permuted_diffs) >= abs(observed_diff))
 
 # Plot the null distribution and observed difference
 plt.hist(permuted_diffs, bins=30, alpha=0.7, label="Permuted Differences")
@@ -256,10 +257,10 @@ plt.ylabel("Frequency")
 plt.legend()
 plt.show()
 
-print(f"Observed difference in means: {observed_diff:.4f}")
-print(f"$p value from one-sided permutation test (diff>=0): {ge_p_value:.4f}")
-print(f"p-value from one-sided permutation test (diff<=0): {le_p_value:.4f}")
-print(f"p-value from one-sided permutation test (diff=0): {two_p_value:.4f}")
+display(Markdown(rf"Observed difference in means: {observed_diff:.4f}"))
+display(Math(rf"p (H_0: \Delta \le 0): {ge_p_value:.4f}"))
+display(Math(rf"p (H_0: \Delta \ge 0): {le_p_value:.4f}"))
+display(Math(rf"p (H_0: \Delta = 0): {two_p_value:.4f}"))
 ```
 
 In this **one-sided permutation test**, we are specifically testing if `sample2` has a larger mean than `sample1`. The observed difference and permuted differences are not taken as absolute values, and the p-value is computed based on the proportion of permutations where `perm_sample2 - perm_sample1` is greater than or equal to the observed difference. This makes it a one-sided test focusing on whether `sample2` is greater (or smaller) than `sample1`.
