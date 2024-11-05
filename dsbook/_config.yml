@@ -27,7 +27,7 @@ sphinx:
   extra_extensions:
     - sphinxcontrib.mermaid
 
-exclude_patterns: [data/readme.md]
+exclude_patterns: ["*.md","**/*.md", "data/readme.*"]
 
 # Information about where the book exists on the web
 repository:
