@@ -29,7 +29,7 @@ This can be achieved by minimizing a **loss function**, which represents the err
 
 ## Classification Loss Functions
 
-When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications propotional to how much the predictor insists on the incorrect prediction. Below are two common loss functions used in classification tasks:
+When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications propotional to how much the predictor insists on the incorrect prediction. Below are three common loss functions used in classification tasks:
 
 ### Hinge Loss (Used in Support Vector Machines)
 
