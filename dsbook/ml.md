@@ -1,3 +1,15 @@
+---
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+jupytext:
+  formats: md:myst
+  text_representation:
+    extension: .md
+    format_name: myst
+---
+
 # Introduction to Machine Learning
 
 Machine learning (ML) is a branch of artificial intelligence (AI) that enables computers to learn from data without being explicitly programmed. In biotechnology, ML is applied to analyze large datasets, find patterns, and make predictions. Below, we introduce different types of ML approaches with examples relevant to biotechnology. During the course we will cover these concepts more in detail.
