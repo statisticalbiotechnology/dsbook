@@ -79,10 +79,11 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
    where $\#\{ p_i > \lambda \}$ represents the count of $p$ values greater than $\lambda$, and $m$ is the total number of hypotheses.
 
 3. **Fit a natural cubic spline to estimate $ \pi_0 $**:
-   - Let $ \hat{f} $ be the natural cubic spline with 3 degrees of freedom fitted to $\hat{\pi}_0(\lambda)$ as a function of $\lambda$. The final estimate of $ \pi_0 $ is given by evaluating the spline at $ \lambda = 1 $:
+   - Let $ \hat{f} $ be the natural cubic spline fitted to $\hat{\pi}_0(\lambda)$ as a function of $\lambda$. The final estimate of $ \pi_0 $ is given by evaluating the spline at $ \lambda = 1 $:
    ```{math}
    \hat{\pi}_0 = \hat{f}(1)
    ```
+   A **spline** is a piecewise polynomial function that is used to create smooth curves through a set of data points. Essentially, it fits multiple polynomial functions between segments of the data to form a single, continuous curve that is both flexible and smooth. The advantage of using splines is that they help create a smooth approximation without oscillations, especially when dealing with complex or unevenly spaced data. For more details, you can check out the [Wikipedia page on splines](https://en.wikipedia.org/wiki/Spline_(mathematics)).
 
 4. **Calculate the q-value for each $p$ value**:
    - The q-value for each ordered $p$ value $p_{(i)}$, by considering the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$-values below threshold, $i$. 
@@ -93,7 +94,7 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
    This formula provides an estimate of the minimum FDR at which the $i$-th most significant feature is considered significant.
 
 5. **Ensure monotonicity**:
-   - For $ i = m - 1, m - 2, \dots, 1 $, update the q-values to ensure they are monotonically increasing:
+   - For $ i = m - 1, m - 2, \dots, 1 $, update the q-values to ensure they are [monotonically increasing](https://en.wikipedia.org/wiki/Monotonic_function):
    ```{math}
    q_{(i)} = \min(q_{(i)}, q_{(i+1)})
    ```
@@ -134,6 +135,7 @@ Below is a Python script that simulates $p$ value distributions for multiple hyp
 ```{code-cell} ipython3
 :tags: [hide-input]
 import numpy as np
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Parameters
@@ -149,15 +151,15 @@ alternative = m - true_nulls
 p_values_null = np.random.uniform(0, 1, true_nulls)
 
 # Generate p-values from a Beta distribution for false nulls (to represent true effects)
-p_values_effect = np.random.beta(1.0, 5.0, alternative) # Just for illustration
+p_values_effect = np.random.beta(1.0, 5.0, alternative)  # Just for illustration
 
 # Combine p-values
 p_values = np.concatenate([p_values_null, p_values_effect])
 
-# Plot p-value distribution and corrections
-num_bins = 50
+# Plot p-value distribution and corrections using seaborn
+sns.set(style="whitegrid", context="talk")
 plt.figure(figsize=(14, 6))
-plt.hist(p_values, bins=num_bins, alpha=0.5, label='Original $p$ values')
+sns.histplot(p_values, bins=50, kde=False, color='gray', alpha=0.5, label='Original $p$ values')
 plt.axvline(x=0.1, color='r', linestyle='--', label='Significance Threshold')
 plt.axhline(y=true_nulls / 50, color='b', linestyle='--', label='Expected Level of Nulls')
 
