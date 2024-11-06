@@ -51,12 +51,12 @@ f_x_wide = np.linspace(-3, 3, 200)
 
 # Calculate hinge loss for y=1 and y=0 over the range of f(x) from -3 to +3
 hinge_loss_y1 = np.maximum(0, 1 - f_x_wide)  # Hinge loss for y=1
-hinge_loss_y0 = np.maximum(0, 1 + f_x_wide)  # Hinge loss for y=0
+hinge_loss_y0 = np.maximum(0, 1 + f_x_wide)  # Hinge loss for y=-1
 
 # Plot the hinge loss for y=1 and y=0 over the wider range
 plt.figure(figsize=(10, 6))
 plt.plot(f_x_wide, hinge_loss_y1, label="Hinge Loss (y=1)", linestyle='-', linewidth=2)
-plt.plot(f_x_wide, hinge_loss_y0, label="Hinge Loss (y=0)", linestyle='--', linewidth=2)
+plt.plot(f_x_wide, hinge_loss_y0, label="Hinge Loss (y=-1)", linestyle='--', linewidth=2)
 plt.xlabel("Predicted Value $f(\\mathbf{x})$")
 plt.ylabel("Hinge Loss")
 plt.legend()
