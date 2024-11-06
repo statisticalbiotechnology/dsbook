@@ -53,45 +53,49 @@ from sklearn.datasets import make_blobs
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+# Generate sample data
 X, y_true = make_blobs(n_samples=300, centers=5, cluster_std=0.60, random_state=1)
-sns.scatterplot(x=X[:, 0], y=X[:, 1], s=50)
-plt.show()
 
-# Function to perform one iteration of the k-Means EM step
-def plot_kmeans_step(X, centers, step_title):
+# Function to perform one iteration of the k-Means EM step and plot in specified axes
+def plot_kmeans_step(ax, X, centers, step_title):
     labels = pairwise_distances_argmin(X, centers)
-    plt.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma')
-    sns.scatterplot(x=centers[:, 0], y=centers[:, 1], color='black', s=200, alpha=0.5)
-    plt.title(step_title)
-    plt.show()
+    ax.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma')
+    sns.scatterplot(x=centers[:, 0], y=centers[:, 1], color='black', s=200, alpha=0.5, ax=ax)
+    ax.set_title(step_title)
     return labels
 
-# Step 1: Random initialization of cluster centers
+# Initialize the plot with a 4x2 grid (4 steps per column for E and M steps)
+fig, axes = plt.subplots(4, 2, figsize=(12, 16))
+fig.tight_layout(pad=5)
+
+# Step 1: Initial Random Cluster Centers
 rng = np.random.RandomState(1)
 i = rng.permutation(X.shape[0])[:5]
 centers = X[i]
-plot_kmeans_step(X, centers, "Initial Random Cluster Centers")
+plot_kmeans_step(axes[0, 1], X, centers, "Initial Random Cluster Centers")
 
 # Step 2: First E-Step (assign points to the nearest cluster center)
-labels = plot_kmeans_step(X, centers, "First E-Step: Assign Points to Nearest Cluster")
+labels = plot_kmeans_step(axes[1, 0], X, centers, "First E-Step: Assign Points to Nearest Cluster")
 
 # Step 3: First M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(0) for i in range(5)])
-plot_kmeans_step(X, centers, "First M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[1, 1], X, centers, "First M-Step: Recalculate Cluster Centers")
 
 # Step 4: Second E-Step (assign points to the nearest cluster center)
-labels = plot_kmeans_step(X, centers, "Second E-Step: Assign Points to Nearest Cluster")
+labels = plot_kmeans_step(axes[2, 0], X, centers, "Second E-Step: Assign Points to Nearest Cluster")
 
 # Step 5: Second M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(0) for i in range(5)])
-plot_kmeans_step(X, centers, "Second M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[2, 1], X, centers, "Second M-Step: Recalculate Cluster Centers")
 
-# Step 6: Second E-Step (assign points to the nearest cluster center)
-labels = plot_kmeans_step(X, centers, "Third E-Step: Assign Points to Nearest Cluster")
+# Step 6: Third E-Step (assign points to the nearest cluster center)
+labels = plot_kmeans_step(axes[3, 0], X, centers, "Third E-Step: Assign Points to Nearest Cluster")
 
-# Step 7: Second M-Step (recalculate cluster centers)
+# Step 7: Third M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(0) for i in range(5)])
-plot_kmeans_step(X, centers, "Third M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[3, 1], X, centers, "Third M-Step: Recalculate Cluster Centers")
+
+plt.show()
 ```
 
 The algorithm automatically assigns the points to clusters, and we can see that it closely matches what we would expect by visual inspection.
@@ -122,7 +126,8 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma');
 plt.show()
 ```
 
-4. **Differences in size**: K-Means assumes that the cluster sizes are fairly similar for all clusters
+4. **Differences in euclidian size**: K-Means assumes that the cluster sizes, in terms of euclidian distance to its borders, are fairly similar for all clusters.
+Here is an example of three "Mikey Mouse" shaped cludsters, where k-means seems to have a hard time allocating cluster boarders correct.
 
 ```{code-cell}ipython3
 # Parameters for the blobs
@@ -153,114 +158,6 @@ plt.grid(True)
 plt.show()
 ```
 
-## Gaussian Mixture Models (GMM)
-
-**Gaussian Mixture Models (GMMs)** provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster.
-
-### Illustrations of GMM
-
-To understand GMM better, let's consider the following visualizations:
-
-1. **Data Generation**: Generate a dataset with distinct clusters.
-
-```{code-cell}ipython3
-from sklearn.datasets import make_blobs
-import matplotlib.pyplot as plt
-
-X, y_true = make_blobs(n_samples=400, centers=4, cluster_std=0.60, random_state=0)
-X = X[:, ::-1]  # flip axes for better plotting
-plt.scatter(X[:, 0], X[:, 1], s=40)
-plt.title("Generated Data with Four Clusters")
-plt.show()
-```
-
-2. **k-Means Limitations**: Apply k-Means and visualize its limitations.
-
-```{code-cell}ipython3
-from sklearn.cluster import KMeans
-
-kmeans = KMeans(4, random_state=0)
-labels = kmeans.fit(X).predict(X)
-plt.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='plasma');
-plt.title("k-Means Clustering with Limitations")
-plt.show()
-```
-
-The k-Means algorithm assigns hard cluster labels, with no intrinsic measure of uncertainty or probabilistic membership.
-
-3. **GMM Clustering**: Apply GMM and visualize the probabilistic assignment of clusters.
-
-```{code-cell}ipython3
-from sklearn.mixture import GaussianMixture
-
-gmm = GaussianMixture(n_components=4, random_state=42)
-labels = gmm.fit(X).predict(X)
-plt.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='plasma');
-plt.title("Gaussian Mixture Model Clustering")
-plt.show()
-```
-
-Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
-
-4. **Probabilistic Cluster Assignment**: Visualize the uncertainty in cluster assignment.
-
-```{code-cell}ipython3
-probs = gmm.predict_proba(X)
-size = 50 * probs.max(1) ** 2  # emphasize differences in certainty
-plt.scatter(X[:, 0], X[:, 1], c=labels, s=size, cmap='plasma');
-plt.title("GMM Probabilistic Cluster Assignment")
-plt.show()
-```
-
-Points near the cluster boundaries have lower certainty, reflected in smaller marker sizes.
-
-5. **Flexible Cluster Shapes**: GMM can model elliptical clusters, unlike k-Means, which assumes spherical clusters.
-
-```{code-cell}ipython3
-from matplotlib.patches import Ellipse
-import numpy as np
-
-def draw_ellipse(position, covariance, ax=None, **kwargs):
-  """Draw an ellipse with a given position and covariance"""
-  ax = ax or plt.gca()
-  if covariance.shape == (2, 2):
-    U, s, Vt = np.linalg.svd(covariance)
-    angle = np.degrees(np.arctan2(U[1, 0], U[0, 0]))
-    width, height = 2 * np.sqrt(s)
-  else:
-    angle = 0
-    width, height = 2 * np.sqrt(covariance)
-  for nsig in range(1, 4):
-    ax.add_patch(Ellipse(position, nsig * width, nsig * height, angle, **kwargs))
-
-def plot_gmm(gmm, X, label=True, ax=None):
-  ax = ax or plt.gca()
-  labels = gmm.fit(X).predict(X)
-  if label:
-    ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='plasma', zorder=2)
-  else:
-    ax.scatter(X[:, 0], X[:, 1], s=40, zorder=2)
-  ax.axis('equal')
-  w_factor = 0.2 / gmm.weights_.max()
-  for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
-            draw_ellipse(pos, covar, alpha=w * w_factor)
-
-gmm = GaussianMixture(n_components=4, covariance_type='full', random_state=42)
-plot_gmm(gmm, X)
-plt.title("GMM with Elliptical Cluster Boundaries")
-plt.show()
-```
-
-GMM is able to model more complex, elliptical cluster boundaries, addressing one of the main limitations of k-Means.
-
-## Expectation-Maximization (EM) Algorithm
-The **Expectation-Maximization (EM)** algorithm is a statistical technique used for finding maximum likelihood estimates in models with latent variables, such as GMMs. The EM algorithm consists of two main steps:
-
-- **Expectation (E) Step**: This step calculates the expected value of the latent variables given the current parameter estimates and the data.
-- **Maximization (M) Step**: In this step, the parameters are updated by maximizing the expected likelihood found in the E step.
-
-The E and M steps are repeated until the algorithm converges, usually when the change in the log-likelihood is below a certain threshold.
-
 ## Multivariate Normal Distribution
 
 A **multivariate normal distribution**, also known as a **multinormal distribution**, is a generalization of the one-dimensional normal distribution to multiple dimensions.
@@ -279,16 +176,200 @@ where:
 
 The multivariate normal distribution is fundamental to Gaussian Mixture Models and provides a natural way to model the clusters in high-dimensional data.
 
+```{code-cell}ipython3
+:tags: [hide-input]
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
+
+# Parameters for the bivariate normal distribution
+mean = [0, 0]  # Mean vector
+cov = [[1, 0.5], [0.5, 1]]  # Covariance matrix
+
+# Generate grid points for plotting
+x = np.linspace(-3, 3, 100)
+y = np.linspace(-3, 3, 100)
+X, Y = np.meshgrid(x, y)
+pos = np.dstack((X, Y))
+
+# Calculate the probability density function
+rv = multivariate_normal(mean, cov)
+Z = rv.pdf(pos)
+
+# Create a figure with two subplots: a 3D surface and a 2D contour plot
+fig = plt.figure(figsize=(12, 6))
+
+# 3D Surface plot
+ax = fig.add_subplot(1, 2, 1, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='k', alpha=0.7)
+ax.set_title("3D Surface Plot of Bivariate Normal Distribution")
+ax.set_xlabel("X-axis")
+ax.set_ylabel("Y-axis")
+ax.set_zlabel("Density")
+
+# 2D Contour plot
+ax2 = fig.add_subplot(1, 2, 2)
+contour = ax2.contourf(X, Y, Z, cmap='viridis')
+plt.colorbar(contour, ax=ax2, label="Density")
+ax2.set_title("2D Contour Plot of Bivariate Normal Distribution")
+ax2.set_xlabel("X-axis")
+ax2.set_ylabel("Y-axis")
+
+plt.tight_layout()
+plt.show()
+```
+
+## Gaussian Mixture Models (GMM)
+
+**Gaussian Mixture Models (GMMs)** provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
+
+
+### Illustrations of GMM
+
+To understand GMM better, let's consider the following visualizations.
+
+1. Here is a set of random datapoints generated from distributions where we introduced co-variation between the features.
+
+```{code-cell}ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.mixture import GaussianMixture
+from matplotlib.patches import Ellipse
+
+# Function to generate diagonal blobs with custom shapes
+def generate_diagonal_blobs(means, covariances, n_samples):
+    X = []
+    y = []
+    for i, (mean, cov) in enumerate(zip(means, covariances)):
+        # Generate points for each cluster with given mean and covariance
+        cluster_points = np.random.multivariate_normal(mean, cov, n_samples)
+        X.append(cluster_points)
+        y.extend([i] * n_samples)
+    X = np.vstack(X)
+    y = np.array(y)
+    return X, y
+
+# Define means and covariances for diagonal elliptical clusters
+means = [[0, 0], [-3, 3], [0, 5], [2, 2]]
+covariances = [
+    [[1, 0.5], [0.5, 1]],  # Slightly rotated ellipse
+    [[0.3, 0.2], [0.2, 1.2]],  # Narrow ellipse
+    [[1.5, -0.7], [-0.7, 0.5]],  # Wider, tilted ellipse
+    [[0.5, -0.3], [-0.3, 0.5]],  # Smaller ellipse
+]
+
+# Generate custom diagonal blobs
+X, y_true = generate_diagonal_blobs(means, covariances, 100)
+plt.scatter(X[:, 0], X[:, 1], s=40)
+plt.title("Generated Data with Diagonal Elliptical Clusters")
+plt.show()
+
+# Function to draw ellipses based on covariance matrices
+def draw_ellipse(position, covariance, ax=None, **kwargs):
+    ax = ax or plt.gca()
+    if covariance.shape == (2, 2):
+        U, s, Vt = np.linalg.svd(covariance)
+        angle = np.degrees(np.arctan2(U[1, 0], U[0, 0]))
+        width, height = 2 * np.sqrt(s)
+    else:
+        angle = 0
+        width, height = 2 * np.sqrt(covariance)
+    for nsig in range(1, 4):
+        ax.add_patch(Ellipse(position, nsig * width, nsig * height, angle=angle, **kwargs))
+
+# Plot GMM with elliptical boundaries
+def plot_gmm(gmm, X, label=True, ax=None):
+    ax = ax or plt.gca()
+    labels = gmm.fit(X).predict(X)
+    if label:
+        ax.scatter(X[:, 0], X[:, 1], c=labels, s=40, cmap='plasma', zorder=2)
+    else:
+        ax.scatter(X[:, 0], X[:, 1], s=40, zorder=2)
+    ax.axis('equal')
+    w_factor = 0.2 / gmm.weights_.max()
+    for pos, covar, w in zip(gmm.means_, gmm.covariances_, gmm.weights_):
+        draw_ellipse(pos, covar, alpha=w * w_factor)
+
+# Apply Gaussian Mixture Model to generated data
+gmm = GaussianMixture(n_components=4, covariance_type='full', random_state=42)
+plot_gmm(gmm, X)
+plt.title("GMM with Diagonal Elliptical Cluster Boundaries")
+plt.show()
+```
+
+Points near the cluster boundaries have lower certainty, reflected in smaller marker sizes.
+
+2. **Flexible Cluster Shapes**: GMM can model elliptical clusters, with diffent standard deviations, unlike k-Means, which assumes spherical clusters with uniform cluster sizes.
+
+```{code-cell}ipython3
+# Parameters for the blobs
+n_samples = [400, 100, 100]  
+centers = [(0, 0), (4, 4), (-4, 4)]  # Center coordinates
+cluster_std = [2., 0.5, 0.5]  # Standard deviations for each blob
+
+# Generate blobs
+X, y = make_blobs(n_samples=n_samples, centers=centers, cluster_std=cluster_std, random_state=1)
+
+# Plot GMM with elliptical boundaries
+gmm = GaussianMixture(n_components=3, covariance_type='full', random_state=42)
+plot_gmm(gmm, X)
+plt.show()
+```
+
+GMM is able to model more complex, elliptical cluster boundaries, addressing one of the main limitations of k-Means.
+
+## Expectation-Maximization (EM) Algorithm
+The **Expectation-Maximization (EM)** algorithm is a statistical technique used for finding maximum likelihood estimates in models with latent variables, such as GMMs. The EM algorithm consists of two main steps:
+
+- **Expectation (E) Step**: This step calculates the expected value of the latent variables given the current parameter estimates and the data.
+- **Maximization (M) Step**: In this step, the parameters are updated by maximizing the expected likelihood found in the E step.
+
+The E and M steps are repeated until the algorithm converges, usually when the change in the log-likelihood is below a certain threshold.
+
+
 ## Comparison between k-Means and GMM
 
 The following table highlights the similarities and differences between the k-Means and GMM algorithms in terms of their iteration steps:
+``````{list-table}
+:header-rows: 1
+:widths: 5 20 20
 
-| Step           | k-Means                                                                                      | GMM                                                                                                     |
-|----------------|---------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
-| **Initialization** | Select $K$ cluster centers $(\mathbf{m}_1^{(1)}, \ldots, \mathbf{m}_K^{(1)})$               | $K$ components with means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$                |
-| **E-Step**     | Allocate data points to clusters:                                                           | Update the probability that component $k$ generated data point $\mathbf{x}_n$:                          |
-|                | $S_i^{(t)} = \{\mathbf{x}_p: ||\mathbf{x}_p - \mathbf{m}_i^{(t)}||^2 \le ||\mathbf{x}_p - \mathbf{m}_j^{(t)}||^2 \; \forall j \}$ | $\gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \mu_j, \Sigma_j)}$ |
-| **M-Step**     | Re-estimate cluster centers:                                                                | Calculate estimated number of cluster members $N_k$, means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$: |
-|                | $\mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_j \in S_i^{(t)}} \mathbf{x}_j$ | $N_k = \sum_{n=1}^N \gamma_{nk}$, $\mu_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n$, $\Sigma_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \mu_k^{\text{new}})(\mathbf{x}_n - \mu_k^{\text{new}})^T$, $P_k^{\text{new}} = \frac{N_k}{N}$ |
-| **Stopping Criterion** | Stop when there are no changes in cluster assignments.                                   | Stop when the log-likelihood does not increase significantly:                                           |
-|                |                                                                                             | $\ln \Pr(\mathbf{x}|\boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k) \right)$ |
+* - Step
+  - $k$-Means
+  - GMM
+* - **Init**
+  - Select $K$ cluster centers $(\mathbf{m}_1^{(1)}, \ldots, \mathbf{m}_K^{(1)})$
+  - $K$ components with means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$
+* - **E:**
+  - Allocate data points to clusters: 
+  -  Update the probability that component $k$ generated data point $\mathbf{x}_n$:
+* -
+  - ```{math}
+    S_i^{(t)} = \{\mathbf{x}_p: ||\mathbf{x}_p - \mathbf{m}_i^{(t)}||^2 \le ||\mathbf{x}_p - \mathbf{m}_j^{(t)}||^2 \; \forall j \}
+    ```
+  - ```{math}
+    \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \mu_j, \Sigma_j)} 
+    ```
+* - **M:**
+  - Re-estimate cluster centers: 
+  - Calculate estimated number of cluster members $N_k$, means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$:
+* - 
+  - ```{math}
+    \mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_j \in S_i^{(t)}} \mathbf{x}_j 
+    ```
+  - ```{math}
+    N_k = \sum_{n=1}^N \gamma_{nk}, \\
+    \mu_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n, \\
+    \Sigma_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \mu_k^{\text{new}})(\mathbf{x}_n - \mu_k^{\text{new}})^T, \\
+    P_k^{\text{new}} = \frac{N_k}{N}
+    ```
+* - **Stop:**
+  - Stop when there are no changes in cluster assignments.
+  - Stop when the log-likelihood does not increase
+* -
+  -
+  - ```{math}
+    \ln \Pr(\mathbf{x}|\boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k) \right)
+    ```
+``````

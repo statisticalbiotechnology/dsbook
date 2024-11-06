@@ -18,6 +18,7 @@ parts:
     - file: supervised/supervisedML.ipynb
     - file: supervised/mlp.ipynb
     - file: unsupervised/cluster.ipynb
+    - file: unsupervised/cluster_brca.ipynb
   - caption: Statistics
     numbered: True
     chapters:
