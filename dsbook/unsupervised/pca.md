@@ -152,3 +152,40 @@ ax.legend()
 # Show plot
 plt.show()
 ```
+
+## Decomposition of a matrix
+
+- From linear algebra, we know that we can multiply two vectors into a matrix. $$ \mathbf{X} = \mathbf{u} \otimes \mathbf{v} = \mathbf{u} \mathbf{v}^{\textsf{T}} = \begin{bmatrix} u_1 \\ u_2 \\ u_3 \\ u_4 \end{bmatrix} \begin{bmatrix} v_1 & v_2 & v_3 \end{bmatrix} = \begin{bmatrix} u_1 v_1 & u_1 v_2 & u_1 v_3 \\ u_2 v_1 & u_2 v_2 & u_2 v_3 \\ u_3 v_1 & u_3 v_2 & u_3 v_3 \\ u_4 v_1 & u_4 v_2 & u_4 v_3 \end{bmatrix}. $$
+
+- What if we could do the opposite? I.e., given a matrix $\mathbf{X}$, what would be the vectors $\mathbf{u}$ and $\mathbf{v}$ that best represent $\mathbf{X}$ so that $\mathbf{X} \approx \mathbf{u} \mathbf{v}^{\textsf{T}}$? This is, in essence, what you do with principal component analysis (PCA).
+
+
+## More principal components to your PCA
+
+- Once you remove the principal components from a matrix $\mathbf{X}$, the remaining residues, i.e., $\mathbf{X - u^{(1)} v^{(1)T}}$, might in turn be decomposed into vectors. We can calculate the vectors $\mathbf{u^{(2)}}$ and $\mathbf{v^{(2)}}$ that best describe the matrix $\mathbf{X - u^{(1)} v^{(1)T}}$. These are called the second principal components, while the original ones are called the first principal components.
+
+- In this manner, we can derive as many principal components as there are rows or columns (whichever is smaller) in $\mathbf{X}$. In most applications, we settle for two such components.
+
+## An illustration of PCA
+
+|           |          | → Sample |           |          |       |       |       | $\mathbf{u}^{(1)}$ |         |
+|-----------|----------|------------|-----------|----------|-------|-------|-------|----------------|---------|
+| Gene $1$  | $X_{11}$ | $X_{12}$   | $X_{13}$  | $\ldots$ | $X_{1M}$ |       | $u^{(1)}_1$ |         |
+| Gene $2$  | $X_{21}$ | $X_{22}$   | $X_{23}$  | $\ldots$ | $X_{2M}$ |       | $u^{(1)}_2$ |         |
+| Gene $3$  | $X_{31}$ | $X_{32}$   | $X_{33}$  | $\ldots$ | $X_{3M}$ |       | $u^{(1)}_3$ |         |
+| $\vdots$ | $\vdots$ | $\vdots$  | $\vdots$ | $\ddots$ | $\vdots$ |       | $\vdots$  |         |
+| Gene $N$  | $X_{N1}$ | $X_{N2}$   | $X_{N3}$  | $\ldots$ | $X_{NM}$ |       | $u^{(1)}_N$ |         |
+| Eigengene $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$  |
+
+## An illustration of PCA (continued)
+
+|           |          | → Sample |           |          |       |       |       | $\mathbf{u}^{(1)}$ | $\mathbf{u}^{(2)}$ |
+|-----------|----------|------------|-----------|----------|-------|-------|-------|----------------|----------------|
+| Gene $1$  | $X_{11}$ | $X_{12}$   | $X_{13}$  | $\ldots$ | $X_{1M}$ |       | $u^{(1)}_1$ | $u^{(2)}_1$ |
+| Gene $2$  | $X_{21}$ | $X_{22}$   | $X_{23}$  | $\ldots$ | $X_{2M}$ |       | $u^{(1)}_2$ | $u^{(2)}_2$ |
+| Gene $3$  | $X_{31}$ | $X_{32}$   | $X_{33}$  | $\ldots$ | $X_{3M}$ |       | $u^{(1)}_3$ | $u^{(2)}_3$ |
+| $\vdots$ | $\vdots$ | $\vdots$  | $\vdots$ | $\ddots$ | $\vdots$ |       | $\vdots$  | $\vdots$  |
+| Gene $N$  | $X_{N1}$ | $X_{N2}$   | $X_{N3}$  | $\ldots$ | $X_{NM}$ |       | $u^{(1)}_N$ | $u^{(2)}_N$ |
+| Eigengene $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |
+| Eigengene $\mathbf{v}^{T(2)}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |      $S_2$ |
+
