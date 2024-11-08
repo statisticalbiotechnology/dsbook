@@ -208,7 +208,7 @@ Hyperparameters are parameters of the machine learning model that are not learne
 
 Grid search is a brute-force method for finding the optimal hyperparameter values for a given model. It involves specifying a grid of hyperparameter values and then training and evaluating the model for each combination of parameters. The combination that yields the best performance on the validation set is selected as the final set of hyperparameters.
 
-Let’s consider an example where we are training a Lasso regression model, and we want to determine the optimal value for the hyperparameter, $\alpha$. Lasso regression is a linear model that includes L1 regularization, which helps to prevent overfitting by adding a penalty to the magnitude of the coefficients, effectively setting some of them to zero. With grid search, we define a range of possible values for “lambda” and iterate over each value, training and evaluating the model at each step.
+Let’s consider an example where we are training a Lasso regression model, and we want to determine the optimal value for the hyperparameter, $\alpha$. Lasso regression is a linear model that includes L1 regularization, which helps to prevent overfitting by adding a penalty to the magnitude of the coefficients, effectively setting some of them to zero. With grid search, we define a range of possible values for $\alpha$ and iterate over each value, training and evaluating the model at each step.
 
 The following code demonstrates the use of **GridSearchCV** in scikit-learn to perform a grid search over the regularization parameter of a Lasso regression model:
 
