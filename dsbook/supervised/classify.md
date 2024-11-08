@@ -100,7 +100,7 @@ plt.show()
 
 ### Cross-entropy loss
 
-The probably most used **loss function** for classification **cross-entropy loss** for classification tasks. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
+The probably most used **loss function** for classification tasks is **cross-entropy loss**. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
 
 ```{math}
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
