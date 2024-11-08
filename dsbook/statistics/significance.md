@@ -78,7 +78,7 @@ In permutation testing, we test the null hypothesis that there is no relationshi
 3. **Repeat** the permutation process many times to build a distribution of losses under the null hypothesis.
 4. Calculate the **$p$ value** by comparing the observed loss to this distribution.
 
-### Code Example: Permutation Test for comparing means of two poulations
+### Code Example: Permutation Test for comparing means of two populations
 
 Below is an example of how to implement permutation testing for assessing the significance of differences between two samples.
 
