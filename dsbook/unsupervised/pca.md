@@ -12,8 +12,7 @@ jupytext:
 
 # Principal Component Analysis (PCA)
 
-Principal Component Analysis (PCA) is a powerful unsupervised learning method used for finding the axes of maximum variation in your data and projecting the data into new coordinate systems. In this chapter, we'll explore how PCA works, its mathematical foundations.
-
+Principal Component Analysis (PCA) is a powerful unsupervised learning method used for finding the axes of maximum variation in your data and projecting the data into new coordinate systems. 
 
 ## Decomposition of a matrix
 
@@ -22,25 +21,79 @@ Principal Component Analysis (PCA) is a powerful unsupervised learning method us
 - What if we could do the opposite? I.e., given a matrix $\mathbf{X}$, what would be the vectors $\mathbf{u}$ and $\mathbf{v}$ that best represent $\mathbf{X}$ so that $\mathbf{X} \approx \mathbf{u} \mathbf{v}^{\textsf{T}}$? This is, in essence, what you do with principal component analysis (PCA).
 
 
+### A scenario where this might be useful
+
+In PCA, we often deal with a matrix that encapsulates multiple sources of variation. Imagine a scenario where we’re studying gene expression levels across several samples. Here, the gene expression levels might be influenced by two key factors:
+
+1. **Gene-Specific Effects**: These are inherent to each gene, such as its baseline expression level or potential for expression. For example, some genes may generally be expressed at high levels across all conditions, while others have lower baseline expression.
+  
+2. **Sample-Specific Effects**: These capture the influence of each sample (environmental condition, patient, disease state) on gene expression. For instance, one condition might increase expression levels across many genes, while another has a weaker or even suppressive effect.
+
+By setting up the gene expression matrix $X$ as a product of two vectors:
+```{maths}
+X = u \cdot v^T
+```
+
+we express the matrix as an outer product of these two effects:
+- $u$ represents the gene-specific effects.
+- $v$ represents the sample-specific effects.
+
+When we perform PCA on $ X $, the primary principal component should capture the main pattern driven by these combined effects, showing a dominant structure that reflects how genes and samples contribute to variation together. Secondary components may capture additional variations or deviations, if any, from this main trend.
+
+### Fictive Example
+
+Now, let’s apply this theory in a concrete, 4x4 example with 4 samples and 4 genes.
+
+#### Setup
+Let:
+- $u$ be a vector representing the gene-specific effects: $ u = [2, 1, 0.5, 3] $.
+- $v$ be a vector representing the sample-specific effects: $ v = [1, 0.8, 1.2, 0.5] $.
+
+To build our matrix $ X $, we calculate the outer product $ X = u \cdot v^T $, where each entry $ X_{ij} = u_i \cdot v_j $.
+
+#### Calculations
+1. **Gene-Specific Effects** $ u = [2, 1, 0.5, 3] $
+2. **Sample-Specific Effects** $ v = [1, 0.8, 1.2, 0.5] $
+
+Using the outer product:
+
+$$
+X = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \cdot \begin{bmatrix} 1 & 0.8 & 1.2 & 0.5 \end{bmatrix} = 
+\begin{bmatrix} 
+2 & 1.6 & 2.4 & 1 \\
+1 & 0.8 & 1.2 & 0.5 \\
+0.5 & 0.4 & 0.6 & 0.25 \\
+3 & 2.4 & 3.6 & 1.5 
+\end{bmatrix}
+$$
+
+### Scaling the components
+
+When decomposing a matrix with PCA, we aim to find directions that capture the main sources of variation. For a matrix $ X $, where we assume a factorization as an outer product of two vectors $ u $ and $ v $, the decomposition can be represented as:
+
+$$
+X \approx S \cdot u \cdot v^T
+$$
+
+where $ S $ is a scalar that captures the magnitude, while $ u $ and $ v $ provide the directions.
+
+In PCA, the directions $ u $ and $ v $ indicate the axes along which most of the data's variance lies. However, the magnitude of the variation (how much variance is explained) can technically be distributed between $ u $ and $ v $. This is because if we scale $ u $ by a factor $ \alpha $ and scale $ v $ by $ 1 / \alpha $, the product $ u \cdot v^T $ remains the same, allowing flexibility in how we allocate the magnitude.
+
+To standardize this decomposition, it is common to select $ u $ and $ v $ to have a norm of 1. This normalization ensures that $ u $ and $ v $ only represent directions, while the entire magnitude of the variation is captured by the scalar $ s $. Thus, $ s $ becomes a single value that encapsulates the strength of the variation along the principal component, while $ u $ and $ v $ are pure directional vectors, each constrained to unit length:
+
+$$
+\| u \| = 1, \quad \| v \| = 1
+$$
+
+This approach makes the interpretation of the PCA decomposition more consistent, as $ s $ represents the variance captured by this component, and $ u $ and $ v $ describe the specific directions of variation in row and column space, respectively.
+
 ## More principal components to your PCA
 
-- Once you remove the principal components from a matrix $\mathbf{X}$, the remaining residues, i.e., $\mathbf{X - u^{(1)} v^{(1)T}}$, might in turn be decomposed into vectors. We can calculate the vectors $\mathbf{u^{(2)}}$ and $\mathbf{v^{(2)}}$ that best describe the matrix $\mathbf{X - u^{(1)} v^{(1)T}}$. These are called the second principal components, while the original ones are called the first principal components.
+- Once you remove the principal components from a matrix $\mathbf{X}$, the remaining residues, i.e., $\mathbf{X - S_1u^{(1)} v^{(1)T}}$, might in turn be decomposed into vectors. We can calculate the vectors $\mathbf{u^{(2)}}$ and $\mathbf{v^{(2)}}$ that best describe the matrix $\mathbf{X - S_1u^{(1)} v^{(1)T}}$. These are called the second principal components, while the original ones are called the first principal components.
 
 - In this manner, we can derive as many principal components as there are rows or columns (whichever is smaller) in $\mathbf{X}$. In most applications, we settle for two such components.
 
 ## An illustration of PCA
-
-|           |          | Sample     |           |          |       |       | $\mathbf{u}^{(1)}$ |         |
-|-----------|----------|------------|-----------|----------|-------|-------|----------------|---------|
-| Gene $1$  | $X_{11}$ | $X_{12}$   | $X_{13}$  | $\ldots$ | $X_{1M}$ |       | $u^{(1)}_1$ |         |
-| Gene $2$  | $X_{21}$ | $X_{22}$   | $X_{23}$  | $\ldots$ | $X_{2M}$ |       | $u^{(1)}_2$ |         |
-| Gene $3$  | $X_{31}$ | $X_{32}$   | $X_{33}$  | $\ldots$ | $X_{3M}$ |       | $u^{(1)}_3$ |         |
-| $\vdots$ | $\vdots$ | $\vdots$  | $\vdots$ | $\ddots$ | $\vdots$ |       | $\vdots$  |         |
-| Gene $N$  | $X_{N1}$ | $X_{N2}$   | $X_{N3}$  | $\ldots$ | $X_{NM}$ |       | $u^{(1)}_N$ |         |
-|           |          |            |           |          |       |       |                |         |
-| Eigengene $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$  |
-
-more...
 
 |           |          |            |           |          |          |       | $\mathbf{u}^{(1)}$ | $\mathbf{u}^{(2)}$ |
 |-----------|----------|------------|-----------|----------|----------|-------|--------------------|----------------|
@@ -52,7 +105,6 @@ more...
 |           |          |            |           |          |          |       |             |         |
 | Eigengene $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |  |
 | Eigengene $\mathbf{v}^{T(2)}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |        | $S_2$ |
-
 
 
 ## Principal Components
