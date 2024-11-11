@@ -42,7 +42,7 @@ By using the Bonferroni correction, we control the probability of making at leas
 
 ### Calculating the Upper Bound of the False Discovery Rate with the Benjamini-Hochberg Procedure
 
-The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of false positives among the rejected hypotheses. Unlike more conservative approaches like the Bonferroni correction, which aims to eliminate all false positives at the cost of potentially missing true effects, the BH method balances sensitivity and specificity by controlling the rate of false discoveries.
+The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of null among the $p$~values below treshold. I.e. the fraction of false posives among the $p$-values we call as significant. Unlike more conservative approaches like the Bonferroni correction, which aims to eliminate all false positives at the cost of potentially missing true effects, the BH method balances sensitivity and specificity by controlling the rate of false discoveries.
 
 The BH procedure involves ranking the $p$ values from all the tests in ascending order. Let’s denote these ordered $p$ values as $p_{(1)}, p_{(2)}, \dots, p_{(m)}$, where $m$ is the total number of hypotheses. The method works as follows:
 
@@ -55,14 +55,11 @@ The BH procedure involves ranking the $p$ values from all the tests in ascending
 ```
 
 where $i$ is the rank of the $p$ value and $m$ is the total number of hypotheses.
-4. Find the largest $i$ for which $p_{(i)} \le \frac{i}{m} \times q$. Reject all hypotheses with $p$ values less than or equal to $p_{(i)}$.
+4. Find the largest $i$ for which $p_{(i)} \le \frac{i}{m} \times q$. Accept all hypotheses with $p$ values less than or equal to $p_{(i)}$.
 
 **Summary**: The Benjamini-Hochberg procedure is less conservative than Bonferroni, providing a balance between controlling false positives and finding true effects, making it more suitable when a moderate number of false positives is acceptable.
 
 By using this approach, the BH procedure ensures that the expected proportion of false discoveries is controlled at the desired level $q$, allowing us to draw more reliable conclusions while still maintaining a reasonable sensitivity to detect true effects.
-
-
-
 
 ### Calculating q-values with Storey's Method
 
