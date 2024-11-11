@@ -95,7 +95,7 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 
 ## An illustration of PCA
 
-|           |          |            |           |          |          |       | $\mathbf{u}^{(1)}$ | $\mathbf{u}^{(2)}$ |
+|           | Sample $1$ | Sample $2$ | Sample $3$ |       | Sample $M$|       | $\mathbf{u}^{(1)}$ | $\mathbf{u}^{(2)}$ |
 |-----------|----------|------------|-----------|----------|----------|-------|--------------------|----------------|
 | Gene $1$  | $X_{11}$ | $X_{12}$   | $X_{13}$  | $\ldots$ | $X_{1M}$ |       | $u^{(1)}_1$ | $u^{(2)}_1$ |
 | Gene $2$  | $X_{21}$ | $X_{22}$   | $X_{23}$  | $\ldots$ | $X_{2M}$ |       | $u^{(1)}_2$ | $u^{(2)}_2$ |
@@ -112,16 +112,6 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 PCA aims to identify the directions, or **principal components**, in the data that describe the most variance. These directions are essentially the new axes into which the original data is projected, and they help us gain insight into the underlying structure and patterns. The principal components are ordered such that the first principal component describes the largest possible variance, while each subsequent component describes as much of the remaining variance as possible, subject to being orthogonal to the preceding components.
 
 One interesting property of principal components is that the components generated from a data matrix $X$ are equivalent to the projections of the principal components derived from the transposed matrix $X^T$. This means that we can often examine **principal component pairs**, which are generated from both rows and columns of the matrix. Each pair of principal components minimizes the squared sum of residuals, providing an optimal lower-dimensional representation of the data.
-
-## Eigensamples and Eigengenes
-
-When working with data matrices where rows represent genes and columns represent samples, PCA provides meaningful biological interpretations through **eigensamples** and **eigengenes**:
-
-- **Eigensample**: This is a linear combination of genes that captures the maximum variation in the dataset. It can be thought of as the "most typical sample" in the data, behaving as a representative of the dominant patterns among samples.
-
-- **Eigengene**: Conversely, this is a linear combination of samples that captures the most variance from the perspective of genes. It behaves like the "most typical gene" in the dataset, summarizing the dominant variation across different genes.
-
-These eigensamples and eigengenes provide insights into the major biological signals in the dataset and are frequently used for data visualization, clustering, and downstream analyses.
 
 ## Dimensionality Reduction and Explained Variance
 
