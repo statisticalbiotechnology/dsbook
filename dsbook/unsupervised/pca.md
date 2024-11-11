@@ -30,7 +30,7 @@ In PCA, we often deal with a matrix that encapsulates multiple sources of variat
 2. **Sample-Specific Effects**: These capture the influence of each sample (environmental condition, patient, disease state) on gene expression. For instance, one condition might increase expression levels across many genes, while another has a weaker or even suppressive effect.
 
 By setting up the gene expression matrix $X$ as a product of two vectors:
-```{maths}
+```{math}
 X = u \cdot v^T
 ```
 
@@ -123,9 +123,9 @@ The contribution of each principal component to the overall variance is called t
 
 The calculation of principal components can be efficiently performed using **singular value decomposition (SVD)**, a fundamental linear algebra technique. Given a data matrix $X$, SVD decomposes it as follows:
 
-\[
+```{math}
 X = USV^T
-\]
+```
 
 Here:
 
@@ -134,6 +134,8 @@ Here:
 - $S$ is a diagonal matrix that carries the magnitude (singular values) of each principal component pair.
 
 SVD provides a robust way to perform PCA, allowing for the identification of eigensamples and eigengenes while efficiently capturing the major patterns in the data. Since $S$ contains the singular values, it directly relates to the explained variance of the principal components, with larger singular values corresponding to more significant components.
+
+A practical use of the singular values is that they give the amount of variance explained by each principal component. Typically we are interested in computing the percentage of variance explained by component $i$ as $R^2_i=\frac{s^2_i}{\sum_j s^2_j}$.
 
 ## Affine Transformation and Interpretation
 
@@ -148,3 +150,96 @@ In data science, PCA is widely applied for visualization, clustering, and featur
 - Detect batch effects and outliers in high-throughput experiments.
 
 By applying PCA, researchers can distill complex, high-dimensional data into a manageable form, making it easier to interpret and analyze the underlying biological phenomena.
+
+## An example of reconstruction with PCA, Eigenfaces
+
+```{code-cell}ipython3
+
+import matplotlib.pyplot as plt
+from numpy.random import RandomState
+
+from sklearn import cluster, decomposition
+from sklearn.datasets import fetch_olivetti_faces
+from sklearn.decomposition import PCA
+
+rng = RandomState(0)
+
+
+# Load the Olivetti faces dataset
+faces, _ = fetch_olivetti_faces(return_X_y=True, shuffle=True, random_state=rng)
+n_samples, n_features = faces.shape
+
+# Global centering (focus on one feature, centering all samples)
+faces_centered = faces - faces.mean(axis=0)
+
+# Local centering (focus on one sample, centering all features)
+faces_centered -= faces_centered.mean(axis=1).reshape(n_samples, -1)
+
+print("Dataset consists of %d faces" % n_samples)
+
+# Define a base function to plot the gallery of faces
+n_row, n_col = 2, 3
+n_components = n_row * n_col
+image_shape = (64, 64)
+
+def plot_gallery(title, images, n_col=n_col, n_row=n_row, cmap=plt.cm.gray):
+    fig, axs = plt.subplots(
+        nrows=n_row,
+        ncols=n_col,
+        figsize=(2.0 * n_col, 2.3 * n_row),
+        facecolor="white",
+        constrained_layout=True,
+    )
+    fig.set_constrained_layout_pads(w_pad=0.01, h_pad=0.02, hspace=0, wspace=0)
+    fig.set_edgecolor("black")
+    fig.suptitle(title, size=16)
+    for ax, vec in zip(axs.flat, images):
+        vmax = max(vec.max(), -vec.min())
+        im = ax.imshow(
+            vec.reshape(image_shape),
+            cmap=cmap,
+            interpolation="nearest",
+            vmin=-vmax,
+            vmax=vmax,
+        )
+        ax.axis("off")
+
+    fig.colorbar(im, ax=axs, orientation="horizontal", shrink=0.99, aspect=40, pad=0.01)
+    plt.show()
+
+# Number of components for PCA (e.g., how many eigenfaces we will keep)
+n_components = 6
+
+# Create a PCA model and fit it to the centered faces
+print("Fitting PCA model to faces dataset...")
+pca = PCA(n_components=n_components, whiten=True, random_state=rng)
+pca.fit(faces_centered)
+
+# Extract the eigenfaces (principal components)
+eigenfaces = pca.components_
+
+# Plot the first n_components eigenfaces
+plot_gallery("Eigenfaces (Principal Components)", eigenfaces[:n_components])
+
+# Project the original faces onto the PCA components to get their low-dimensional representation
+faces_pca_projection = pca.transform(faces_centered)
+
+# Reconstruct the faces using the PCA projection
+faces_reconstructed = pca.inverse_transform(faces_pca_projection)
+
+# Plot a gallery of original and reconstructed faces for comparison
+plot_gallery("Original Centered Faces", faces_centered[:n_components])
+plot_gallery("Reconstructed Faces", faces_reconstructed[:n_components])
+
+print("Explained variance ratio of components: ", pca.explained_variance_ratio_)
+
+# Optional: Show how much variance is explained by the components
+plt.figure(figsize=(8, 5))
+plt.plot(range(1, n_components + 1), pca.explained_variance_ratio_, marker='o', linestyle='--')
+plt.xlabel('Principal Component Index')
+plt.ylabel('Explained Variance Ratio')
+plt.title('Explained Variance by Each Principal Component')
+plt.show()
+```
+
+While the faces might not appear as wery well reconstructed, it is worth noting that the reconstruction was done from a face-specific vector of only six floating points. 

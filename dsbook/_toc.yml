@@ -4,7 +4,7 @@
 format: jb-book
 root: intro
 parts:
-  - caption: Machine Learning
+  - caption: Supervised Machine Learning
     numbered: True
     chapters:
     - file: ml.ipynb
@@ -17,8 +17,6 @@ parts:
     - file: supervised/svm.ipynb
     - file: supervised/supervisedML.ipynb
     - file: supervised/mlp.ipynb
-    - file: unsupervised/cluster.ipynb
-    - file: unsupervised/cluster_brca.ipynb
   - caption: Statistics
     numbered: True
     chapters:
@@ -26,3 +24,11 @@ parts:
     - file: statistics/testing.ipynb
     - file: statistics/multiple.ipynb
     - file: statistics/qvalue.ipynb
+  - caption: Unsupervised Machine Learning
+    numbered: True
+    chapters:
+    - file: unsupervised/cluster.ipynb
+    - file: unsupervised/cluster_brca.ipynb
+    - file: unsupervised/pca.ipynb
+    - file: unsupervised/PCAofCarcinomas.ipynb
+    - file: unsupervised/autoenc.ipynb

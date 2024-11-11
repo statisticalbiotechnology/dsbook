@@ -64,7 +64,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 1. **Forward Pass**: Input data passes through the network, and predictions are generated.
 2. **Loss Calculation**: A loss function (e.g., mean squared error for regression or cross-entropy for classification) is used to measure the error between the predictions and true labels.
-3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, and the weights are updated using optimization techniques like stochastic gradient descent (SGD).
+3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are the updated using optimization techniques, often gradient descent-based techniques.
 
 ## Example: Training an MLP on Artificial Data
 
@@ -193,8 +193,7 @@ plt.ylabel("Feature 2")
 plt.show()
 ```
 
-We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process. However, then you would not have had the possibility to see the inner workings of the classifier.
-
+We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process (, but without seeing the inner workings of the classifier). For the ones of you intereste, see below.
 
 ```{code-cell} ipython3
 :tags: [hide-cell]
