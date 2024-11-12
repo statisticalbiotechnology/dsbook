@@ -17,7 +17,7 @@ MLPs are widely used in supervised learning tasks such as classification and reg
 
 ## Artificial Neuron
 
-An **artificial neuron** is a fundamental building block of neural networks. It is inspired by the biological neuron and functions as a mathematical model that takes multiple inputs, processes them, and produces an output. The artifical neuron makes a linear combination of its input that is forwarded to a non-linear activation function. This can be expressed as:
+An **artificial neuron** is a fundamental building block of neural networks. It is inspired by the biological neuron and functions as a mathematical model that takes multiple inputs, processes them, and produces an output. The artificial neuron makes a linear combination of its input that is forwarded to a non-linear activation function. This can be expressed as:
 
 $$ f(\mathbf{x};\mathbf{w}) = g(\sum_{i=1}^n w_i x_i + b) $$
 
@@ -256,4 +256,4 @@ plt.show()
 
 ## A workbench for MLPs
 
-TensorFlow provides a nice workbench for MLPs, wher you can investigate the influence of different selections of input features, architectures, and regularizartion on performance on differnt datatypes. [Try it out!](https://playground.tensorflow.org/)
+TensorFlow provides a nice workbench for MLPs, where you can investigate the influence of different selections of input features, architectures, and regularization on performance on different datatypes. [Try it out!](https://playground.tensorflow.org/)
