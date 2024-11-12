@@ -69,6 +69,8 @@ Storey's method (as well as the Benjamini-Hochberg  procedure) is founded on the
 
 Storey's procedure calculates  the total number of features considered significant by counting all $p$ values below a threshold $t$. The number of **nulls** below this threshold, is estimated as $\pi_0 m t$, where $\pi_0$ is the estimated fraction of null hypotheses, $m$ is the total number of hypotheses, and $t$ is the chosen threshold. This could be done as there is expected to be $\pi_0 m$ nulls, uniformly distributed between, 0 and 1, and a fraction $t$ of them is expected to be under threshhold.
 
+The proportion of null statistics $\pi_0$ is estimated by a procedure of its own. If all hypotheses were null, we would expect approximately $m(1 - \lambda)$ $p$-values above a threshold $\lambda$. However, the presence of true alternative hypotheses results in fewer $p$-values above $\lambda$, so the proportion of values above the threshold provides an estimate of $\pi_0$, the proportion of true null hypotheses. As $\lambda$ approaches 1, this estimate contains fewer alternative $p$-values but the estimate also more variable, so a smoothing function (spline) is applied to stabilize the estimate by evaluating it at $\lambda = 1$.
+
 Here is how Storey's q-value procedure works, as described by Storey & Tibshirani:
 
 1. **Order the $p$ values**: Let $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$ be the ordered $p$ values. This ordering of $p$ values ranks the features in terms of their evidence against the null hypothesis, with lower $p$ values suggesting stronger evidence.
@@ -132,7 +134,7 @@ This approach provides a more adaptive and refined way to estimate $\pi_0$, enha
 
 ### Illustration of q-value calculations
 
-Below is a Python script that simulates $p$ value distributions for multiple hypotheses, showcasing the challenge of distinguishing true effects from random variation:
+Below is a simulation of $p$ value distributions for multiple hypotheses, showcasing the challenge of distinguishing true effects from random variation:
 
 ```{code-cell} ipython3
 :tags: [hide-input]
