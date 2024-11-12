@@ -29,6 +29,12 @@ sphinx:
 
 exclude_patterns: ["*.md","**/*.md", "data/readme.*"]
 
+parse:
+  myst_enable_extensions:
+    - colon_fence
+    - dollarmath
+    - tasklist
+
 # Information about where the book exists on the web
 repository:
   url: https://github.com/statisticalbiotechnology/dsbook  # Online location of your book
