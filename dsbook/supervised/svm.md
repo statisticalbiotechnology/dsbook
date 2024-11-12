@@ -98,7 +98,3 @@ Here, $C > 0$ is a parameter that controls the trade-off between maximizing the 
 ### Support Vectors
 
 An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it—the **support vectors**. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.
-
-### Summary
-
-Linear SVMs are a fundamental technique for binary classification. They aim to find the optimal hyperplane that separates two classes with the **maximum margin**. In practice, when the data is not perfectly separable, a **soft-margin** approach is used to allow some misclassification, making SVMs a versatile and robust tool in machine learning.
