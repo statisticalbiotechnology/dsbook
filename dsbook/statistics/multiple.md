@@ -77,11 +77,11 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
 1. **Order the $p$ values**: Let $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$ be the ordered $p$ values. This ordering of $p$ values ranks the features in terms of their evidence against the null hypothesis, with lower $p$ values suggesting stronger evidence.
 
 2. **Estimate $ \pi_0 $ for a range of $ \lambda $ values**:
-   - For a range of $ \lambda $ values, such as $ \lambda = 0, 0.01, 0.02, \dots, 0.95 $, calculate the proportion of $p$ values greater than $\lambda$:
+   - For a range of $ \lambda $ values, such as $ \lambda = 0, 0.05, 0.10, \dots, 0.95 $, calculate the proportion of $p$ values greater than $\lambda$:
    ```{math}
-   \hat{\pi}_0(\lambda) = \frac{\#\{ p_i > \lambda \}}{m (1 - \lambda)}
+   \hat{\pi}_0(\lambda) = \frac{|\{ p_i > \lambda \}|}{m (1 - \lambda)}
    ```
-   where $\#\{ p_i > \lambda \}$ represents the count of $p$ values greater than $\lambda$, and $m$ is the total number of hypotheses.
+   where $|\{ p_i > \lambda \}|$ represents the count of $p$ values greater than $\lambda$, and $m$ is the total number of hypotheses.
 
 3. **Fit a natural cubic spline to estimate $ \pi_0 $**:
    - Let $ \hat{f} $ be the natural cubic spline fitted to $\hat{\pi}_0(\lambda)$ as a function of $\lambda$. The final estimate of $ \pi_0 $ is given by evaluating the spline at $ \lambda = 1 $:
