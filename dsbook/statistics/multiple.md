@@ -14,7 +14,7 @@ jupytext:
 
 ## Introduction
 
-In high throughput biology, analysis often involves testing a large number of hypotheses simultaneously. This is common in fields like genomics, transcriptomics, and proteomics, where experiments might involve thousands of genes or proteins being tested for associations with a condition or trait. The challenge of multiple hypothesis testing arises because, when many tests are conducted, the likelihood of obtaining false positives (incorrectly rejecting a null hypothesis) increases.
+In high-throughput biology, analysis often involves testing a large number of hypotheses simultaneously. This is common in fields like genomics, transcriptomics, and proteomics, where experiments might involve thousands of genes or proteins being tested for associations with a condition or trait. A key challenge here is multiple hypothesis testing: when many tests are conducted, the probability of obtaining false positives increases because even a small chance of error for each test can accumulate across thousands of tests, resulting in a substantial number of false discoveries.
 
 To understand this, imagine testing 1,000 hypotheses with a significance threshold ($\alpha$) of 0.05. If the null hypothesis is true for all these tests, we would still expect about 5% of them, or 50 tests, to be significant simply by chance. Without any correction for multiple comparisons, the results are prone to contain many false positives, reducing the reliability of the conclusions drawn from the data.
 
