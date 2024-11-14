@@ -69,7 +69,7 @@ Permutation testing is non-parametric, meaning it doesn’t assume a specific di
 
 ## Permutation Testing for Model Significance
 
-In permutation testing, we test the null hypothesis that there is no relationship between the dependent and independent variables. To do this, we randomly shuffle the dependent variable **y** while keeping the independent variable **x** unchanged, refit the model, and compute the loss. Repeating this process many times creates a **null distribution** of losses. The $p$ value is calculated by comparing the observed loss to this null distribution.
+In permutation testing, we test the null hypothesis that there is no relationship between the dependent and independent variables. To do this, we randomly shuffle the dependent variable $y$ while keeping the independent variable $\mathbf{x}$ unchanged, refit the model, and compute the loss. Repeating this process many times creates a **null distribution** of losses. The $p$ value is calculated by comparing the observed loss to this null distribution. The idea is that if we are testing the association between $\mathbf{x}$ and $y$, then under the null hypothesis, any random pairing between $\mathbf{x}$ and $y$ should have the same effect on the model as the actual observed pairing.
 
 ### Step-by-step Procedure
 
