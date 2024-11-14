@@ -64,7 +64,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 1. **Forward Pass**: Input data passes through the network, and predictions are generated.
 2. **Loss Calculation**: A loss function (e.g., mean squared error for regression or cross-entropy for classification) is used to measure the error between the predictions and true labels.
-3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are the updated using optimization techniques, often gradient descent-based techniques.
+3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are the updated using optimization techniques, often gradient descent-based techniques. A more detailed description can be found in the [wikipedia entry](https://en.wikipedia.org/wiki/Backpropagation).
 
 ## Example: Training an MLP on Artificial Data
 
