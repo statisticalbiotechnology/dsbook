@@ -71,6 +71,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes.
 
 ```{code-cell}ipython3
+# Import necessary libraries
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -95,22 +96,22 @@ y_test = y_test.reshape(-1, 1)
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-# Derivative of the sigmoid function
+# Derivative of the sigmoid function (needed for backpropagation)
 def sigmoid_derivative(z):
     return sigmoid(z) * (1 - sigmoid(z))
 
-# Initialize parameters
+# Initialize parameters (weights and biases)
 n_hidden_1 = 10
 n_hidden_2 = 5
 n_input = X_train.shape[1]
 n_output = 1
 
 np.random.seed(42)
-weights_1 = np.random.randn(n_input, n_hidden_1)
+weights_1 = np.random.randn(n_input, n_hidden_1)  # Input to first hidden layer
 bias_1 = np.zeros((1, n_hidden_1))
-weights_2 = np.random.randn(n_hidden_1, n_hidden_2)
+weights_2 = np.random.randn(n_hidden_1, n_hidden_2)  # First hidden to second hidden layer
 bias_2 = np.zeros((1, n_hidden_2))
-weights_out = np.random.randn(n_hidden_2, n_output)
+weights_out = np.random.randn(n_hidden_2, n_output)  # Second hidden to output layer
 bias_out = np.zeros((1, n_output))
 
 # Training parameters
@@ -119,40 +120,48 @@ n_epochs = 1000
 
 # Training loop
 for epoch in range(n_epochs):
-    # Forward pass
+    # Forward pass: compute activations layer by layer
     z1 = np.dot(X_train, weights_1) + bias_1
-    a1 = sigmoid(z1)
+    a1 = sigmoid(z1)  # Activation for first hidden layer
     z2 = np.dot(a1, weights_2) + bias_2
-    a2 = sigmoid(z2)
+    a2 = sigmoid(z2)  # Activation for second hidden layer
     z_out = np.dot(a2, weights_out) + bias_out
-    y_pred = sigmoid(z_out)
+    y_pred = sigmoid(z_out)  # Output prediction
 
     # Compute loss (binary cross-entropy)
     loss = -np.mean(y_train * np.log(y_pred) + (1 - y_train) * np.log(1 - y_pred))
 
-    # Backward pass
+    # Backward pass (gradient computation using chain rule)
+    # Gradient of loss w.r.t. output layer activation (y_pred)
     d_loss_y_pred = -(y_train / y_pred) + ((1 - y_train) / (1 - y_pred))
+    # Gradient of sigmoid activation w.r.t. z_out (output layer input)
     d_y_pred_z_out = sigmoid_derivative(z_out)
+    # Chain rule: Gradient of loss w.r.t. z_out
     d_loss_z_out = d_loss_y_pred * d_y_pred_z_out
 
-    d_loss_weights_out = np.dot(a2.T, d_loss_z_out)
+    # Gradients for output layer weights and biases
+    d_loss_weights_out = np.dot(a2.T, d_loss_z_out)  # Chain rule to propagate to weights
     d_loss_bias_out = np.sum(d_loss_z_out, axis=0, keepdims=True)
 
-    d_loss_a2 = np.dot(d_loss_z_out, weights_out.T)
+    # Propagate the gradient back to the second hidden layer
+    d_loss_a2 = np.dot(d_loss_z_out, weights_out.T)  # Gradient w.r.t. activations in second hidden layer
     d_a2_z2 = sigmoid_derivative(z2)
-    d_loss_z2 = d_loss_a2 * d_a2_z2
+    d_loss_z2 = d_loss_a2 * d_a2_z2  # Gradient w.r.t. z2 (input to second hidden layer)
 
+    # Gradients for second hidden layer weights and biases
     d_loss_weights_2 = np.dot(a1.T, d_loss_z2)
     d_loss_bias_2 = np.sum(d_loss_z2, axis=0, keepdims=True)
 
-    d_loss_a1 = np.dot(d_loss_z2, weights_2.T)
+    # Propagate the gradient back to the first hidden layer
+    d_loss_a1 = np.dot(d_loss_z2, weights_2.T)  # Gradient w.r.t. activations in first hidden layer
     d_a1_z1 = sigmoid_derivative(z1)
-    d_loss_z1 = d_loss_a1 * d_a1_z1
+    d_loss_z1 = d_loss_a1 * d_a1_z1  # Gradient w.r.t. z1 (input to first hidden layer)
 
+    # Gradients for first hidden layer weights and biases
     d_loss_weights_1 = np.dot(X_train.T, d_loss_z1)
     d_loss_bias_1 = np.sum(d_loss_z1, axis=0, keepdims=True)
 
-    # Update weights and biases
+    # Update weights and biases using gradients
     weights_out -= learning_rate * d_loss_weights_out
     bias_out -= learning_rate * d_loss_bias_out
     weights_2 -= learning_rate * d_loss_weights_2
