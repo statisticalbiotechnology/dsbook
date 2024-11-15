@@ -2,7 +2,6 @@ jupyter-book
 matplotlib
 seaborn
 scikit-learn
-pytorch
 numpy
 cptac
 sphinxcontrib-mermaid
