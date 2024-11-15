@@ -61,7 +61,7 @@ $$L(x, \hat{x}) = \lVert x - \hat{x} \rVert^2$$
 
 This objective ensures that the latent representation retains as much relevant information about the original data as possible while being compressed. The encoder-decoder architecture can introduce non-linearity through the use of activation functions such as ReLU or sigmoid, making autoencoders capable of capturing more complex relationships than purely linear methods.
 
-```mermaid
+```{mermaid}
 graph TD
     A[Input Data (x)] --> B[Encoder]
     B --> C[Latent Representation (z)]
