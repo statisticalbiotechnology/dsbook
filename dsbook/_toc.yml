@@ -32,3 +32,7 @@ parts:
     - file: unsupervised/pca.ipynb
     - file: unsupervised/PCAofCarcinomas.ipynb
     - file: unsupervised/autoenc.ipynb
+  - caption: Network Analysis
+    numbered: True
+    chapters:
+    - file: network/pathway.ipynb
