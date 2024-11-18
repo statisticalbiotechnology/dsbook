@@ -8,3 +8,4 @@ cptac
 sphinxcontrib-mermaid
 ipywidgets
 jupytext
+gseapy
