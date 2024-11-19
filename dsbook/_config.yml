@@ -11,7 +11,11 @@ copyright: "2024"
 execute:
   execute_notebooks: auto
   timeout: 100
-
+  exclude_patterns:
+    - dsbook/network/gsea.ipynb
+    - dsbook/statistics/testing.ipynb
+    - dsbook/statistics/qvalue.ipynb
+    - dsbook/unsupervised/VAEofCarcinomas.ipynb
 
 # Define the name of the latex output file for PDF builds
 latex:
