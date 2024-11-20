@@ -84,7 +84,7 @@ plot_kmeans_step(axes[1, 0], X, centers, labels, "First E-Step: Assign Points to
 
 # Step 3: First M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(axis=0) for i in range(len(centers))])
-plot_kmeans_step(axes[1, 1], X, centers, step_title="First M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[1, 1], X, centers, labels, step_title="First M-Step: Recalculate Cluster Centers")
 
 # Step 4: Second E-Step (assign points to the nearest cluster center)
 labels = pairwise_distances_argmin(X, centers)
@@ -92,7 +92,7 @@ plot_kmeans_step(axes[2, 0], X, centers, labels, "Second E-Step: Assign Points t
 
 # Step 5: Second M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(axis=0) for i in range(len(centers))])
-plot_kmeans_step(axes[2, 1], X, centers, step_title="Second M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[2, 1], X, centers, labels, step_title="Second M-Step: Recalculate Cluster Centers")
 
 # Step 6: Third E-Step (assign points to the nearest cluster center)
 labels = pairwise_distances_argmin(X, centers)
@@ -100,7 +100,7 @@ plot_kmeans_step(axes[3, 0], X, centers, labels, "Third E-Step: Assign Points to
 
 # Step 7: Third M-Step (recalculate cluster centers)
 centers = np.array([X[labels == i].mean(axis=0) for i in range(len(centers))])
-plot_kmeans_step(axes[3, 1], X, centers, step_title="Third M-Step: Recalculate Cluster Centers")
+plot_kmeans_step(axes[3, 1], X, centers, labels, step_title="Third M-Step: Recalculate Cluster Centers")
 
 plt.show()
 ```
