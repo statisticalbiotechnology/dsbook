@@ -11,6 +11,11 @@ jupytext:
 ---
 # Unsupervised Machine Learning
 
+[//]: # "Add maths for GMMs"
+
+[//]: # "Coloring of e-step i k-means"
+
+
 ## Introduction
 
 Unsupervised machine learning aims to learn patterns from data without predefined labels. Specifically, the goal is to learn a function $f(x)$ from the dataset $D = \{\mathbf{x}_i\}$ by optimizing an objective function $g(D, f)$, or by simply partitioning the dataset $D$. This chapter provides an overview of clustering methods, which are a core part of unsupervised machine learning.
