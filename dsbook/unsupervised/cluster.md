@@ -11,11 +11,6 @@ jupytext:
 ---
 # Unsupervised Machine Learning
 
-[//]: # "Add maths for GMMs"
-
-[//]: # "Coloring of e-step i k-means"
-
-
 ## Introduction
 
 Unsupervised machine learning aims to learn patterns from data without predefined labels. Specifically, the goal is to learn a function $f(x)$ from the dataset $D = \{\mathbf{x}_i\}$ by optimizing an objective function $g(D, f)$, or by simply partitioning the dataset $D$. This chapter provides an overview of clustering methods, which are a core part of unsupervised machine learning.
@@ -266,7 +261,64 @@ plt.show()
 
 ## Gaussian Mixture Models (GMM)
 
-**Gaussian Mixture Models (GMMs)** provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
+Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
+
+Here is a detailed description of the **Gaussian Mixture Models (GMM)** algorithm with the mathematics you provided, outlining its steps:
+
+---
+
+## Gaussian Mixture Models (GMM)
+
+**Gaussian Mixture Models (GMMs)** provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides soft clustering where each point is assigned a probability of belonging to each cluster.
+
+### Steps of the GMM Algorithm
+
+1. **Initialization**:
+   - Define the number of clusters, $ K $.
+   - Initialize the parameters:
+     - Means $ \mu_k $ for each component.
+     - Covariance matrices $ \Sigma_k $ for each component.
+     - Mixing coefficients $ P_k $, such that $ \sum_{k=1}^K P_k = 1 $.
+
+2. **Expectation Step (E-Step)**:
+   - Compute the probability that a data point $ \mathbf{x}_n $ belongs to cluster $ k $, called the responsibility $ \gamma_{nk} $:
+   ```{math}
+   \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \mu_j, \Sigma_j)} 
+   ```
+   where:
+   - $ \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) $ is the Gaussian probability density function:
+   ```{math}
+   \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) = \frac{1}{\sqrt{(2\pi)^d |\Sigma_k|}} \exp\left( -\frac{1}{2} (\mathbf{x}_n - \mu_k)^T \Sigma_k^{-1} (\mathbf{x}_n - \mu_k) \right)
+   ```
+
+3. **Maximization Step (M-Step)**:
+   - Recalculate the parameters based on the responsibilities $ \gamma_{nk} $:
+     - Effective number of points in cluster $ k $:
+     ```{math}
+     N_k = \sum_{n=1}^N \gamma_{nk}
+     ```
+     - Updated cluster means:
+     ```{math}
+     \mu_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n
+     ```
+     - Updated covariance matrices:
+     ```{math}
+     \Sigma_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \mu_k^{\text{new}})(\mathbf{x}_n - \mu_k^{\text{new}})^T
+     ```
+     - Updated mixing coefficients:
+     ```{math}
+     P_k^{\text{new}} = \frac{N_k}{N}
+     ```
+
+4. **Log-Likelihood Calculation**:
+   - Evaluate the log-likelihood of the data given the current model parameters:
+   ```{math}
+   \ln \Pr(\mathbf{X} | \boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) \right)
+   ```
+
+5. **Convergence Check**:
+   - Repeat the E and M steps until convergence, which occurs when the log-likelihood no longer increases or the parameter updates become negligible.
+
 
 
 ### Illustrations of GMM
