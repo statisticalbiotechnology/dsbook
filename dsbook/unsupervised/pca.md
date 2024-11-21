@@ -42,9 +42,10 @@ When we perform PCA on $ X $, the primary principal component should capture the
 
 ### Fictive Example
 
-Now, let’s apply this theory in a concrete, 4x4 example with 4 samples and 4 genes.
+Now, let’s apply this theory in a concrete, 4x4 example with 4 samples and 4 genes. Here, we will see how gene-specific and sample-specific effects can combine to form the observed matrix.
 
 #### Setup
+
 Let:
 - $u$ be a vector representing the gene-specific effects: $ u = [2, 1, 0.5, 3] $.
 - $v$ be a vector representing the sample-specific effects: $ v = [1, 0.8, 1.2, 0.5] $.
@@ -52,20 +53,30 @@ Let:
 To build our matrix $ X $, we calculate the outer product $ X = u \cdot v^T $, where each entry $ X_{ij} = u_i \cdot v_j $.
 
 #### Calculations
+
 1. **Gene-Specific Effects** $ u = [2, 1, 0.5, 3] $
 2. **Sample-Specific Effects** $ v = [1, 0.8, 1.2, 0.5] $
 
 Using the outer product:
 
 $$
-X = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \cdot \begin{bmatrix} 1 & 0.8 & 1.2 & 0.5 \end{bmatrix} = 
-\begin{bmatrix} 
+X = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \cdot \begin{bmatrix} 1 & 0.8 & 1.2 & 0.5 \end{bmatrix} =
+\begin{bmatrix}
 2 & 1.6 & 2.4 & 1 \\
 1 & 0.8 & 1.2 & 0.5 \\
 0.5 & 0.4 & 0.6 & 0.25 \\
-3 & 2.4 & 3.6 & 1.5 
+3 & 2.4 & 3.6 & 1.5
 \end{bmatrix}
 $$
+
+#### Interpretation
+
+In practice, we usually start with the observed matrix $ X $—for example, the gene expression levels across samples. The goal of PCA is to approximate this observed matrix by finding underlying factors (similar to $u$ and $v$ in this example) that explain the main sources of variation. In this fictive example, the matrix $ X $ is constructed directly from $u$ and $v$, representing gene-specific and sample-specific effects.
+
+If we only had access to $ X $, PCA would allow us to decompose it into components that reflect these underlying patterns of variation. The first principal component would likely capture the dominant trend influenced by both gene-specific and sample-specific effects, while subsequent components might explain additional variability not captured by the primary trend.
+
+This illustrative example helps to understand that, through PCA, we are essentially trying to express the observed data as a combination of simpler underlying factors, much like how $ X $ here is represented as an outer product of $u$ and $v$.
+
 
 ### Scaling the components
 
@@ -109,9 +120,9 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 
 ## Principal Components
 
-PCA aims to identify the directions, or **principal components**, in the data that describe the most variance. These directions are essentially the new axes into which the original data is projected, and they help us gain insight into the underlying structure and patterns. The principal components are ordered such that the first principal component describes the largest possible variance, while each subsequent component describes as much of the remaining variance as possible, subject to being orthogonal to the preceding components.
+PCA aims to identify the directions, or **principal components**, in the data that describe the most variance. These directions are essentially the new axes into which the original data is [projected](https://en.wikipedia.org/wiki/Projection_(linear_algebra)), and they help us gain insight into the underlying structure and patterns. The principal components are ordered such that the first principal component describes the largest possible variance, while each subsequent component describes as much of the remaining variance as possible, subject to being orthogonal to the preceding components.
 
-One interesting property of principal components is that the components generated from a data matrix $X$ are equivalent to the projections of the princi§pal components derived from the transposed matrix $X^T$. This means that we can often examine **principal component pairs**, which are generated from both rows and columns of the matrix. Each pair of principal components minimizes the squared sum of residuals, providing an optimal lower-dimensional representation of the data.
+An interesting property of PCA is that the principal components derived from a data matrix $ X $ are equivalent to the projections of the principal components derived from the transposed matrix $ X^T $. In our example, the gene-specific effects ($u$) and the sample-specific effects ($v$) can be thought of as such **principal component pairs**. Each pair of principal components, derived from both rows and columns of the matrix, helps to minimize the squared sum of residuals, providing an optimal lower-dimensional representation of the data. This means that the decomposition we see with $u$ and $v$ is similar to what PCA aims to achieve: capturing the most significant variation in the data through paired components.
 
 ## Dimensionality Reduction and Explained Variance
 
