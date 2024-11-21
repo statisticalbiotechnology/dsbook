@@ -106,7 +106,7 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 
 ## An illustration of PCA
 
-|           | Sample $1$ | Sample $2$ | Sample $3$ |       | Sample $M$|       | $\mathbf{u}^{(1)}$ | $\mathbf{u}^{(2)}$ |
+|           | Sample $1$ | Sample $2$ | Sample $3$ |       | Sample $M$|       | Gene specific<br>$\mathbf{u}^{(1)}$ | Gene specific<br>$\mathbf{u}^{(2)}$ |
 |-----------|----------|------------|-----------|----------|----------|-------|--------------------|----------------|
 | Gene $1$  | $X_{11}$ | $X_{12}$   | $X_{13}$  | $\ldots$ | $X_{1M}$ |       | $u^{(1)}_1$ | $u^{(2)}_1$ |
 | Gene $2$  | $X_{21}$ | $X_{22}$   | $X_{23}$  | $\ldots$ | $X_{2M}$ |       | $u^{(1)}_2$ | $u^{(2)}_2$ |
@@ -114,8 +114,8 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 | $\vdots$ | $\vdots$ | $\vdots$  | $\vdots$ | $\ddots$ | $\vdots$ |       | $\vdots$  | $\vdots$  |
 | Gene $N$  | $X_{N1}$ | $X_{N2}$   | $X_{N3}$  | $\ldots$ | $X_{NM}$ |       | $u^{(1)}_N$ | $u^{(2)}_N$ |
 |           |          |            |           |          |          |       |             |         |
-| Eigengene $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |  |
-| Eigengene $\mathbf{v}^{T(2)}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |        | $S_2$ |
+| Sample specific $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |  |
+| Sample specific $\mathbf{v}^{T(2)}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |        | $S_2$ |
 
 
 ## Principal Components

@@ -466,7 +466,8 @@ Overall, the EM algorithm is a versatile approach that adapts to models of vario
 ## Comparison between k-Means and GMM
 
 The following table highlights the similarities and differences between the k-Means and GMM algorithms in terms of their iteration steps:
-``````{list-table}
+`````{div} full-width
+````{list-table}
 :header-rows: 1
 :widths: 5 20 20
 
@@ -507,4 +508,5 @@ The following table highlights the similarities and differences between the k-Me
   - ```{math}
     \ln \Pr(\mathbf{x}|\boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k) \right)
     ```
-``````
+````
+`````
