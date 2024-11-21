@@ -189,7 +189,7 @@ faces_centered -= faces_centered.mean(axis=1).reshape(n_samples, -1)
 print("Dataset consists of %d faces" % n_samples)
 
 # Define a base function to plot the gallery of faces
-n_row, n_col = 2, 3
+n_row, n_col = 5, 4
 n_components = n_row * n_col
 image_shape = (64, 64)
 
@@ -218,9 +218,6 @@ def plot_gallery(title, images, n_col=n_col, n_row=n_row, cmap=plt.cm.gray):
     fig.colorbar(im, ax=axs, orientation="horizontal", shrink=0.99, aspect=40, pad=0.01)
     plt.show()
 
-# Number of components for PCA (e.g., how many eigenfaces we will keep)
-n_components = 6
-
 # Create a PCA model and fit it to the centered faces
 print("Fitting PCA model to faces dataset...")
 pca = PCA(n_components=n_components, whiten=True, random_state=rng)
@@ -239,8 +236,8 @@ faces_pca_projection = pca.transform(faces_centered)
 faces_reconstructed = pca.inverse_transform(faces_pca_projection)
 
 # Plot a gallery of original and reconstructed faces for comparison
-plot_gallery("Original Centered Faces", faces_centered[:n_components])
-plot_gallery("Reconstructed Faces", faces_reconstructed[:n_components])
+plot_gallery("Original Centered Faces", faces_centered[:4*5],5,4)
+plot_gallery("Reconstructed Faces", faces_reconstructed[:4*5],5,4)
 
 print("Explained variance ratio of components: ", pca.explained_variance_ratio_)
 
@@ -253,4 +250,16 @@ plt.title('Explained Variance by Each Principal Component')
 plt.show()
 ```
 
-While the faces might not appear as wery well reconstructed, it is worth noting that the reconstruction was done from a face-specific vector of only six floating points. 
+In this example, we demonstrate the power of PCA by reconstructing facial images from a low-dimensional representation. The dataset we use is the Olivetti Faces Dataset, which contains images of different individuals' faces. We start by centering the data both globally (centering each feature, i.e., pixel, across all samples) and locally (centering each sample, i.e., face, across all features). This centering is important for PCA as it ensures that the data has a mean of zero, which simplifies the calculation of principal components.
+
+We fit a PCA model to this dataset to extract the eigenfaces, which are the principal components of the dataset. These eigenfaces represent the directions of maximum variance in the face dataset. Each eigenface can be thought of as a building block that captures a certain pattern or feature common across the set of faces (e.g., eyes, nose, or general facial structure).
+
+Next, we project the original face images onto the lower-dimensional space defined by these eigenfaces. This projection reduces the dimensionality of each face, essentially transforming each high-resolution face image into a vector of only 20 numbers (as we used 20 components in the example). This significant reduction highlights how much the essential features of the faces can be compactly represented.
+
+After projecting the faces into the lower-dimensional space, we reconstruct the faces by reversing the process (using the inverse transform). The reconstructed faces are approximate versions of the original ones, created by the linear combination of the eigenfaces weighted by the projection coefficients.
+
+Although the reconstructed faces might not be perfect replicas of the originals, it is important to note that they are generated from only 20 floating-point values, rather than the full set of 4,096 pixel values. This shows the power of PCA in compressing information while retaining the essential features. The reconstructed faces still maintain recognizable traits, despite the massive reduction in data.
+
+We also plotted the explained variance ratio for each of the principal components. This plot helps us understand how much of the total variance in the data is captured by each component. The first few components capture the most significant variation, while the remaining components capture progressively less. This cumulative understanding of variance helps in deciding how many components are necessary for a reasonable reconstruction.
+
+Overall, this example of eigenfaces shows how PCA can reduce the dimensionality of complex data like facial images while retaining meaningful patterns. It highlights PCA's utility in tasks like compression, noise reduction, and feature extraction, which are common in various machine learning and other data science applications.
