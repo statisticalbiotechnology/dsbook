@@ -14,6 +14,12 @@ jupytext:
 
 Principal Component Analysis (PCA) is a powerful unsupervised learning method used for finding the axes of maximum variation in your data and projecting the data into new coordinate systems. 
 
+````{margin}
+```{note}
+A [projection](https://en.wikipedia.org/wiki/Projection_(linear_algebra)) is a transformation that maps a point onto a subspace, such as a line or plane, by finding the closest point in that subspace. Imagine shining a light perpendicular to a surface; the shadow cast is a projection of the original shape onto that surface. In mathematics, projections are often used to simplify complex data by reducing dimensions while retaining important relationships.
+```
+````
+
 ## Decomposition of a matrix
 
 - From linear algebra, we know that we can multiply two vectors into a matrix. $$ \mathbf{X} = \mathbf{u} \otimes \mathbf{v} = \mathbf{u} \mathbf{v}^{\textsf{T}} = \begin{bmatrix} u_1 \\ u_2 \\ u_3 \\ u_4 \end{bmatrix} \begin{bmatrix} v_1 & v_2 & v_3 \end{bmatrix} = \begin{bmatrix} u_1 v_1 & u_1 v_2 & u_1 v_3 \\ u_2 v_1 & u_2 v_2 & u_2 v_3 \\ u_3 v_1 & u_3 v_2 & u_3 v_3 \\ u_4 v_1 & u_4 v_2 & u_4 v_3 \end{bmatrix}. $$
@@ -75,7 +81,7 @@ In practice, we usually start with the observed matrix $ X $—for example, the 
 
 If we only had access to $ X $, PCA would allow us to decompose it into components that reflect these underlying patterns of variation. The first principal component would likely capture the dominant trend influenced by both gene-specific and sample-specific effects, while subsequent components might explain additional variability not captured by the primary trend.
 
-This illustrative example helps to understand that, through PCA, we are essentially trying to express the observed data as a combination of simpler underlying factors, much like how $ X $ here is represented as an outer product of $u$ and $v$.
+This example helps to understand that, through PCA, we are essentially trying to express the observed data as a combination of simpler underlying factors, much like how $ X $ here is represented as an outer product of $u$ and $v$.
 
 
 ### Scaling the components
@@ -123,6 +129,13 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 PCA aims to identify the directions, or **principal components**, in the data that describe the most variance. These directions are essentially the new axes into which the original data is [projected](https://en.wikipedia.org/wiki/Projection_(linear_algebra)), and they help us gain insight into the underlying structure and patterns. The principal components are ordered such that the first principal component describes the largest possible variance, while each subsequent component describes as much of the remaining variance as possible, subject to being orthogonal to the preceding components.
 
 An interesting property of PCA is that the principal components derived from a data matrix $ X $ are equivalent to the projections of the principal components derived from the transposed matrix $ X^T $. In our example, the gene-specific effects ($u$) and the sample-specific effects ($v$) can be thought of as such **principal component pairs**. Each pair of principal components, derived from both rows and columns of the matrix, helps to minimize the squared sum of residuals, providing an optimal lower-dimensional representation of the data. This means that the decomposition we see with $u$ and $v$ is similar to what PCA aims to achieve: capturing the most significant variation in the data through paired components.
+
+Suppose we have a data matrix $X$, and we are focusing on just the first pair of principal components, If you project $X$ onto $v^{(1)}$, you are essentially collapsing the information in each row of $X$ along the direction of the first principal component represented by $v^{(1)}$. This gives you a score for each row of $X$, which can be seen as the **projection of $X$ on $v^{(1)}$**. Similarly, if you project $X^T$ onto $u^{(1)}$, you are collapsing the information in each column of $X$ along the direction of the first principal component represented by $u^{(1)}$. This gives you a score for each column of $X$, $v^{(1)}$, also scaled by the singular value $S_1$.
+
+Thus, we can say:
+
+- $u^{(1)}$ is what you get (up to a scaling factor) when you **project $X$ on $v^{(1)}$**.
+- $v^{(1)}$ is what you get (up to a scaling factor) when you **project $X^T$ on $u^{(1)}$**.
 
 ## Dimensionality Reduction and Explained Variance
 
@@ -253,6 +266,8 @@ plt.show()
 In this example, we demonstrate the power of PCA by reconstructing facial images from a low-dimensional representation. The dataset we use is the Olivetti Faces Dataset, which contains images of different individuals' faces. We start by centering the data both globally (centering each feature, i.e., pixel, across all samples) and locally (centering each sample, i.e., face, across all features). This centering is important for PCA as it ensures that the data has a mean of zero, which simplifies the calculation of principal components.
 
 We fit a PCA model to this dataset to extract the eigenfaces, which are the principal components of the dataset. These eigenfaces represent the directions of maximum variance in the face dataset. Each eigenface can be thought of as a building block that captures a certain pattern or feature common across the set of faces (e.g., eyes, nose, or general facial structure).
+
+Interestingly, each of these principal components (eigenfaces) can be interpreted much like the gene-specific effects mentioned previously. In this analogy, the pixel values across all images act as the pixel-specific effects, describing how much each pixel contributes to the overall variation seen across all faces. These effects are then paired with the photo-specific (or sample-specific) coefficients that indicate how much each individual's face is influenced by these pixel-specific patterns. This combination allows for both general facial patterns and individual differences to be represented efficiently.
 
 Next, we project the original face images onto the lower-dimensional space defined by these eigenfaces. This projection reduces the dimensionality of each face, essentially transforming each high-resolution face image into a vector of only 20 numbers (as we used 20 components in the example). This significant reduction highlights how much the essential features of the faces can be compactly represented.
 
