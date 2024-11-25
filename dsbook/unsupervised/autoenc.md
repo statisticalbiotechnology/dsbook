@@ -45,7 +45,7 @@ To understand why the maximization of the variance in the components is equivale
 
 Mathematically, PCA can be expressed using Singular Value Decomposition (SVD), which decomposes the data matrix $X$ into three matrices: $U$, $\Sigma$, and $V^T$, such that:
 
-Here, $U$ and $V$ contain the left and right singular vectors, and $\Sigma$ is a diagonal matrix of singular values. The first $k$ columns of $V$ define the principal components, and by projecting $X$ onto these components, we obtain the low-dimensional representation. The reconstruction of $X$ from these $k$ components can be seen as minimizing the reconstruction error in terms of mean squared error (MSE), making SVD and PCA equivalent to minimizing the MSE in an autoencoder framework.
+Here, $U$ and $V$ contain the principal components (e.g. your gene-specific and sample-specific effects), and $\Sigma$ is a diagonal matrix of singular values. The first $k$ columns of $V$ define the principal components, and by projecting $X$ onto these components, we obtain the low-dimensional representation. The reconstruction of $X$ from these $k$ components can be seen as minimizing the reconstruction error in terms of mean squared error (MSE), making SVD and PCA equivalent to minimizing the MSE in an autoencoder framework.
 
 This perspective provides insight into how PCA is fundamentally related to linear autoencoders: both aim to represent data in a compressed form while preserving as much information as possible, with PCA focusing explicitly on maximizing variance and minimizing reconstruction error.
 
@@ -53,10 +53,12 @@ This perspective provides insight into how PCA is fundamentally related to linea
 
 #### The PyTorch Package
 
-PyTorch is a popular open-source deep learning framework developed by Facebook's AI Research lab. It provides a flexible and efficient platform for building and training neural networks, including autoencoders. PyTorch uses a dynamic computation graph, which makes it particularly user-friendly for experimenting with different model architectures, as changes can be made on-the-fly without needing to recompile the entire graph.
+[PyTorch](https://pytorch.org/) is a popular open-source deep learning framework developed by Facebook's AI Research lab. It provides a flexible and efficient platform for building and training neural networks, including autoencoders. PyTorch uses a dynamic computation graph, which makes it particularly user-friendly for experimenting with different model architectures, as changes can be made on-the-fly without needing to recompile the entire graph.
 
 PyTorch's core components include `torch.Tensor` for handling multi-dimensional data, `nn.Module` for defining neural network layers and models, and the `torch.optim` package for optimizing models. These features make it straightforward to implement and train complex architectures, such as autoencoders, with relatively few lines of code.
 Autoencoders can be implemented using Multilayer Perceptrons (MLPs), which are neural networks composed of multiple layers of interconnected nodes. In an MLP-based autoencoder, both the encoder and decoder are typically represented as feedforward neural networks with one or more hidden layers.
+
+Note that there are several other tensor packages available with similar functionality as torch, e.g. [tensorflow](https://www.tensorflow.org/) and [JAX](https://jax.readthedocs.io/en/latest/).
 
 #### Implementation 
 

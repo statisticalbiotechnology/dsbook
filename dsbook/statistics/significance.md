@@ -28,6 +28,7 @@ The purpose of hypothesis testing is to assess whether the data provides enough 
 
 A **test statistic** is a value calculated from sample data that allows us to make a decision about the hypotheses. One commonly used test statistic is the **difference in means** between two samples. For example, if we want to compare the average effect of a treatment versus a placebo, we calculate the difference in the sample means for the two groups. The test statistic helps determine how far the observed data deviates from what we would expect under $H_0$, which typically assumes that there is no difference in means between the groups.
 
+(sec:statistics:sampling)=
 ### Sampling Distribution under the Null Hypothesis
 
 The **sampling distribution under the null hypothesis** is the distribution of the test statistic assuming that $H_0$ is true. This distribution helps us understand the range of possible values the test statistic can take if the null hypothesis is correct. By comparing the observed test statistic to this distribution, we can determine how likely it is to observe such a value by random chance alone. This comparison is essential for calculating the *p* value.

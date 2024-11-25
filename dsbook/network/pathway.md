@@ -19,15 +19,17 @@ A typical output from a high-throughput experiment is a list of genes, transcrip
 
 ## Pathway Databases
 
-Two of the most widely used databases for pathway analysis are KEGG and Reactome. These databases serve as repositories of curated information about biological pathways, providing researchers with access to comprehensive maps of cellular functions.
+Examples of commonly used pathway databases include [**KEGG**](https://www.kegg.jp/), [**Reactome**](https://reactome.org/), [**WikiPathways**](https://www.wikipathways.org/), and [**BioCyc**](https://biocyc.org/), which provide curated pathways for metabolic and signaling processes across various organisms. Specialized databases like [**MetaCyc**](https://metacyc.org/) (metabolic pathways), [**SIGNOR**](https://signor.uniroma2.it/) (signaling networks), and [**CTD**](http://ctdbase.org/) (toxicogenomic interactions) cater to specific research needs, while [**MSigDB**](https://www.gsea-msigdb.org/gsea/msigdb/) and [**PANTHER**](http://www.pantherdb.org/) are frequently used in enrichment analyses. Although not formally a pathway database, [**Gene Ontology (GO)**](http://geneontology.org/) is often used with pathway-based methods to identify enriched biological processes, cellular components, and molecular functions from gene or protein lists.
+
+Two of the most widely used databases for pathway analysis are KEGG and Reactome.
 
 ### KEGG
 
-The **Kyoto Encyclopedia of Genes and Genomes (KEGG)** is a manually curated database that offers a collection of high-level maps integrating genomic, chemical, and systemic functional information. KEGG provides comprehensive pathway maps, including metabolic pathways, signal transduction pathways, and regulatory pathways. KEGG pathways are represented as graphical diagrams, which help in visualizing molecular interactions and their roles in specific biological functions.
+The [**Kyoto Encyclopedia of Genes and Genomes (KEGG)**](https://www.genome.jp/kegg/) is a manually curated database that offers a collection of high-level maps integrating genomic, chemical, and systemic functional information. KEGG provides comprehensive pathway maps, including metabolic pathways, signal transduction pathways, and regulatory pathways. KEGG pathways are represented as graphical diagrams, which help in visualizing molecular interactions and their roles in specific biological functions.
 
 ### Reactome
 
-**Reactome** is another prominent pathway database that provides detailed information about cellular processes, including metabolic reactions, signal transduction, immune system functions, and more. Reactome is an open-source, manually curated knowledge base, focusing on the relationships between genes, proteins, and other molecules in the context of biological pathways. Compared to KEGG, Reactome provides finer details about molecular interactions and is enriched by contributions from experts in the field.
+[**Reactome**](https://reactome.org/PathwayBrowser/) is another prominent pathway database that provides detailed information about cellular processes, including metabolic reactions, signal transduction, immune system functions, and more. Reactome is an open-source, manually curated knowledge base, focusing on the relationships between genes, proteins, and other molecules in the context of biological pathways. Compared to KEGG, Reactome provides finer details about molecular interactions and is enriched by contributions from experts in the field.
 
 ## Over Representation Analysis (ORA)
 
@@ -45,7 +47,7 @@ Consider the following contingency table:
 | Not in Gene List  | $c$        | $d$            | $c+d$   |
 | **All Genes**     | $a+c$      | $b+d$        | $a+b+c+d$ |
 
-To calculate the significance of enrichment, we start by considering the number of combinations of ways to pick genes from the input list and pathway using choose notation. The probability of observing a particular outcome can be expressed as:
+We expect the fraction of genes in the overlap between the pathway and a gene list to all genes, is just a multiplication of the fractions of genes in the pathway and the fraction of genes in the genelist. Any deviation from tha fraction is an enrichment, i.e. an overrepresentation of genes compared to what would be expected by chance. To calculate the significance of such an enrichment, we start by considering the number of combinations of ways to pick genes from the input list and pathway using choose notation. The probability of observing a particular outcome can be expressed as:
 
 $$ P(X = a) = \frac{\binom{a+b}{a} \binom{c+d}{c}}{\binom{a+b+c+d}{a+c}} $$
 
@@ -61,19 +63,63 @@ This represents the probability of picking $a$ genes in the pathway from the gen
 
 $$ p = \sum_{x \geq a} P(X = x) $$
 
+```{code-cell}ipython3
+:tags: [hide-input]
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Define fixed fractions for illustration
+fraction_in_pathway = 0.2  # e.g., 20% of the total genes are in the pathway
+fraction_in_gene_list = 0.3  # e.g., 30% of the total genes are in the gene list
+
+# Total number of genes (arbitrary fixed value for illustration)
+N = 1000
+expected_overlap = fraction_in_pathway * fraction_in_gene_list * N
+
+
+# Create the plot with extended dashed lines
+plt.figure(figsize=(8, 6))
+
+# Plot the dashed lines representing the fractions, extended to the axes
+plt.plot([0, 1], [fraction_in_gene_list, fraction_in_gene_list], 'k--', label="Fraction in Gene List")  # horizontal line
+plt.plot([fraction_in_pathway, fraction_in_pathway], [0, 1], 'k--', label="Fraction in Pathway")  # vertical line
+
+# Highlight the overlap region
+plt.fill_betweenx([0, fraction_in_gene_list], 0, fraction_in_pathway, color="lightblue", label="Expected Overlap")
+
+# Add text annotations
+plt.text(fraction_in_pathway / 2, fraction_in_gene_list / 2, f"Overlap genes",
+         color="blue", ha="center", va="center", fontsize=12, bbox=dict(facecolor="white", alpha=0.8, edgecolor="none"))
+
+# Format the plot
+plt.title("Illustration of Expected Overlap", fontsize=14)
+plt.xlabel("Fraction of Genes in Pathway", fontsize=12)
+plt.ylabel("Fraction of Genes in Gene List", fontsize=12)
+plt.xlim(0, 1)
+plt.ylim(0, 1)
+plt.legend()
+plt.grid(True, linestyle="--", alpha=0.7)
+plt.tight_layout()
+
+# Show the plot
+plt.show()
+
+```
+
+Above is an illustration of the expected overlap (6%) of a pathway consisting of 20% of all genes and a gene-list of 30% of all genes. 
+
 ## Gene Set Enrichment Analysis (GSEA)
 
 **Gene Set Enrichment Analysis (GSEA)** is a more sophisticated pathway analysis method compared to ORA. Unlike ORA, which relies on a predefined threshold to determine differentially expressed genes, GSEA considers the entire ranked list of genes, avoiding the need to impose an arbitrary cutoff.
 
 In GSEA, gene sets corresponding to known biological pathways are tested for their enrichment at the top or bottom of a ranked gene list, typically based on differential expression scores. The idea is to determine whether the genes in a given pathway tend to be overrepresented among the most up- or down-regulated genes.
 
-### Enrichment Score and Null Distribution
+### Enrichment Score
 
 GSEA works by calculating an **enrichment score (ES)**, which measures how often genes from the gene set of interest appear in the ranked list. Starting at the top of the ranked gene list, an enrichment score is computed by walking down the list, increasing when a gene is in the gene set and decreasing otherwise. I.e. it reflects how many genes encountered as compared to what you would expect if they where uniformly distributed among the genes.
 
-To assess the statistical significance of the observed enrichment score, GSEA uses a **null distribution** obtained through permutation. The ranked gene list is shuffled many times to generate a background distribution of ES values, which can then be used to calculate the p-value for the observed enrichment score.
-
-Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 100 genes. We also include 10 genes that are from the same pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples. GSEA ranks the data and displays the position of the genes in the pathway as black lines among the genes noyt in the pathway, which are shown as white lines. If the black lines where evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the black lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes. For anoying reasons the enrichment plot appears twice in the output below.
+Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 130 genes. We also include 30 genes that are from two pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples, but in oposite direction. GSEA ranks the data and displays the position of the genes in the pathway as black lines among the genes not in the pathway, which are shown as white lines. If the black lines where evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the black lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes. For anoying reasons the enrichment plot appears twice in the output below.
 
 ```{code-cell} ipython3
 :tags: [hide-input]
@@ -88,16 +134,21 @@ n_genes_in_pathway = 15
 n_genes_in_background = 100
 n_samples_per_group = 15
 
-pathway_genes = { f"PathwayGene{i}" for i in range(1, n_genes_in_pathway + 1 ) }
-pathway_db = {"my_pathway" : pathway_genes }
-genes = list(pathway_genes) + [f"Gene{i}" for i in range(1, n_genes_in_background + 1 )]
+pathway1_genes = { f"Pathway1Gene{i}" for i in range(1, n_genes_in_pathway + 1 ) }
+pathway2_genes = { f"Pathway2Gene{i}" for i in range(1, n_genes_in_pathway + 1 ) }
+pathway_db = {"Pathway1" : pathway1_genes, "Pathway2" : pathway2_genes }
+genes = list(pathway1_genes) + list(pathway2_genes) + [f"Gene{i}" for i in range(1, n_genes_in_background + 1 )]
 samples = [f"Sample{j}" for j in range(1, 2*n_samples_per_group + 1)]
 fake_data = pd.DataFrame(np.random.normal(0, 1, size=(len(genes), len(samples))), index=genes, columns=samples)
 
-for gene in pathway_genes:
+for gene in pathway1_genes:
     if gene in fake_data.index:
-        # Make pathway genes have higher values in the first half of samples using iloc
+        # Make pathway1 genes have higher values in the first half of samples using iloc
         fake_data.loc[gene, fake_data.columns[:n_samples_per_group]] += np.random.normal(0.5, 0.5, size=n_samples_per_group)
+for gene in pathway2_genes:
+    if gene in fake_data.index:
+        # Make pathway2 genes have higher values in the second half of samples using iloc
+        fake_data.loc[gene, fake_data.columns[n_samples_per_group:2*n_samples_per_group]] += np.random.normal(0.5, 0.5, size=n_samples_per_group)
 
 labels = ["Healthy"]*n_samples_per_group + ["Sick"]*n_samples_per_group
 
@@ -113,17 +164,28 @@ gs = gp.GSEA(data=fake_data,
                  seed=42,
                  format='png',)
 gs.run()
-gs.plot("my_pathway", show_ranking=False)
+gs.plot(["Pathway1", "Pathway2"], show_ranking=False)
 gs.res2d
 ```
+
+To assess the statistical significance of the observed enrichment score, GSEA uses a [sampling distribution](sec:statistics:sampling) of ES obtained through permutation. The ranked gene list is shuffled many times to generate a background distribution of ES values, which can then be used to calculate the p-value for the observed enrichment score.
+
 
 For a more detailed explanation of the enrichment score, please check out the original paper, [Subramanian, et al.](https://www.pnas.org/doi/10.1073/pnas.0506580102).
 
 ### Kolmogorov-Smirnov (KS) Test
 
-The **Kolmogorov-Smirnov (KS) test** is used in GSEA to calculate the enrichment score. The KS test is a non-parametric test that measures the maximum deviation between the observed cumulative distribution of the gene set and the expected distribution under the null hypothesis. In GSEA, the enrichment score is effectively the maximum deviation encountered as we move down the ranked list, capturing whether genes from the pathway are found disproportionately at the top or bottom of the list. This score is then compared against the null distribution to determine statistical significance.
+The [**Kolmogorov-Smirnov (KS) test**](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test) is a non-parametric test that measures the maximum deviation between the observed cumulative distribution of the gene set and the expected distribution under the null hypothesis. In GSEA, the enrichment score is effectively the maximum deviation encountered as we move down the ranked list, capturing whether genes from the pathway are found disproportionately at the top or bottom of the list. This score is then compared against the null distribution to determine statistical significance.
 
-GSEA also corrects for multiple testing by calculating **false discovery rates (FDRs)**, thus allowing researchers to account for the number of pathways being tested simultaneously. A low FDR value indicates a significantly enriched pathway.
+```{figure} ./img/ks.png
+:width: 300px
+:name: fig-KS
+
+GSEA is using a KS-like test to evaluate if the expression of the genes in a pathway differes significantly from other genes expression pattern between the phenotypes (e.g. "Healthy" or "Disease"). 
+```
+
+The test used in GSEA is in principle a **Kolmogorov-Smirnov (KS) test**. However, the authors are resigning to a slower permutation test, but the basics of the test statistics is similar.
+GSEA also corrects for multiple testing by calculating **false discovery rates (FDRs)**.
 
 ## Summary
 
