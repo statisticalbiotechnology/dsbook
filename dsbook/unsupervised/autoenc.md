@@ -62,9 +62,9 @@ Note that there are several other tensor packages available with similar functio
 
 #### Implementation 
 
-To implement an autoencoder with an MLP, we start by defining the architecture. The encoder consists of a series of fully connected layers that reduce the dimensionality of the input data until reaching the bottleneck layer, which represents the latent space. The decoder then consists of a series of layers that expand the latent representation back to the original input dimension.
+To implement an autoencoder with an MLP, we start by defining the architecture. The encoder consists of a series of connected layers that reduce the dimensionality of the input data until reaching the bottleneck layer, which represents the latent space. The decoder then consists of a series of layers that expand the latent representation back to the original input dimension.
 
-A simple MLP-based autoencoder can be implemented in Python using popular deep learning libraries like TensorFlow or PyTorch. Below is an example implementation using PyTorch. As a test case, lets ćonsider synthetic data with a certain structure, 2D data from a "noisy" circle, that we scamble by projecting it into a 10 dimensional space. Could we train an encoder that in its latent representation capture the original structure of the data?
+A simple MLP-based autoencoder can be implemented in Python using popular deep learning libraries like TensorFlow or PyTorch. Below is an example implementation using PyTorch. As a test case, lets consider synthetic data with a certain structure, 2D data from a "noisy" circle, that we scramble by projecting it into a 10 dimensional space. Could we train an encoder that in its latent representation capture the original structure of the data?
 
 Steps Summary of the code:
 
@@ -73,7 +73,7 @@ Steps Summary of the code:
    - Visualize the generated data using matplotlib.
 
 2. **Project Data into 10D Space**:
-   - Apply a random linear transformation to the 2D data to create 10-dimensional representations.
+   - Apply a random linear transformation to the 2D data to create 10-dimensional representations. We do this to hide the actual structure of the data for the autoencoder. Our hope is that the encoder will learn to reverse this random transformation. 
 
 3. **Define and Train the Autoencoder**:
    - The autoencoder consists of an encoder that compresses 10D data into a 2D latent space and a decoder that reconstructs it back to the original 10D.
@@ -223,12 +223,7 @@ Without the regularization term, the model could overfit and behave like a stand
 
 #### Intuitions about the Regularization of VAEs
 
-The regularity expected from the latent space of a variational autoencoder is crucial to making the generative process effective. This regularity can be understood through two main properties:
-
-- **Continuity**: Two points that are close in the latent space should produce similar outputs when decoded. This means that small changes in the latent representation should lead to small changes in the generated data, ensuring a smooth transition across the latent space.
-- **Completeness**: Any point sampled from the latent space should produce a meaningful output when decoded. This ensures that the entire latent space is used effectively, without empty or meaningless regions.
-
-A key difference between a regular and an irregular latent space lies in the ability to satisfy these properties. The fact that VAEs encode inputs as distributions rather than single points is important but not sufficient on its own to ensure continuity and completeness. Without well-defined regularization, the model may ignore the distributional encoding and behave similarly to a standard autoencoder, which could lead to overfitting. This overfitting could occur if the encoder returns distributions with very small variances (effectively collapsing to single points) or if the means of the distributions are very far apart, leading to discontinuities in the latent space.
+The regularity expected from the latent space of a variational autoencoder is crucial to making the generative process effective. This regularity can be understood through two main properties listed above (**Continuity** and **Completeness**.) A key difference between a regular and an irregular latent space lies in the ability to satisfy these properties. The fact that VAEs encode inputs as distributions rather than single points is important but not sufficient on its own to ensure continuity and completeness. Without well-defined regularization, the model may ignore the distributional encoding and behave similarly to a standard autoencoder, which could lead to overfitting. This overfitting could occur if the encoder returns distributions with very small variances (effectively collapsing to single points) or if the means of the distributions are very far apart, leading to discontinuities in the latent space.
 
 To address these issues, VAEs employ a regularization term that controls both the covariance matrix and the mean of the latent distributions returned by the encoder. In practice, this regularization is implemented by encouraging the encoded distributions to be close to a standard normal distribution (mean zero and unit variance). By doing so:
 
