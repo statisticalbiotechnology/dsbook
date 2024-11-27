@@ -92,7 +92,7 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
 # Step 1: Generate 2D points on a circle with noise
-n_samples = 1000
+n_samples = 5000
 noise_level = 0.1
 np.random.seed(42)
 

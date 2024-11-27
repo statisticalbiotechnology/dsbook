@@ -19,17 +19,15 @@ A typical output from a high-throughput experiment is a list of genes, transcrip
 
 ## Pathway Databases
 
-Examples of commonly used pathway databases include [**KEGG**](https://www.kegg.jp/), [**Reactome**](https://reactome.org/), [**WikiPathways**](https://www.wikipathways.org/), and [**BioCyc**](https://biocyc.org/), which provide curated pathways for metabolic and signaling processes across various organisms. Specialized databases like [**MetaCyc**](https://metacyc.org/) (metabolic pathways), [**SIGNOR**](https://signor.uniroma2.it/) (signaling networks), and [**CTD**](http://ctdbase.org/) (toxicogenomic interactions) cater to specific research needs, while [**MSigDB**](https://www.gsea-msigdb.org/gsea/msigdb/) and [**PANTHER**](http://www.pantherdb.org/) are frequently used in enrichment analyses. Although not formally a pathway database, [**Gene Ontology (GO)**](http://geneontology.org/) is often used with pathway-based methods to identify enriched biological processes, cellular components, and molecular functions from gene or protein lists.
-
-Two of the most widely used databases for pathway analysis are KEGG and Reactome.
+Examples of commonly used pathway databases include [**KEGG**](https://www.kegg.jp/), [**Reactome**](https://reactome.org/), [**WikiPathways**](https://www.wikipathways.org/), and [**BioCyc**](https://biocyc.org/), which provide curated pathways for metabolic and signaling processes across various organisms. For specialized needs, researchers use databases like [**MetaCyc**](https://metacyc.org/) for metabolic pathways, [**SIGNOR**](https://signor.uniroma2.it/) for signaling networks, and [**CTD**](http://ctdbase.org/) for studying toxicogenomic interactions. Although not formally a pathway database, [**Gene Ontology (GO)**](http://geneontology.org/) is often utilized alongside pathway-based methods to identify enriched biological processes, cellular components, and molecular functions from gene or protein lists.
 
 ### KEGG
 
-The [**Kyoto Encyclopedia of Genes and Genomes (KEGG)**](https://www.genome.jp/kegg/) is a manually curated database that offers a collection of high-level maps integrating genomic, chemical, and systemic functional information. KEGG provides comprehensive pathway maps, including metabolic pathways, signal transduction pathways, and regulatory pathways. KEGG pathways are represented as graphical diagrams, which help in visualizing molecular interactions and their roles in specific biological functions.
+The [**Kyoto Encyclopedia of Genes and Genomes (KEGG)**](https://www.genome.jp/kegg/) is a manually curated database that integrates genomic, chemical, and systemic functional information into comprehensive pathway maps, including metabolic and regulatory pathways. KEGG pathways are depicted in graphical diagrams, facilitating the visualization of molecular interactions and their roles in specific biological functions.
 
 ### Reactome
 
-[**Reactome**](https://reactome.org/PathwayBrowser/) is another prominent pathway database that provides detailed information about cellular processes, including metabolic reactions, signal transduction, immune system functions, and more. Reactome is an open-source, manually curated knowledge base, focusing on the relationships between genes, proteins, and other molecules in the context of biological pathways. Compared to KEGG, Reactome provides finer details about molecular interactions and is enriched by contributions from experts in the field.
+[**Reactome**](https://reactome.org/PathwayBrowser/) is a detailed, open-source, manually curated knowledge base that provides information about cellular processes like metabolic reactions and immune system functions. Reactome focuses on the relationships between genes, proteins, and other molecules, offering more granular details about molecular interactions than KEGG.
 
 ## Over Representation Analysis (ORA)
 
