@@ -12,7 +12,9 @@ jupytext:
 
 # Appendix: Some Maths
 
-## Row Vector
+## Linear algebra
+
+### Row Vector
 
 A **row vector** is a 1-dimensional array consisting of a single row of elements. For example, a row vector with three elements can be written as:
 
@@ -20,7 +22,7 @@ $$
 \mathbf{r} = [r_1, r_2, r_3]
 $$
 
-## Column Vector
+### Column Vector
 
 A **column vector** is a 1-dimensional array consisting of a single column of elements. It can be thought of as a matrix with one column. For instance, a column vector with three elements appears as:
 
@@ -32,7 +34,7 @@ c_3
 \end{bmatrix}
 $$
 
-## Matrix
+### Matrix
 
 A **matrix** is a rectangular array of numbers arranged in rows and columns. For example, a matrix with two rows and three columns is shown as:
 
@@ -43,7 +45,7 @@ a_{21} & a_{22} & a_{23}
 \end{bmatrix}
 $$
 
-## Transpose Operator
+### Transpose Operator
 
 The **transpose** of a matrix is obtained by swapping its rows with its columns. The transpose of matrix $\mathbf{A}$ is denoted $\mathbf{A}^T$. For the given matrix $\mathbf{A}$, the transpose is:
 
@@ -55,7 +57,7 @@ a_{13} & a_{23}
 \end{bmatrix}
 $$
 
-## Multiplication between Vectors
+### Multiplication between Vectors
 
 **Vector multiplication** can result in either a scalar or a matrix:
 
@@ -75,7 +77,7 @@ a_3b_1 & a_3b_2 & a_3b_3
 \end{bmatrix}
 $$
 
-## Matrix Multiplication
+### Matrix Multiplication
 
 The product of two matrices $\mathbf{A}$ and $\mathbf{B}$ is a third matrix $\mathbf{C}$. Each element $c_{ij}$ of $\mathbf{C}$ is computed as the dot product of the $i$-th row of $\mathbf{A}$ and the $j$-th column of $\mathbf{B}$:
 
@@ -83,7 +85,7 @@ $$
 c_{ij} = \sum_{k} a_{ik} b_{kj}
 $$
 
-## Projection
+### Projection
 
 The **projection** of vector $\mathbf{u}$ onto vector $\mathbf{v}$ is given by:
 
@@ -130,7 +132,7 @@ plt.show()
 
 ```
 
-## Eigenvalue and Eigenvector
+### Eigenvalue and Eigenvector
 
 An **eigenvalue** $\lambda$ and its corresponding **eigenvector** $\mathbf{v}$ of a matrix $\mathbf{A}$ satisfy the equation:
 
@@ -138,7 +140,7 @@ $$
 \mathbf{A} \mathbf{v} = \lambda \mathbf{v}
 $$
 
-## Gradient
+### Gradient
 
 The **gradient** of a multivariable function $f(\mathbf{x})$ is a vector of partial derivatives, which points in the direction of the steepest ascent of $f$:
 
@@ -151,3 +153,66 @@ $$
 \end{bmatrix}
 $$
 
+## Basics of Probability
+
+### Mean
+
+The **mean** or expected value of a set of numbers is the average of all the values. For a set $ X = \{x_1, x_2, \dots, x_n\} $, the mean $ \mu $ is calculated as:
+
+$$
+\mu = \frac{1}{n} \sum_{i=1}^n x_i
+$$
+
+### Variance
+
+The **variance** measures the spread of a set of numbers from their mean. For a sample set $ X $, the variance $ \sigma^2 $ using the maximum likelihood estimate is defined as:
+
+$$
+\sigma^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2
+$$
+
+### Covariance
+
+**Covariance** is a measure of how much two random variables change together. For variables $ X $ and $ Y $, the covariance using the maximum likelihood estimate is defined as:
+
+$$
+\text{cov}(X, Y) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y)
+$$
+
+### Probability Distributions
+
+#### Uniform Distribution
+
+The **uniform distribution** is a probability distribution where every outcome is equally likely over a given interval $[a, b]$. Its probability density function (pdf) is:
+
+$$
+f(x) = \frac{1}{b-a} \quad \text{for } x \in [a, b]
+$$
+
+#### Normal Distribution
+
+The **normal distribution** is a probability distribution that is symmetric about the mean, showing that data near the mean are more frequent in occurrence than data far from the mean. Its pdf is given by:
+
+$$
+f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x - \mu)^2}{2\sigma^2}}
+$$
+
+### Probability Density Function (PDF)
+
+The **probability density function** (pdf) of a continuous random variable is a function that describes the likelihood of the random variable taking on a specific value. The area under the pdf curve between two values represents the probability of the variable falling within that range.
+
+### Cumulative Distribution Function (CDF)
+
+The **cumulative distribution function** (cdf) of a random variable $ X $ gives the probability that $ X $ will take a value less than or equal to $ x $. It is defined as:
+
+$$
+F(x) = P(X \leq x)
+$$
+
+### Expectation Value
+
+The **expectation value** of a random variable is the long-run average value of repetitions of the experiment it represents. For a random variable $ X $ with a probability function $ p(x) $, the expectation is given by:
+
+$$
+E[X] = \sum_{x} x \cdot p(x) \quad \text{(discrete)} \quad \text{or} \quad E[X] = \int_{-\infty}^{\infty} x \cdot f(x) dx \quad \text{(continuous)}
+$$
