@@ -38,3 +38,7 @@ parts:
     chapters:
     - file: network/pathway.ipynb
     - file: network/gsea.ipynb
+  - caption: Appendix
+    numbered: True
+    chapters:
+    - file: appendix/math.ipynb
