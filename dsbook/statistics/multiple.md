@@ -96,7 +96,7 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
    ```
  
 5. **Ensure monotonicity**:
-6. - Assign $\hat{q}_{(m)} = \hat{\pi}_0$
+   - Assign $\hat{q}_{(m)} = \hat{\pi}_0$
    - For $ i = m - 1, m - 2, \dots, 1 $, update the q-values to ensure they are [monotonically increasing](https://en.wikipedia.org/wiki/Monotonic_function):
    ```{math}
    \hat{q}_{(i)} = \min(\hat{\rm FDR}(t=p_{(i)}), \hat{q}_{(i+1)})
