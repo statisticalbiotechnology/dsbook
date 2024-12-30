@@ -42,7 +42,7 @@ By using the Bonferroni correction, we control the probability of making at leas
 
 ### Calculating the Upper Bound of the False Discovery Rate with the Benjamini-Hochberg Procedure
 
-The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of null among the $p$~values below treshold. I.e. the fraction of false posives among the $p$-values we call as significant. Unlike more conservative approaches like the Bonferroni correction, which aims to eliminate all false positives at the cost of potentially missing true effects, the BH method balances sensitivity and specificity by controlling the rate of false discoveries.
+The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of null among the $p$ values below treshold. I.e. the fraction of false posives among the $p$ values we call as significant. Unlike more conservative approaches like the Bonferroni correction, which aims to eliminate all false positives at the cost of potentially missing true effects, the BH method balances sensitivity and specificity by controlling the rate of false discoveries.
 
 The BH procedure involves ranking the $p$ values from all the tests in ascending order. Let’s denote these ordered $p$ values as $p_{(1)}, p_{(2)}, \dots, p_{(m)}$, where $m$ is the total number of hypotheses. The method works as follows:
 
@@ -89,20 +89,19 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
    ```
    A **spline** is a piecewise polynomial function that is used to create smooth curves through a set of data points. Essentially, it fits multiple polynomial functions between segments of the data to form a single, continuous curve that is both flexible and smooth. The advantage of using splines is that they help create a smooth approximation without oscillations, especially when dealing with complex or unevenly spaced data. For more details, you can check out the [Wikipedia page on splines](https://en.wikipedia.org/wiki/Spline_(mathematics)).
 
-4. **Calculate the q-value for each $p$ value**:
-   - The q-value for each ordered $p$ value $p_{(i)}$, by considering the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$-values below threshold, $i$. 
-   However, we want to guar ourselves against the posibility that there is a lower fraction for a higher $p$-value threshold, $i$, so we evaluate:
+4. **Estimate the FDR for each $p$ value**:
+   - The FDR for each treshold at the ordered $p$ value $p_{(i)}$, by considering the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$-values below or at a threshold, $t=p_{(j)}$.
    ```{math}
-   q_{(i)} = \min_{j \ge i} \left( \frac{\hat{\pi}_0 m p_{(j)}}{j} \right)
+   \hat{\rm FDR}(t=p_{(j)}) = \left( \frac{\hat{\pi}_0 m p_{(j)}}{j} \right)
    ```
-   This formula provides an estimate of the minimum FDR at which the $i$-th most significant feature is considered significant.
-
+ 
 5. **Ensure monotonicity**:
+6. - Assign $\hat{q}_{(m)} = \hat{\pi}_0$
    - For $ i = m - 1, m - 2, \dots, 1 $, update the q-values to ensure they are [monotonically increasing](https://en.wikipedia.org/wiki/Monotonic_function):
    ```{math}
-   q_{(i)} = \min(q_{(i)}, q_{(i+1)})
+   \hat{q}_{(i)} = \min(\hat{\rm FDR}(t=p_{(i)}), \hat{q}_{(i+1)})
    ```
-   This ensures that higher $p$ values do not end up with lower q-values, maintaining logical consistency in the significance estimates.
+   This ensures that higher $p$ values do not end up with lower q-values, maintaining logical consistency in the significance estimates. 
 
 **Summary**: Storey's method provides a more flexible and often less conservative approach to controlling the FDR compared to traditional methods. By adapting the estimate of $\pi_0$, Storey's method can achieve more powerful statistical inference, particularly when many of the hypotheses are expected to be null. It should be noted that Storeys procedure gives gives similar estimates as Benjamini-Hochberg if we set $\pi_0=1$, i.e. the Storey procedure is less conservative than Benjamini-Hochberg for most situations.
 
