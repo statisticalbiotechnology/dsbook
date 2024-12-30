@@ -90,9 +90,9 @@ Here is how Storey's q-value procedure works, as described by Storey & Tibshiran
    A **spline** is a piecewise polynomial function that is used to create smooth curves through a set of data points. Essentially, it fits multiple polynomial functions between segments of the data to form a single, continuous curve that is both flexible and smooth. The advantage of using splines is that they help create a smooth approximation without oscillations, especially when dealing with complex or unevenly spaced data. For more details, you can check out the [Wikipedia page on splines](https://en.wikipedia.org/wiki/Spline_(mathematics)).
 
 4. **Estimate the FDR for each $p$ value**:
-   - The FDR for each treshold at the ordered $p$ value $p_{(i)}$, by considering the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$-values below or at a threshold, $t=p_{(j)}$.
+   - The FDR for each treshold at the ordered $p$ value $p_{(i)}$, by considering the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$-values below or at a threshold, $t=p_{(i)}$.
    ```{math}
-   \hat{\rm FDR}(t=p_{(j)}) = \left( \frac{\hat{\pi}_0 m p_{(j)}}{j} \right)
+   \hat{\rm FDR}(t=p_{(i)}) = \left( \frac{\hat{\pi}_0 m p_{(i)}}{i} \right)
    ```
  
 5. **Ensure monotonicity**:
