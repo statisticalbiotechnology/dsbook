@@ -24,7 +24,7 @@ In unsupervised learning, we are given a dataset $\{\mathbf{x}_i\}_{i=1}^N$, whe
 
 ## Semi-Supervised Learning
 
-Semi-supervised learning combines labeled and unlabeled data. We are provided with a dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^M$ where $M < N$, and a larger set of unlabeled data $\{\mathbf{x}_i\}_{i=M+1}^N$. The goal is to improve the prediction of the function $f(\mathbf{x})$ by using the structure of the unlabeled data to assist in training the model, particularly when labeled data is scarce but unlabeled data is abundant.
+Semi-supervised learning combines labeled and unlabeled data. We are provided with a dataset $\{(\mathbf{x}_i, y_i)\}_{i=1}^M$, and a (typically larger) set of unlabeled data $\{\mathbf{x}_i\}_{i=M+1}^N$. The goal is to improve the prediction of the function $f(\mathbf{x})$ by using the structure of the unlabeled data to assist in training the model, particularly when labeled data is scarce but unlabeled data is abundant.
 
 ## Self-Supervised Learning
 
