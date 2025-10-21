@@ -202,6 +202,9 @@ plt.ylabel("Feature 2")
 plt.show()
 ```
 
+```{include} ../_includes/honey2.html
+```
+
 We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process (, but without seeing the inner workings of the classifier). For the ones of you intereste, see below.
 
 ```{code-cell} ipython3

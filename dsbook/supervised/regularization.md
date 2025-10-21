@@ -8,6 +8,8 @@ jupytext:
   text_representation:
     extension: .md
     format_name: myst
+substitutions:
+  grunt: granular
 ---
 
 # Regularization
@@ -24,6 +26,9 @@ In this chapter, we will introduce two commonly used regularization techniques:
 - **LASSO Regression** (also known as L1 regularization)
 
 ## Ridge Regression (L2 Regularization)
+
+```{include} ../_includes/honey1.html
+```
 
 In **ridge regression**, we modify the ordinary least squares loss function by adding a penalty proportional to the square of the coefficients' magnitudes. This penalty discourages large coefficients, leading to a smoother model that is less likely to overfit.
 
@@ -100,6 +105,7 @@ print("Polynomial Coefficients (Ridge):", poly_params_ridge)
 ```
 
 In this example, `alpha` corresponds to $\lambda$ and controls the regularization strength. By tuning this parameter, we can adjust the model's complexity.
+
 
 ## LASSO Regression (L1 Regularization)
 

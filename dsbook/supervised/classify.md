@@ -106,6 +106,9 @@ The probably most used **loss function** for classification tasks is **cross-ent
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
 ```
 
+```{include} ../_includes/honey2.html
+```
+
 ```{code-cell}ipython3
 :tags: [hide-input]
 import numpy as np

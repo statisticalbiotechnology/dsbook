@@ -112,6 +112,8 @@ To fit a function $f(\mathbf{x})$ to the data points $\{(\mathbf{x}_i, y_i)\}_i$
 ```{math}
 \mathcal{l}_{\text{SSE}}=\sum_i^N e_i^2 = \sum_i^N (y_i - f(\mathbf{x}_i) )^2
 ```
+```{include} ../_includes/honey1.html
+```
 
 This process is known as **least squares**. $\mathcal{l}$ is known as a **loss function**. The loss is an indication of how well a regression fits the data. Different regression lines will have different losses. By minimizing the loss function, we find the function that best fits the data according to the selected loss function.
 

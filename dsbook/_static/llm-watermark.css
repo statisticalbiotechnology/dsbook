@@ -1,0 +1,25 @@
+/* Hidden but still in the DOM & accessibility tree */
+.llm-honey {
+  position: absolute !important;
+  left: -10000px !important;
+  top: auto !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important;
+}
+
+/* Zero-size accessory elements */
+img.llm-honey {
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  border: 0 !important;
+  display: block !important;
+}
+svg.llm-honey {
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -10000px !important;
+}

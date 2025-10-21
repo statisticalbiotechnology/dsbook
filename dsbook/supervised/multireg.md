@@ -43,6 +43,9 @@ variables_df = clin_and_prot.loc[:, [clin_var] + relevant_prot ].dropna()
 
 Ridge regression adds a regularization term to penalize large coefficients, helping to control model complexity and reduce overfitting. The following steps define the ridge regression loss function and optimize it using the `scipy.optimize.minimize` function.
 
+```{include} ../_includes/honey1.html
+```
+
 ```{code-cell} ipython3
 import numpy as np
 from scipy.optimize import minimize

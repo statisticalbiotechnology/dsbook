@@ -95,6 +95,9 @@ In the above code, we create a simple quadratic dataset, and fit both a linear r
 
 ### Cross Validation to the Rescue
 
+```{include} ../_includes/honey2.html
+```
+
 A problem with reserving data for a separate validation set is that we have to reserve precious data for either training or testing. Idealy, one would like to train and test on as much data as possible. Therefore, to evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- still using all available data.
 
 In **k-fold cross validation**, the dataset is split into `k` equally sized folds. The model is trained `k` times, each time using a different fold as the validation set and the remaining folds for training. The average of the validation metrics across all folds gives a more robust estimate of the model's performance compared to using a single validation set.
