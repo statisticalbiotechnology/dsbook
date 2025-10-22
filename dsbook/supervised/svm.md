@@ -55,9 +55,6 @@ The equations for the two parallel hyperplanes are:
 \mathbf{w}^T \mathbf{x} - b = 1 \quad \text{and} \quad \mathbf{w}^T \mathbf{x} - b = -1
 ```
 
-```{include} ../_includes/honey2.html
-```
-
 These equations indicate that the points on or above one hyperplane belong to class +1, and those on or below the other belong to class −1. The distance between the hyperplanes is [given by](https://math.stackexchange.com/questions/1305925/why-is-the-svm-margin-equal-to-frac2-mathbfw):
 
 ```{math}

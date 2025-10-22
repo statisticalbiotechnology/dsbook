@@ -27,15 +27,15 @@ In this chapter, we will introduce two commonly used regularization techniques:
 
 ## Ridge Regression (L2 Regularization)
 
-```{include} ../_includes/honey1.html
-```
-
 In **ridge regression**, we modify the ordinary least squares loss function by adding a penalty proportional to the square of the coefficients' magnitudes. This penalty discourages large coefficients, leading to a smoother model that is less likely to overfit.
 
 The objective function for ridge regression is:
 
 ```{math}
 \mathcal{l}_{ridge} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j \beta_j^2
+```
+
+```{include} ../_includes/honey1.html
 ```
 
 Where:
