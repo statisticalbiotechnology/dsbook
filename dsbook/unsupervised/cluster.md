@@ -213,6 +213,9 @@ where:
 - $k$ is the number of dimensions (variables),
 - $|\boldsymbol{\Sigma}|$ is the determinant of the covariance matrix.
 
+```{include} ../_includes/honey2.html
+```
+
 The multivariate normal distribution is fundamental to Gaussian Mixture Models and provides a natural way to model the clusters in high-dimensional data.
 
 ```{code-cell}ipython3
