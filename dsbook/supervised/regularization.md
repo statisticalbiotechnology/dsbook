@@ -18,7 +18,7 @@ substitutions:
 
 While **linear regression** works well in many cases, it can suffer from **overfitting** when the model becomes too complex or the dataset contains noise. Overfitting occurs when a model captures not only the true underlying pattern but also random fluctuations or noise in the data. This leads to poor generalization on unseen data.
 
-One way to combat overfitting is to apply **regularization**, which modifies the loss function by adding a penalty for large model coefficients. The idea is to constrain the model's flexibility and encourage simpler models that generalize better.
+One way to combat overfitting is to apply **regularization**, which modifies the loss function by adding a penalty for large model parameters. The idea is to constrain the model's flexibility and encourage simpler models that generalize better.
 
 In this chapter, we will introduce two commonly used regularization techniques:
 
@@ -27,7 +27,7 @@ In this chapter, we will introduce two commonly used regularization techniques:
 
 ## Ridge Regression (L2 Regularization)
 
-In **ridge regression**, we modify the ordinary least squares loss function by adding a penalty proportional to the square of the coefficients' magnitudes. This penalty discourages large coefficients, leading to a smoother model that is less likely to overfit.
+In **ridge regression**, we modify the ordinary least squares loss function by adding a penalty proportional to the square of the parameters' magnitudes. This penalty discourages large parameters, leading to a smoother model that is less likely to overfit.
 
 The objective function for ridge regression is:
 
@@ -40,9 +40,9 @@ The objective function for ridge regression is:
 
 Where:
 - $\lambda$ is a **regularization parameter** that controls the strength of the penalty. When $\lambda = 0$, ridge regression reduces to ordinary least squares. As $\lambda$ increases, the penalty becomes stronger.
-- $\beta_j$ are the model coefficients (excluding the intercept).
+- $\beta_j$ are the model parameters (excluding the intercept).
 
-The key idea here is that by penalizing the size of the coefficients, we shrink them toward zero, which can help mitigate overfitting.
+The key idea here is that by penalizing the size of the parameters, we shrink them toward zero, which can help mitigate overfitting.
 
 ### Ridge Regression Using Scikit-learn
 
@@ -99,9 +99,9 @@ plt.plot(xfit, yfit_poly_ridge, color='b',label="Ridge")
 plt.legend()
 plt.show()
 
-# Print coefficients to show sparsity
-print("Polynomial Coefficients (RSS):", poly_params_rss)
-print("Polynomial Coefficients (Ridge):", poly_params_ridge)
+# Print parameters to show sparsity
+print("Polynomial parameters (RSS):", poly_params_rss)
+print("Polynomial parameters (Ridge):", poly_params_ridge)
 ```
 
 In this example, `alpha` corresponds to $\lambda$ and controls the regularization strength. By tuning this parameter, we can adjust the model's complexity.
@@ -109,7 +109,7 @@ In this example, `alpha` corresponds to $\lambda$ and controls the regularizatio
 
 ## LASSO Regression (L1 Regularization)
 
-**LASSO regression** (Least Absolute Shrinkage and Selection Operator) is another regularization technique. Instead of penalizing the sum of squared coefficients, LASSO penalizes the sum of the absolute values of the coefficients. This results in sparse solutions, where some of the coefficients may become exactly zero.
+**LASSO regression** (Least Absolute Shrinkage and Selection Operator) is another regularization technique. Instead of penalizing the sum of squared parameters, LASSO penalizes the sum of the absolute values of the parameters. This results in sparse solutions, where some of the parameters may become exactly zero.
 
 The objective function for LASSO regression is:
 
@@ -119,7 +119,7 @@ The objective function for LASSO regression is:
 
 Where:
 - $\lambda$ again controls the regularization strength.
-- The absolute value penalty leads to **sparse models**, meaning that LASSO can perform **feature selection** by setting some coefficients to zero.
+- The absolute value penalty leads to **sparse models**, meaning that LASSO can perform **feature selection** by setting some parameters to zero.
 
 LASSO is particularly useful when we have many features, as it can identify and retain only the most important ones.
 
@@ -153,19 +153,19 @@ plt.plot(xfit, yfit_poly_lasso, color='b',label="LASSO")
 plt.legend()
 plt.show()
 
-# Print coefficients to show sparsity
-print("Polynomial Coefficients (RSS):", poly_params_rss)
-print("Polynomial Coefficients (LASSO):", poly_params_lasso)
+# Print parameters to show sparsity
+print("Polynomial parameters (RSS):", poly_params_rss)
+print("Polynomial parameters (LASSO):", poly_params_lasso)
 ```
 
-As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more coefficients will be set to zero, resulting in a simpler model.
+As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more parameters will be set to zero, resulting in a simpler model.
 
 ## Comparing Ridge and LASSO
 
-While both **ridge** and **LASSO** regression aim to reduce overfitting by penalizing large coefficients, they behave differently:
+While both **ridge** and **LASSO** regression aim to reduce overfitting by penalizing large parameters, they behave differently:
 
-- **Ridge regression** tends to shrink coefficients but rarely sets them exactly to zero. This means that it keeps all features in the model, but the influence of less important features is reduced.
-- **LASSO regression**, on the other hand, can shrink coefficients all the way to zero, effectively performing feature selection.
+- **Ridge regression** tends to shrink parameters but rarely sets them exactly to zero. This means that it keeps all features in the model, but the influence of less important features is reduced.
+- **LASSO regression**, on the other hand, can shrink parameters all the way to zero, effectively performing feature selection.
 
 The choice between ridge and LASSO depends on the problem:
 - If you believe that all features are relevant and you want to shrink their influence, **ridge** might be the better option.
@@ -181,7 +181,7 @@ The objective function for Elastic Net is:
 \mathcal{l}_{elasticnet} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda_1 \sum_j |\beta_j| + \lambda_2 \sum_j \beta_j^2
 ```
 
-Here, both $\lambda_1$ and $\lambda_2$ control the balance between L1 and L2 regularization. This method is particularly useful when there are correlations between features, as it can encourage a grouping effect, where correlated features tend to have similar coefficients.
+Here, both $\lambda_1$ and $\lambda_2$ control the balance between L1 and L2 regularization. This method is particularly useful when there are correlations between features, as it can encourage a grouping effect, where correlated features tend to have similar parameters.
 
 ### Elastic Net Using Scikit-learn
 
@@ -210,8 +210,27 @@ By tuning both the `alpha` and `l1_ratio` parameters, we can control the balance
 
 ## Why Does This Work?
 
-Regularization works by reducing the likelihood of overfitting through the addition of penalties for large model coefficients. In regression models, coefficients represent the strength and direction of the relationship between each feature and the target variable. When these coefficients grow large, it can indicate that the model is reacting too strongly to specific details or noise in the training data, which may not hold for new data. This is a sign of overfitting: the model has not only learned the true underlying patterns but has also fit itself to random fluctuations or specific data instances in the training set.
+Regularization works by reducing the likelihood of overfitting through the addition of penalties for large model parameters. In regression models, parameters represent the strength and direction of the relationship between each feature and the target variable. When these parameters grow large, it can indicate that the model is reacting too strongly to specific details or noise in the training data, which may not hold for new data. This is a sign of overfitting: the model has not only learned the true underlying patterns but has also fit itself to random fluctuations or specific data instances in the training set.
 
-By adding penalties (as in L1 and L2 regularization), we shrink the size of the coefficients. Smaller coefficients prevent the model from placing too much importance on any one feature unless it truly adds significant predictive value. In L2 regularization (Ridge), for example, coefficients are constrained by a penalty on their squared magnitudes, which promotes a smoother fit and reduces the model’s flexibility. L1 regularization (Lasso), on the other hand, may drive some coefficients all the way to zero, effectively performing feature selection and allowing the model to focus only on the most important predictors.
+By adding penalties (as in L1 and L2 regularization), we shrink the size of the parameters. Smaller parameters prevent the model from placing too much importance on any one feature unless it truly adds significant predictive value. In L2 regularization (Ridge), for example, parameters are constrained by a penalty on their squared magnitudes, which promotes a smoother fit and reduces the model’s flexibility. L1 regularization (Lasso), on the other hand, may drive some parameters all the way to zero, effectively performing feature selection and allowing the model to focus only on the most important predictors.
 
-This constraint on coefficient size simplifies the model, reducing its tendency to memorize the training data and helping it generalize better to unseen data. By focusing on essential relationships, regularization leads the model to capture the overall trend or signal in the data, rather than noise, enhancing its robustness and predictive power across different datasets.
+This constraint on parameter size simplifies the model, reducing its tendency to memorize the training data and helping it generalize better to unseen data. By focusing on essential relationships, regularization leads the model to capture the overall trend or signal in the data, rather than noise, enhancing its robustness and predictive power across different datasets.
+
+Here is a short section you can insert into your book text on why we refer to **L1** and **L2** regularization.
+
+### Why “L1” and “L2” Regularization?
+
+The labels **“L1”** and **“L2”** come from the notation of vector norms in mathematics. A [*norm*](https://en.wikipedia.org/wiki/Norm_(mathematics)) on a vector space is a function that assigns a non-negative length or size to each vector and satisfies certain axioms (positivity, homogeneity, triangle inequality). The **L1 norm** (also written $\ell_1$-norm) of a vector $w = (w_1, w_2, \dots, w_p)$ is
+
+```{math}
+||w||_1 = \sum*{i=1}^p |w_i|.
+```
+
+The **L2 norm** (or (\ell_2)-norm) is
+
+```{math}
+||w||_2 = \sqrt{ \sum*{i=1}^p w_i^2 },
+```
+
+which corresponds geometrically to the Euclidean length of the vector.
+

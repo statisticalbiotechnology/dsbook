@@ -272,7 +272,7 @@ where $\eta$ is the step size (learning rate), a small positive scalar controlli
 
 #### Extending to Multiple Dimensions
 
-In higher dimensions, we consider a multivariable function $L(\boldsymbol{\beta})$, where $\boldsymbol{\beta} = \begin{bmatrix} \beta_1 \\ \beta_2 \\ \vdots \\ \beta_n \end{bmatrix}$ represents the coefficients of the model in column vector form, and $L$ is the loss function we aim to minimize. Instead of a single derivative, we use the **gradient**, denoted $\nabla L(\boldsymbol{\beta})$, which is a column vector of partial derivatives with respect to each coefficient:
+In higher dimensions, we consider a multivariable function $L(\boldsymbol{\beta})$, where $\boldsymbol{\beta} = \begin{bmatrix} \beta_1 \\ \beta_2 \\ \vdots \\ \beta_n \end{bmatrix}$ represents the parameters of the model in column vector form, and $L$ is the loss function we aim to minimize. Instead of a single derivative, we use the **gradient**, denoted $\nabla L(\boldsymbol{\beta})$, which is a column vector of partial derivatives with respect to each parameter:
 
 ```{math}
 \nabla L(\boldsymbol{\beta}) = \begin{bmatrix} \frac{\partial L}{\partial \beta_1} \\ \frac{\partial L}{\partial \beta_2} \\ \vdots \\ \frac{\partial L}{\partial \beta_n} \end{bmatrix}
@@ -280,7 +280,7 @@ In higher dimensions, we consider a multivariable function $L(\boldsymbol{\beta}
 
 Each component $\frac{\partial L}{\partial \beta_i}$ represents the rate of change of $L$ with respect to $\beta_i$. The gradient $\nabla L(\boldsymbol{\beta})$ points in the direction of the steepest increase of $L$; therefore, moving in the opposite direction of $\nabla L(\boldsymbol{\beta})$ decreases $L$.
 
-The gradient descent update rule for multiple coefficients is:
+The gradient descent update rule for multiple parameters is:
 
 ```{math}
 \boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla L(\boldsymbol{\beta})
@@ -290,7 +290,7 @@ where $\eta$ is the step size, determining the update amount at each step.
 
 #### Applying Gradient Descent to Linear Regression
 
-In our linear regression model, we minimize a loss function, typically the sum of squared errors $L(a, b)$ for coefficients $a$ (slope) and $b$ (intercept). The gradient of $L$ with respect to $a$ and $b$ consists of the partial derivatives $\frac{\partial L}{\partial a}$ and $\frac{\partial L}{\partial b}$, which we can express in column vector form as:
+In our linear regression model, we minimize a loss function, typically the sum of squared errors $L(a, b)$ for parameters $a$ (slope) and $b$ (intercept). The gradient of $L$ with respect to $a$ and $b$ consists of the partial derivatives $\frac{\partial L}{\partial a}$ and $\frac{\partial L}{\partial b}$, which we can express in column vector form as:
 
 ```{math}
 \nabla L(a, b) = \begin{bmatrix} \frac{\partial L}{\partial b} \\ \frac{\partial L}{\partial a} \end{bmatrix} = \begin{bmatrix} -2 \sum \left( y_i - (a x_i + b) \right) \\ -2 \sum x_i \left( y_i - (a x_i + b) \right) \end{bmatrix}
@@ -302,7 +302,7 @@ The updates for $a$ and $b$ are then:
 \begin{bmatrix} b_{\text{new}} \\ a_{\text{new}} \end{bmatrix} = \begin{bmatrix} b \\ a \end{bmatrix} - \eta \begin{bmatrix} \frac{\partial L}{\partial b} \\ \frac{\partial L}{\partial a} \end{bmatrix}
 ```
 
-With each iteration, $a$ and $b$ are adjusted to reduce $L(a, b)$, bringing us closer to the minimum loss, which corresponds to the optimal coefficients for the model.
+With each iteration, $a$ and $b$ are adjusted to reduce $L(a, b)$, bringing us closer to the minimum loss, which corresponds to the optimal parameters for the model.
 ````
 
 ## Scikit-learn
@@ -310,12 +310,6 @@ With each iteration, $a$ and $b$ are adjusted to reduce $L(a, b)$, bringing us c
 It should be noted that the method described above, by explicitly defining an loss function and minimizing it with a direct call to an optimizer, is selected for explaining something about machine learning, and not the preferd practical approach to e.g. linear regression. Instead linear regression uses an **analytical solution** to the least squares problem, [a well-known method for deriving the optimal parameters](https://en.wikipedia.org/wiki/Least_squares#Solving_the_least_squares_problem). 
 
 Instead of thinking too hard on the implementation, we would use a package for the task. Here, [scikit-learn](https://scikit-learn.org/) is one of the most popular open-source machine learning libraries in Python. It provides simple and efficient tools for data mining and data analysis, making it ideal for academic and industrial applications alike. Built on top of well-established libraries like NumPy, SciPy, and Matplotlib, scikit-learn offers a wide range of machine learning algorithms for both supervised and unsupervised learning tasks.
-
-### Key Features:
-
-- **Easy to use**: scikit-learn’s consistent API and clear documentation make it accessible to beginners.
-- **Wide range of algorithms**: It includes support for classification, regression, clustering, dimensionality reduction, and model selection techniques.
-- **Interoperable**: scikit-learn integrates seamlessly with other Python libraries like pandas and NumPy, allowing for smooth data handling and preprocessing.
 
 ### Linear Regression using Scikit-learn.
 
@@ -350,8 +344,6 @@ In the previous sections, we explored linear regression and saw that the goal is
 One powerful approach for non-linear regression is to use **polynomial basis functions**. Polynomial regression can be thought of as applying a kernel transformation to the data by creating higher-order polynomial terms, such as $x^2$, $x^3$, and so on. These terms allow us to capture more complex patterns in the data.
 
 For example, instead of fitting a linear model $y = a x + b$, we can fit a polynomial of degree $n$, which effectively transforms the input space into a higher-dimensional space where the relationship between $x$ and $y$ may be linear, even if the relationship appears non-linear in the original space.
-
-In fact, **polynomial kernels**  can be used to implicitly transform the data without explicitly computing the higher-dimensional features. In kernel-based models like Support Vector Machines (SVM) or kernel ridge regression, a polynomial kernel can be used to fit more complex functions to the data while still employing the same optimization techniques as in linear regression.
 
 
 ```{code-cell} ipython3
