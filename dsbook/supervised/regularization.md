@@ -81,7 +81,7 @@ def ridge_loss(params, model_function, X, y, alpha=0.1):
     l2_penalty = alpha * np.sum(params**2)
     return residual_sum_squares + l2_penalty
 
-# Optimize the parameters of our model using the lasso loss function
+# Optimize the parameters of our model using the ridge loss function
 result_poly_rss = minimize_loss(rss_loss, polynomial_model, x, y_non_linear,8)
 result_poly_ridge = minimize_loss(ridge_loss, polynomial_model, x, y_non_linear,8)
 
@@ -99,7 +99,6 @@ plt.plot(xfit, yfit_poly_ridge, color='b',label="Ridge")
 plt.legend()
 plt.show()
 
-# Print parameters to show sparsity
 print("Polynomial parameters (RSS):", poly_params_rss)
 print("Polynomial parameters (Ridge):", poly_params_ridge)
 ```
@@ -153,12 +152,12 @@ plt.plot(xfit, yfit_poly_lasso, color='b',label="LASSO")
 plt.legend()
 plt.show()
 
-# Print parameters to show sparsity
+# Print parameters
 print("Polynomial parameters (RSS):", poly_params_rss)
 print("Polynomial parameters (LASSO):", poly_params_lasso)
 ```
 
-As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more parameters will be set to zero, resulting in a simpler model.
+As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more parameters will be set to values close to zero, resulting in a simpler model. It is worth noting that there are better optimization schemes available than regular gradient decent optimizers specially [targeting LASSO regression](https://en.wikipedia.org/wiki/Least-angle_regression), which helps keeping parameters at exactly 0 (not just close to 0).
 
 ## Comparing Ridge and LASSO
 
