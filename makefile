@@ -29,8 +29,8 @@ convert-md2ipynb: activate-env
 	@$(ACTIVATE_CONDA) && $(foreach md, $(MD_FILES), \
 		ipynb=$$(echo $(md) | sed 's/\.md$$/.ipynb/'); \
 		if [ ! -f $$ipynb ] || [ $(md) -nt $$ipynb ]; then \
-			echo "Converting $(md) to $$ipynb"; \
-			jupytext --to notebook $(md); \
+			echo "Syncing $(md) <-> $$ipynb"; \
+			jupytext --sync $(md); \
 		fi;)
 
 # Target to build the Jupyter Book

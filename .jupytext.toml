@@ -1,0 +1,8 @@
+# Pair ipynb with MyST Markdown
+formats = "ipynb,md:myst"
+
+# Only keep tags on cells. Drop other per-cell metadata that causes churn.
+cell_metadata_filter = "tags"
+
+# Keep only what is needed at top level
+notebook_metadata_filter = "jupytext,kernelspec"
