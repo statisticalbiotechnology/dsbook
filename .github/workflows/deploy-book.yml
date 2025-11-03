@@ -49,7 +49,7 @@ jobs:
         pwd
         ls
         jupyter-book build -h
-        jupyter-book build --builder html dsbook/
+        jupyter-book build --html dsbook/
 
     - name: Show build tree
       run: |
