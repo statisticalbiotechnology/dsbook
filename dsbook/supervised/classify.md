@@ -20,14 +20,9 @@ In this chapter, we'll explore how regression-based techniques can be adapted to
 
 ## The Concept of Classification with Regression
 
-In classification, the target variable $y_i$ represents the class label. For binary classification, we often use the labels $y_i = +1$ and $y_i = 0$ (or $y_i = -1$) to represent the two different classes. The goal is to assign the correct class to new data points based on features $\mathbf{x}_i$.
+In classification, the target variable $y_i$ represents the class label. Common encodings for binary classification are signed labels ($y_i \in \{-1, +1\}$), indicator labels ($y_i \in \{0, 1\}$), or boolean labels ($y_i \in \{true, false\}$).
 
-We can approach this problem similarly to regression by fitting a function $f(\mathbf{x})$, but instead of predicting a continuous variable, we focus on predicting whether $f(\mathbf{x})$ is positive or negative:
-
-- If $f(\mathbf{x}) > 0$, predict class $+1$.
-- If $f(\mathbf{x}) < 0$, predict class $0$.
-
-This can be achieved by minimizing a **loss function**, which represents the error between the predicted values and the true class labels.
+In this chapter, we'll primarily use the signed labels $y_i \in \{-1, +1\}$, but we'll note where conversions are necessary.
 
 ## Classification Loss Functions
 
@@ -35,7 +30,7 @@ When applying regression techniques to classification, the choice of loss functi
 
 ### Hinge Loss (Used in Support Vector Machines)
 
-The **hinge loss** is commonly used in support vector machines (SVMs) and is defined as:
+The **hinge loss** is commonly used in [support vector machines (SVMs)](../svm) and is defined as:
 
 ```{math}
 \mathcal{L}_{\text{hinge}} = \sum_i \max(0, 1 - y_i f(\mathbf{x}_i))
@@ -52,14 +47,14 @@ import matplotlib.pyplot as plt
 # Define a wider range for f(x) to span from -3 to +3
 f_x_wide = np.linspace(-3, 3, 200)
 
-# Calculate hinge loss for y=1 and y=0 over the range of f(x) from -3 to +3
-hinge_loss_y1 = np.maximum(0, 1 - f_x_wide)  # Hinge loss for y=1
-hinge_loss_y0 = np.maximum(0, 1 + f_x_wide)  # Hinge loss for y=-1
+# Calculate hinge loss for y=+1 and y=-1 over the range of f(x) from -3 to +3
+hinge_loss_y1 = np.maximum(0, 1 - f_x_wide)  # Hinge loss for y=+1
+hinge_loss_yneg1 = np.maximum(0, 1 + f_x_wide)  # Hinge loss for y=-1
 
-# Plot the hinge loss for y=1 and y=0 over the wider range
+# Plot the hinge loss for y=+1 and y=-1 over the wider range
 plt.figure(figsize=(10, 6))
-plt.plot(f_x_wide, hinge_loss_y1, label="Hinge Loss (y=1)", linestyle='-', linewidth=2)
-plt.plot(f_x_wide, hinge_loss_y0, label="Hinge Loss (y=-1)", linestyle='--', linewidth=2)
+plt.plot(f_x_wide, hinge_loss_y1, label="Hinge Loss (y=+1)", linestyle='-', linewidth=2)
+plt.plot(f_x_wide, hinge_loss_yneg1, label="Hinge Loss (y=-1)", linestyle='--', linewidth=2)
 plt.xlabel("Predicted Value $f(\\mathbf{x})$")
 plt.ylabel("Hinge Loss")
 plt.legend()
@@ -75,7 +70,7 @@ The **logistic loss** is used in logistic regression and is defined as:
 \mathcal{L}_{\text{logistic}} = \sum_i \log(1 + \exp(-y_i f(\mathbf{x}_i)))
 ```
 
-This loss function provides a smooth gradient and penalizes incorrect predictions by increasing the loss for large errors. Logistic regression aims to minimize this loss while interpreting $f(\mathbf{x}_i)$ as a probability.
+This loss function provides a smooth gradient and penalizes incorrect predictions by increasing the loss for large errors. The form above assumes signed labels $y_i\in\{-1,+1\}$ and treats $f(\mathbf{x}_i)$ as a real-valued score.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -86,14 +81,14 @@ import matplotlib.pyplot as plt
 # Define a wider range for f(x) to span from -3 to +3
 f_x_wide = np.linspace(-3, 3, 200)
 
-# Recalculate logistic loss for the wider range of f(x) for y=1 and y=0
-logistic_loss_y1_wide = np.log(1 + np.exp(-f_x_wide))  # Logistic loss for y=1
-logistic_loss_y0_wide = np.log(1 + np.exp(f_x_wide))   # Logistic loss for y=-1
+# Recalculate logistic loss for the wider range of f(x) for y=+1 and y=-1
+logistic_loss_y1_wide = np.log(1 + np.exp(-f_x_wide))  # Logistic loss for y=+1 (signed labels)
+logistic_loss_yneg1_wide = np.log(1 + np.exp(f_x_wide))   # Logistic loss for y=-1 (signed labels)
 
-# Plot the logistic loss for y=1 and y=0 over the wider range
+# Plot the logistic loss for y=+1 and y=-1 over the wider range
 plt.figure(figsize=(10, 6))
-plt.plot(f_x_wide, logistic_loss_y1_wide, label="Logistic Loss (y=1)", linestyle='-', linewidth=2)
-plt.plot(f_x_wide, logistic_loss_y0_wide, label="Logistic Loss (y=-1)", linestyle='--', linewidth=2)
+plt.plot(f_x_wide, logistic_loss_y1_wide, label="Logistic Loss (y=+1)", linestyle='-', linewidth=2)
+plt.plot(f_x_wide, logistic_loss_yneg1_wide, label="Logistic Loss (y=-1)", linestyle='--', linewidth=2)
 plt.xlabel("Predicted Value $f(\\mathbf{x})$")
 plt.ylabel("Logistic Loss")
 plt.legend()
@@ -103,11 +98,13 @@ plt.show()
 
 ### Cross-entropy loss
 
-The probably most used **loss function** for classification tasks is **cross-entropy loss**. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
+The probably most used **loss function** for classification tasks is **cross-entropy loss**. Here we use indicator labels, i.e. $y=1$ or $y=0$. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
 
 ```{math}
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
 ```
+
+For the mathematically inclinded reader, this is the negative log‑likelihood of a [Bernoulli model](https://en.wikipedia.org/wiki/Bernoulli_distribution), so minimizing it corresponds to maximum likelihood estimation for probabilistic predictions.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -178,6 +175,10 @@ y_neg = -np.ones(50)
 X = np.vstack([X_pos, X_neg])
 y = np.hstack([y_pos, y_neg])
 
+# Note: this example encodes labels as +1 and -1 (signed labels).
+# If you prefer 0/1 labels for probability-based losses, convert via:
+#   y01 = (y_signed + 1) / 2
+
 # Sigmoid function
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
@@ -229,7 +230,3 @@ In this example:
 - **Logistic Loss** is minimized to fit a classification model.
 - The model predicts class labels $y = \pm 1$, based on the sign of $f(\mathbf{x})$.
 - The classification accuracy is calculated by comparing the predicted labels with the actual labels.
-
-## Summary
-
-By extending the concepts of regression to classification, we can use similar techniques, such as minimizing a loss function, to build classification models. By using specific loss functions like **hinge loss** or **logistic loss**, we adapt regression methods to classify data. This approach demonstrates how foundational ideas from regression can be applied to a wide range of machine learning tasks.
