@@ -1,13 +1,15 @@
 ---
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
 jupytext:
   formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
 ---
 
 # Multiple Regression Example
@@ -18,16 +20,18 @@ In this example, we apply multiple regression to analyze the relationship betwee
 
 The first step involves loading and preparing data from the CPTAC (Clinical Proteomic Tumor Analysis Consortium) database for Lung Squamous Cell Carcinoma (LSCC). We retrieve proteomics data and a relevant clinical variable (BMI), then merge these datasets based on matching patient records.
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-cell]
+
 import importlib.util, sys
 def _has(pkg): return importlib.util.find_spec(pkg) is not None
 if not _has("cptac"):
     %pip install -q "cptac>=1.5.13"
 ```
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-output]
+
 import pandas as pd
 import cptac
 import cptac.utils as ut
@@ -54,7 +58,7 @@ Ridge regression adds a regularization term to penalize large parameters, helpin
 ```{include} ../_includes/honey1.html
 ```
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 from scipy.optimize import minimize
 
@@ -103,7 +107,7 @@ print(f"Optimized intercept: {intercept}")
 
 After fitting the model, we calculate the predicted BMI values and plot them against the actual BMI values to evaluate the model's performance.
 
-```{code-cell} ipython3
+```{code-cell}
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -124,11 +128,9 @@ plt.ylabel('Predicted BMI')
 plt.title('Predicted vs Actual BMI')
 plt.grid(True)
 plt.show()
-
 ```
 
 * **Scatter Plot**: The plot compares the actual BMI values against the predicted values from the model. A red dashed line indicates the ideal scenario where predictions perfectly match the actual values.
 * **Visual Evaluation**: If the points lie close to the red line, the model’s predictions are accurate. Deviations from this line represent prediction errors.
 
 This example demonstrates how multiple regression can be extended with regularization to improve model generalization, particularly when working with clinical and proteomic datasets.
-

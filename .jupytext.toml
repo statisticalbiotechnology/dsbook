@@ -1,5 +1,5 @@
 # Pair ipynb with MyST Markdown
-formats = "ipynb,md:myst"
+formats = "md:myst,ipynb"
 
 # Only keep tags on cells. Drop other per-cell metadata that causes churn.
 cell_metadata_filter = "tags"

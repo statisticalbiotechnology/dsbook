@@ -1,13 +1,14 @@
 ---
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
 jupytext:
-  formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
+kernelspec:
+  display_name: jb
+  language: python
+  name: python3
 ---
 
 # Principal Component Analysis (PCA)
@@ -177,8 +178,7 @@ By applying PCA, researchers can distill complex, high-dimensional data into a m
 
 ## An example of reconstruction with PCA, Eigenfaces
 
-```{code-cell}ipython3
-
+```{code-cell}
 import matplotlib.pyplot as plt
 from numpy.random import RandomState
 

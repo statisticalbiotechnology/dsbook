@@ -1,14 +1,17 @@
 ---
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
 jupytext:
   formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
 ---
+
 # Multi-Layer Perceptrons (MLPs)
 
 A **Multi-Layer Perceptron (MLP)** is a class of feedforward artificial neural network. An MLP consists of at least three layers: an input layer, one or more hidden layers, and an output layer. Each layer is fully connected to the next, and the network is trained using backpropagation to adjust the weights based on the error.
@@ -70,7 +73,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes.
 
-```{code-cell}ipython3
+```{code-cell}
 # Import necessary libraries
 import numpy as np
 import seaborn as sns
@@ -204,7 +207,7 @@ plt.show()
 
 We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process (, but without seeing the inner workings of the classifier). For the ones of you intereste, see below.
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-cell]
 
 import numpy as np

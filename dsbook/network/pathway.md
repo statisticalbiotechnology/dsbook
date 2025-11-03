@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Pathway Analysis
@@ -61,7 +62,7 @@ This represents the probability of picking $a$ genes in the pathway from the gen
 
 $$ p = \sum_{x \geq a} P(X = x) $$
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
 
 import matplotlib.pyplot as plt
@@ -102,7 +103,6 @@ plt.tight_layout()
 
 # Show the plot
 plt.show()
-
 ```
 
 Above is an illustration of the expected overlap (6%) of a pathway consisting of 20% of all genes and a gene-list of 30% of all genes. 
@@ -119,8 +119,9 @@ GSEA works by calculating an **enrichment score (ES)**, which quantifies the max
 
 Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 130 genes. We also include 30 genes that are from two pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples, but in oposite direction. GSEA ranks the data and displays the position of the genes in the pathway as black lines among the genes not in the pathway, which are shown as white lines. If the black lines where evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the black lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes.
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import pandas as pd
 import gseapy as gp

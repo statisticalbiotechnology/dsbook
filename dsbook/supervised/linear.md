@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Regression
@@ -46,8 +47,9 @@ e_i = y_i - f(\mathbf{x}_i)
 
 Residuals give us a way to evaluate how well the model fits the data. A smaller residual indicates that the model's prediction is close to the actual value, while a larger residual suggests a larger error.
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -102,6 +104,7 @@ plt.ylabel('y')
 plt.legend()
 plt.show()
 ```
+
 Above is an illustration of the concept of residuals. Given the a model, $f(\mathbf{x})$, of the data points $\{(\mathbf{x}_i, y_i)\}_i$, how much of the data "remains to be explained".
 
 
@@ -133,7 +136,7 @@ One such method is to manually minimize the **loss function**, which is the erro
 
 Here, we use the `scipy.optimize.minimize` function to achieve the same linear regression result by explicitly defining a **loss function** and minimizing it.
 
-```{code-cell} ipython3
+```{code-cell}
 from scipy.optimize import minimize
 import numpy as np
 import seaborn as sns
@@ -194,8 +197,9 @@ The basic idea of gradient descent is to update the parameters in the opposite d
 
 Here is an illustration of how gradient descent to find the optimal $a$ and $b$ for our linear regression model. We will also create a contour plot of the loss function as a function of $a$ and $b$ to visualize the optimization process.
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -317,7 +321,7 @@ The **scikit-learn** package offers efficient functions for performing linear re
 
 This approach is both fast and highly optimized, making it easy to apply linear regression with minimal setup.
 
-```{code-cell} ipython3
+```{code-cell}
 from sklearn.linear_model import LinearRegression
 
 model = LinearRegression(fit_intercept=True)
@@ -345,8 +349,7 @@ One powerful approach for non-linear regression is to use **polynomial basis fun
 
 For example, instead of fitting a linear model $y = a x + b$, we can fit a polynomial of degree $n$, which effectively transforms the input space into a higher-dimensional space where the relationship between $x$ and $y$ may be linear, even if the relationship appears non-linear in the original space.
 
-
-```{code-cell} ipython3
+```{code-cell}
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
@@ -390,8 +393,7 @@ What is essential in all these models—whether linear, polynomial, or Gaussian�
 
 In the next chapter, we will explore **more advanced loss functions** and **regularization techniques**, which help control model complexity and prevent overfitting, particularly important in high-dimensional kernel-transformed spaces.
 
-```{code-cell} ipython3
-
+```{code-cell}
 # Define a Gaussian basis function
 def gaussian_basis(x, centers, width):
     return np.exp(-0.5 * ((x[:, np.newaxis] - centers[np.newaxis, :]) / width)**2)
@@ -422,4 +424,3 @@ plt.show()
 ```
 
 By focusing on the unified concept of **loss minimization**, we can see that even complex, non-linear models follow the same principles as basic linear regression—only the structure of the model and the basis functions (kernels) change.
-

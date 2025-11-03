@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Appendix: Some Maths
@@ -95,8 +96,9 @@ $$
 
 This represents the orthogonal projection of $\mathbf{u}$ in the direction of $\mathbf{v}$.
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -129,7 +131,6 @@ plt.title('Projection of Vector $\mathbf{u}$ onto Vector $\mathbf{v}$')
 plt.xlabel('X axis')
 plt.ylabel('Y axis')
 plt.show()
-
 ```
 
 ### Eigenvalue and Eigenvector

@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Validation
@@ -24,7 +25,7 @@ To split data into training and validation sets, scikit-learn provides a conveni
 
 Below, we create a small dataset of 10 data points, and we compare the performance of two polynomial regression models—a simple linear model and an overfitted higher-order polynomial model.
 
-```{code-cell}ipython3
+```{code-cell}
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
@@ -111,7 +112,7 @@ Each fold is used for validation once, and the model is trained on the remaining
 
 Here is a code example illustrating three-fold cross validation with six data points:
 
-```{code-cell}ipython3
+```{code-cell}
 from sklearn.model_selection import KFold
 
 # Example dataset with six data points
@@ -168,7 +169,7 @@ flowchart TB
 
 In the following code, we demonstrate how to use **scikit-learn's KFold cross validation** with three-fold cross validation for a simple linear regression model:
 
-```{code-cell}ipython3
+```{code-cell}
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 
@@ -212,7 +213,7 @@ Let’s consider an example where we are training a Lasso regression model, and 
 
 The following code demonstrates the use of **GridSearchCV** in scikit-learn to perform a grid search over the regularization parameter of a Lasso regression model:
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import Lasso
@@ -263,7 +264,7 @@ The model is trained and validated using the inner loop, and its final performan
 
 The following code demonstrates how nested cross validation can be performed using scikit-learn:
 
-```{code-cell} ipython3
+```{code-cell}
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 
@@ -279,4 +280,3 @@ print(f"Nested cross-validated MSE: {-nested_scores.mean():.2f} (+/- {nested_sco
 ```
 
 In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance. As you see from above, a feature of the cross validation is that it provides posibility to calculate variance estimates of performance figures, since you have calculated the error over a number of predictors for number of validation sets.
-

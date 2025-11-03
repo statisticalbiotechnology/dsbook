@@ -2,9 +2,7 @@
   "drop_outputs": true,
   "extra_keys": [
     "cells/*/id",                   // drop unstable cell ids
-    "cells/*/execution_count",      // drop counts
-    "metadata/language_info",       // often noisy
-    "cells/*/metadata"              // we already kept tags via jupytext config
+    "cells/*/execution_count"      // drop counts
   ],
   "keep_keys": [
     "metadata/kernelspec",

@@ -1,13 +1,15 @@
 ---
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
 jupytext:
   formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
 ---
 
 # Classification
@@ -29,7 +31,7 @@ This can be achieved by minimizing a **loss function**, which represents the err
 
 ## Classification Loss Functions
 
-When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications propotional to how much the predictor insists on the incorrect prediction. Below are three common loss functions used in classification tasks:
+When applying regression techniques to classification, the choice of loss function is critical. In regression, we typically minimize the **sum of squared residuals**, but in classification, we use loss functions that are designed to penalize misclassifications proportional to how much the predictor insists on the incorrect prediction. Below are three common loss functions used in classification tasks:
 
 ### Hinge Loss (Used in Support Vector Machines)
 
@@ -41,8 +43,9 @@ The **hinge loss** is commonly used in support vector machines (SVMs) and is def
 
 This loss penalizes any data points where the predicted value $f(\mathbf{x}_i)$ does not match the true label $y_i$. If $y_i f(\mathbf{x}_i) \geq 1$, the prediction is correct and there is no penalty. If $y_i f(\mathbf{x}_i) < 1$, there is a penalty proportional to the misclassification.
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -74,8 +77,9 @@ The **logistic loss** is used in logistic regression and is defined as:
 
 This loss function provides a smooth gradient and penalizes incorrect predictions by increasing the loss for large errors. Logistic regression aims to minimize this loss while interpreting $f(\mathbf{x}_i)$ as a probability.
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -97,7 +101,6 @@ plt.grid(True)
 plt.show()
 ```
 
-
 ### Cross-entropy loss
 
 The probably most used **loss function** for classification tasks is **cross-entropy loss**. This loss function measures the difference between the predicted probabilities and the actual class labels. It is defined as:
@@ -106,8 +109,9 @@ The probably most used **loss function** for classification tasks is **cross-ent
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
 ```
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -127,7 +131,6 @@ plt.ylabel("Cross-Entropy Loss")
 plt.legend()
 plt.grid(True)
 plt.show()
-
 ```
 
 ## Classification Example: Logistic Regression

@@ -1,15 +1,15 @@
 ---
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
 jupytext:
   formats: md:myst
   text_representation:
     extension: .md
     format_name: myst
-substitutions:
-  grunt: granular
+    format_version: 0.13
+    jupytext_version: 1.16.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
 ---
 
 # Regularization
@@ -48,7 +48,7 @@ The key idea here is that by penalizing the size of the parameters, we shrink th
 
 The **scikit-learn** package provides a `Ridge` class that implements ridge regression. Below is an example of how to apply ridge regression to a dataset.
 
-```{code-cell} ipython3
+```{code-cell}
 from scipy.optimize import minimize
 import numpy as np
 import seaborn as sns
@@ -126,7 +126,7 @@ LASSO is particularly useful when we have many features, as it can identify and 
 
 The **scikit-learn** package provides a `Lasso` class for L1-regularized regression. Below is an example of LASSO applied to a dataset.
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -186,7 +186,7 @@ Here, both $\lambda_1$ and $\lambda_2$ control the balance between L1 and L2 reg
 
 The **scikit-learn** package also provides an `ElasticNet` class, which combines ridge and LASSO regularization.
 
-```{code-cell} ipython3
+```{code-cell}
 from sklearn.linear_model import ElasticNet
 
 # Fit Elastic Net model
@@ -232,4 +232,3 @@ The **L2 norm** (or (\ell_2)-norm) is
 ```
 
 which corresponds geometrically to the Euclidean length of the vector.
-
