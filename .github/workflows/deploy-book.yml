@@ -47,6 +47,7 @@ jobs:
     - name: Build the book
       working-directory: dsbook
       run: |
+        pwd
         jupyter-book build dsbook/
 
     - name: Show build tree
