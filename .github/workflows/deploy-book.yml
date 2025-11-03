@@ -47,9 +47,7 @@ jobs:
     - name: Build the book
       run: |
         pwd
-        ls
-        jupyter-book build -h
-        jupyter-book build --html dsbook/
+        jupyter-book build dsbook/
 
     - name: Show build tree
       run: |
