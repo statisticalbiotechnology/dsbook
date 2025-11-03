@@ -45,13 +45,11 @@ jobs:
 
     # Build the book
     - name: Build the book
-      working-directory: dsbook
       run: |
         pwd
-        jupyter-book build dsbook/
+        jupyter-book build --builder html dsbook/
 
     - name: Show build tree
-      working-directory: dsbook
       run: |
         ls -R dsbook/_build || true
 
