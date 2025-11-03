@@ -184,12 +184,12 @@ scores_2, scores_8 = [], []
 for train_index, test_index in kf.split(x):
     x_train, x_test = x[train_index], x[test_index]
     y_train, y_test = y[train_index], y[test_index]
-    # Fit and test second degree polynomia
+    # Fit and test second degree polynomial
     pipeline_2.fit(x_train, y_train)
     y_pred = pipeline_2.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
     scores_2.append(mse)
-    # Fit and test eith degree polynomia
+    # Fit and test eigth degree polynomial
     pipeline_8.fit(x_train, y_train)
     y_pred = pipeline_8.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
