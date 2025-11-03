@@ -30,7 +30,7 @@ When applying regression techniques to classification, the choice of loss functi
 
 ### Hinge Loss (Used in Support Vector Machines)
 
-The **hinge loss** is commonly used in [support vector machines (SVMs)](../svm) and is defined as:
+The **hinge loss** is commonly used in [support vector machines (SVMs)](./svm.md) that we will use in a subsequent chapter and is defined as:
 
 ```{math}
 \mathcal{L}_{\text{hinge}} = \sum_i \max(0, 1 - y_i f(\mathbf{x}_i))
