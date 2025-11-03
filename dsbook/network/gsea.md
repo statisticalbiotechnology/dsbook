@@ -44,11 +44,11 @@ brca.dropna(axis=0, how='any', inplace=True)
 brca = brca.loc[~(brca<=0.0).any(axis=1)]
 brca = pd.DataFrame(data=np.log2(brca),index=brca.index,columns=brca.columns)
 brca_clin.loc["3N"]= (brca_clin.loc["PR_STATUS_BY_IHC"]=="Negative") & (brca_clin.loc["ER_STATUS_BY_IHC"]=="Negative") & (brca_clin.loc["IHC_HER2"]=="Negative")
-tripple_negative_bool = (brca_clin.loc["3N"] == True)
+triple_negative_bool = (brca_clin.loc["3N"] == True)
 
 def get_significance_two_groups(row):
-    log_fold_change = row[tripple_negative_bool].mean() - row[~tripple_negative_bool].mean()
-    p = ttest_ind(row[tripple_negative_bool],row[~tripple_negative_bool],equal_var=False)[1]
+    log_fold_change = row[triple_negative_bool].mean() - row[~triple_negative_bool].mean()
+    p = ttest_ind(row[triple_negative_bool],row[~triple_negative_bool],equal_var=False)[1]
     return [p,-np.log10(p),log_fold_change]
 
 pvalues = brca.apply(get_significance_two_groups,axis=1,result_type="expand")
@@ -58,7 +58,7 @@ qvalues = qvalue.qvalues(pvalues)
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-If we investigate a Volcano plot of the tripple negative cancers vs. the other cancers, we see an large number of both up and down regulated genes. We will in this note book ecamine if there are common patterns in the up and down regulation.
+If we investigate a Volcano plot of the triple negative cancers vs. the other cancers, we see a large number of both up and down regulated genes. In this notebook we will examine if there are common patterns in the up and down regulation.
 
 ```{code-cell} ipython3
 ---
@@ -137,7 +137,7 @@ Subsequently we us pygsea to perform a geneset enricment analysis (GSEA). This t
 slideshow:
   slide_type: fragment
 ---
-classes = ["TrippleNeg" if tripple_negative_bool[sample_name] else "Respond" for sample_name in brca.columns]
+classes = ["tripleNeg" if triple_negative_bool[sample_name] else "Respond" for sample_name in brca.columns]
 gs = gp.GSEA(data=brca, 
                  gene_sets='MSigDB_Oncogenic_Signatures', 
 #                 gene_sets='KEGG_2019_Human', 
