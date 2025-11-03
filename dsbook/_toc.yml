@@ -7,38 +7,38 @@ parts:
   - caption: Supervised Machine Learning
     numbered: True
     chapters:
-    - file: ml.ipynb
-    - file: supervised/linear.ipynb
-    - file: supervised/regularization.ipynb
-    - file: supervised/multireg.ipynb
-    - file: supervised/KPNA2.ipynb
-    - file: supervised/classify.ipynb
-    - file: supervised/xval.ipynb
-    - file: supervised/svm.ipynb
-    - file: supervised/supervisedML.ipynb
-    - file: supervised/mlp.ipynb
+    - file: ml
+    - file: supervised/linear
+    - file: supervised/regularization
+    - file: supervised/multireg
+    - file: supervised/KPNA2
+    - file: supervised/classify
+    - file: supervised/xval
+    - file: supervised/svm
+    - file: supervised/supervisedML
+    - file: supervised/mlp
   - caption: Statistics
     numbered: True
     chapters:
-    - file: statistics/significance.ipynb
-    - file: statistics/testing.ipynb
-    - file: statistics/multiple.ipynb
-    - file: statistics/qvalue.ipynb
+    - file: statistics/significance
+    - file: statistics/testing
+    - file: statistics/multiple
+    - file: statistics/qvalue
   - caption: Unsupervised Machine Learning
     numbered: True
     chapters:
-    - file: unsupervised/cluster.ipynb
-    - file: unsupervised/cluster_brca.ipynb
-    - file: unsupervised/pca.ipynb
-    - file: unsupervised/PCAofCarcinomas.ipynb
-    - file: unsupervised/autoenc.ipynb
-    - file: unsupervised/VAEofCarcinomas.ipynb
+    - file: unsupervised/cluster
+    - file: unsupervised/cluster_brca
+    - file: unsupervised/pca
+    - file: unsupervised/PCAofCarcinomas
+    - file: unsupervised/autoenc
+    - file: unsupervised/VAEofCarcinomas
   - caption: Network Analysis
     numbered: True
     chapters:
-    - file: network/pathway.ipynb
-    - file: network/gsea.ipynb
+    - file: network/pathway
+    - file: network/gsea
   - caption: Appendix
     numbered: True
     chapters:
-    - file: appendix/math.ipynb
+    - file: appendix/math

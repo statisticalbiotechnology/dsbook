@@ -44,7 +44,7 @@ combined = combined.loc[~(combined<=0.0).any(axis=1)]
 combined = pd.DataFrame(data=np.log2(combined),index=combined.index,columns=combined.columns)
 ```
 
-Make a PCA with a SVD. This involves first removing the mean values (Xm) of each gene from the expression matrix before doing the PCA. 
+Make a PCA with a SVD. This involves first removing the mean values (Xm) of each gene from the expression matrix before doing the PCA.
 
 ```{code-cell} ipython3
 from numpy.linalg import svd
@@ -53,7 +53,7 @@ Xm = np.tile(np.mean(X, axis=1)[np.newaxis].T, (1,X.shape[1]))
 U,S,Vt = svd(X-Xm, full_matrices=False, compute_uv=True)
 ```
 
-First we can analyze the amount of variance explained for the first 10 components. The first components seem to explain about 30% of the variance. That is quite a lot of unexplained variance, however, the components after that seem to contribute relative little. Lets stay with the first two components. 
+First we can analyze the amount of variance explained for the first 10 components. The first components seem to explain about 30% of the variance. That is quite a lot of unexplained variance, however, the components after that seem to contribute relative little. Lets stay with the first two components.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -63,7 +63,7 @@ ax = sns.barplot(y=list(expl_var)[:10],x=list(range(1,11)))
 ax.set(xlabel='Number of components', ylabel='Cumulative explained variance');
 ```
 
-First we plot the Sample-specific vectors. These illustrate the linear combinations of genes that explains the variance of the genes. First one describes the most, the second explains most of the variance when the variance of the first gene-combination is removed. Here we only explore the first two component, but one could plot the other ones as well. 
+First we plot the Sample-specific vectors. These illustrate the linear combinations of genes that explains the variance of the genes. First one describes the most, the second explains most of the variance when the variance of the first gene-combination is removed. Here we only explore the first two component, but one could plot the other ones as well.
 
 ```{code-cell} ipython3
 transformed_patients = pd.DataFrame(data=Vt[0:2,:].T,columns=["Sample-specific 1","Sample-specific 2"],index=list(lusc.columns) + list(luad.columns))

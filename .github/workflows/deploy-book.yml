@@ -48,6 +48,10 @@ jobs:
       run: |
         jupyter-book build dsbook/
 
+    - name: Show build tree
+      run: |
+        ls -R dsbook/_build || true
+
     # Upload the book's HTML as an artifact
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

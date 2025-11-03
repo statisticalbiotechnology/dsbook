@@ -270,7 +270,7 @@ plt.show()
 ```
 
 We see that variables 5 and 10 seem to be the most discriminating latent variables between the sets.
-Much like for the PCA we can use the embeddings to give a dimentionallity reduced description of each cancer's expression profile using those two variables. 
+Much like for the PCA we can use the embeddings to give a dimentionallity reduced description of each cancer's expression profile using those two variables.
 
 ```{code-cell} ipython3
 :id: rvnYbO2ZdZIy
@@ -315,7 +315,7 @@ predicted = pd.DataFrame(data=x_fix.T, index=combined.index, columns=["LUSC", "L
 
 +++ {"id": "6JxtZLn6dZI1"}
 
-Using these generated profiles we may for instance identify the genes most differential between the generated LUSC and LUAD sample. 
+Using these generated profiles we may for instance identify the genes most differential between the generated LUSC and LUAD sample.
 
 ```{code-cell} ipython3
 :id: rdGnIpvgdZI1
@@ -340,7 +340,7 @@ Which is a [cancer related](https://www.proteinatlas.org/ENSG00000172731-LRRC20/
 
 +++
 
-and then in negative direction (larger in LUAD than LUSC). 
+and then in negative direction (larger in LUAD than LUSC).
 
 ```{code-cell} ipython3
 predicted["diff"].idxmax(axis=0)

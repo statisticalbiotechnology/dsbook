@@ -15,10 +15,6 @@ kernelspec:
 
 # Example of ORA and GSEA
 
-+++
-
-
-
 +++ {"slideshow": {"slide_type": "fragment"}}
 
 We first run the same steps as in the previous notebook on multiple testing.
@@ -62,7 +58,7 @@ qvalues = qvalue.qvalues(pvalues)
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-If we investigate a Volcano plot of the tripple negative cancers vs. the other cancers, we see an large number of both up and down regulated genes. We will in this note book ecamine if there are common patterns in the up and down regulation. 
+If we investigate a Volcano plot of the tripple negative cancers vs. the other cancers, we see an large number of both up and down regulated genes. We will in this note book ecamine if there are common patterns in the up and down regulation.
 
 ```{code-cell} ipython3
 ---
@@ -86,7 +82,7 @@ We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overreprese
 
 In the analysis here we use the [KEGG](https://www.genome.jp/kegg/) database's definition of metabolomic pathways. This choice can easily be changed to other databases such as GO.
 
-Here we select to use the $q$ values below $10^{-12}$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathwauys in KEGG. 
+Here we select to use the $q$ values below $10^{-12}$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathwauys in KEGG.
 
 ```{code-cell} ipython3
 ---
@@ -128,7 +124,7 @@ kegg_enr.loc[kegg_enr["q"]<0.20]
 
 +++ {"slideshow": {"slide_type": "fragment"}}
 
-The analysis seem to find overrepresentation of relatively few pathways, particularly given the significance of the differences between case and controll on transcript level. 
+The analysis seem to find overrepresentation of relatively few pathways, particularly given the significance of the differences between case and controll on transcript level.
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
@@ -167,13 +163,13 @@ significant = gs_res[gs_res["FDR q-val"]<0.5]
 significant
 ```
 
-The package we are using for accessing GSEA, gseapy, has some built in plotting routine for illustrating the enrichment for any given pathway.  
+The package we are using for accessing GSEA, gseapy, has some built in plotting routine for illustrating the enrichment for any given pathway.
 
 ```{code-cell} ipython3
 axs = gs.plot(terms=significant.Term[0])
 ```
 
-We can also compare the enrichment between multiple pathways 
+We can also compare the enrichment between multiple pathways
 
 ```{code-cell} ipython3
 axs = gs.plot(significant.Term, show_ranking=False, legend_kws={'loc': (1.05, 0)}, )

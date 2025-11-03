@@ -47,7 +47,6 @@ pr_bool = (brca_clin.loc["PR"] == True)
 We then select the most differential genes. The procedure selecting such genes will hopefully be more cleare after the statistics part of this course
 
 ```{code-cell} ipython3
-
 def get_significance_two_groups(row):
     log_fold_change = row[pr_bool].mean() - row[~pr_bool].mean()
     p = ttest_ind(row[pr_bool],row[~pr_bool],equal_var=False)[1]
@@ -64,7 +63,7 @@ We begin with a case of supervised machine learning aimed as a warning, as it il
 
 Imagine a situation where we want to find the best combination of genes unrelated to a condition that still are telling of the condition. Does that sound like an imposibility, it is because it is imposible. However, there is nothing stopping us to try.
 
-So first we select the 1000 genes which are the least differentialy expressed genes when comparing PR positive with PR negative breast cancers.  
+So first we select the 1000 genes which are the least differentialy expressed genes when comparing PR positive with PR negative breast cancers.
 
 ```{code-cell} ipython3
 last1k=brca.loc[qvalues.iloc[-1000:,:].index]
@@ -104,7 +103,7 @@ pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-",
 
 In this setting, the classifier seems to have very little predictive power.  
 
-The reason for the discrepency of the two predictors are that in both cases the large number of variables makes the predictor to overfit to the data. In the first instance, we could not detect the problem as we were testing on the overfitted data. However, when holding out a separate test set, the predictors weak performance was blatantly visible. 
+The reason for the discrepency of the two predictors are that in both cases the large number of variables makes the predictor to overfit to the data. In the first instance, we could not detect the problem as we were testing on the overfitted data. However, when holding out a separate test set, the predictors weak performance was blatantly visible.
 
 +++
 
@@ -123,7 +122,7 @@ X = scaler.fit_transform(top6.values.T) # Scale all gene expression values to st
 y = 2*pr_bool.values.astype(int) - 1           # transform from bool to -1 and 1
 ```
 
-We then separate 40% of our cancers into a separate test set. The function $GridSearchCV$ use cross validation (k=5) to select an optimal slack penalty $C$ out from a vector of differnt choices.  
+We then separate 40% of our cancers into a separate test set. The function $GridSearchCV$ use cross validation (k=5) to select an optimal slack penalty $C$ out from a vector of differnt choices.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import GridSearchCV
@@ -137,7 +136,7 @@ y_pred = clf.predict(X_test)
 pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
 ```
 
-Given the choise of penalty $C=0.1$, we can now perform a cross validation (k=5) on the full data set. Here we will train thee separate classifiers on ech cross validation training set, and subsequently merge each such predictor's prediction into one combined result.  
+Given the choise of penalty $C=0.1$, we can now perform a cross validation (k=5) on the full data set. Here we will train thee separate classifiers on ech cross validation training set, and subsequently merge each such predictor's prediction into one combined result.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import StratifiedKFold

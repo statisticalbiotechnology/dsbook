@@ -213,7 +213,7 @@ plot_pi0_hat(pvalues,s,0,1,0,0.6,ax[0])
 plot_pi0_hat(pvalues,s,0.95,1,0.1,0.35,ax[1])
 ```
 
-We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare the it to the bootstrapping estimate. 
+We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare the it to the bootstrapping estimate.
 
 ```{code-cell} ipython3
 print("Spline estimate of pi_0: " + str(s(1)))
