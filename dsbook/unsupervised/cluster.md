@@ -413,12 +413,12 @@ GMM is able to model more complex, elliptical cluster boundaries, addressing one
 
 ## Expectation-Maximization (EM) Algorithm and Latent Variables
 
-The **Expectation-Maximization (EM) algorithm** is a widely-used technique in probabilistic models to estimate parameters in cases where some information is missing or hidden. These missing values are known as **latent variables**—unobserved factors that influence the data but are not directly visible. EM is powerful because it allows us to infer both the **cluster membership** of data points and, in more complex models, the **internal structure** of each cluster, such as its shape and spread.
+The **Expectation-Maximization (EM) algorithm** is a widely-used technique in probabilistic models to estimate parameters in cases where some information is missing or hidden. These missing values are known as **latent variables**, unobserved factors that influence the data but are not directly visible. EM is powerful because it allows us to infer both the cluster membership of data points and, in more complex models, the internal structure of each cluster, such as its shape and spread.
 
 For clustering tasks, latent variables can represent two main types of information:
 1. **Cluster Membership**: This latent variable indicates which cluster each data point belongs to. In simpler models like k-means, cluster membership is treated as a discrete, "hard" assignment, meaning each data point is assigned entirely to one cluster. In more flexible models like Gaussian Mixture Models (GMMs), cluster membership is a "soft" assignment, where each data point has a probability of belonging to each cluster.
    
-2. **Cluster Structure**: In GMMs and other probabilistic models, latent variables also describe the **covariance structure** within each cluster. This structure, captured by covariance matrices, allows each cluster to have its own unique shape and orientation, enabling the model to represent elliptical clusters or clusters with different spreads and dependencies between variables.
+2. **Cluster Structure**: In GMMs and other probabilistic models, latent variables also describe the covariance structure within each cluster. This structure, captured by covariance matrices, allows each cluster to have its own unique shape and orientation, enabling the model to represent elliptical clusters or clusters with different spreads and dependencies between variables.
 
 ### EM Algorithm and Cluster Membership
 
