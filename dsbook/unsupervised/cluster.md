@@ -269,14 +269,6 @@ Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering an
 
 Here is a detailed description of the **Gaussian Mixture Models (GMM)** algorithm with the mathematics you provided, outlining its steps:
 
----
-
-## Gaussian Mixture Models (GMM)
-
-**Gaussian Mixture Models (GMMs)** provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides soft clustering where each point is assigned a probability of belonging to each cluster.
-
-### Steps of the GMM Algorithm
-
 1. **Initialization**:
    - Define the number of clusters, $ K $.
    - Initialize the parameters:
