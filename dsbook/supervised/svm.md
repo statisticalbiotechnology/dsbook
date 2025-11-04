@@ -92,10 +92,10 @@ This loss function is zero if the point is correctly classified with enough marg
 The goal for a soft-margin SVM is to minimize the following expression:
 
 ```{math}
-\| \mathbf{w} \|^2 + C \left[ \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b)) \right]
+\lambda \| \mathbf{w} \|^2 + \left[ \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b)) \right]
 ```
 
-Here, $C > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A larger value of $C$ puts more emphasis on correctly classifying every point, while a smaller value allows for a wider margin with some misclassifications.
+Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A samaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications.
 
 ### Support Vectors
 
