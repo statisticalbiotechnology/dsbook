@@ -44,7 +44,7 @@ brca_clin.loc["PR"]= (brca_clin.loc["PR_STATUS_BY_IHC"]!="Negative")
 pr_bool = (brca_clin.loc["PR"] == True)
 ```
 
-We then select the most differential genes. The procedure selecting such genes will hopefully be more cleare after the statistics part of this course
+We then select the most differential genes. The procedure selecting such genes will hopefully be more clear after the statistics part of this course
 
 ```{code-cell} ipython3
 def get_significance_two_groups(row):
@@ -136,7 +136,7 @@ y_pred = clf.predict(X_test)
 pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
 ```
 
-Given the choise of penalty $C=0.1$, we can now perform a cross validation (k=5) on the full data set. Here we will train thee separate classifiers on ech cross validation training set, and subsequently merge each such predictor's prediction into one combined result.
+Given the choise of penalty $C=0.1$, we can now perform a cross validation (k=5) on the full data set. Here we will train thee separate classifiers on each cross validation training set, and subsequently merge each such predictor's prediction into one combined result.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import StratifiedKFold
