@@ -95,7 +95,7 @@ The goal for a soft-margin SVM is to minimize the following expression:
 \lambda \| \mathbf{w} \|^2 + \left[ \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b)) \right]
 ```
 
-Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A samaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications.
+Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A smaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications. Nothe that in the example in next chapter, we will use a slightly different formulation, using $C=1/\lambda$.
 
 ### Support Vectors
 
