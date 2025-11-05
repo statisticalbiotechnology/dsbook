@@ -172,8 +172,9 @@ X_neg = np.random.randn(50, 2) - 0.5
 y_neg = -np.ones(50)
 
 # Combine the datasets
-X = np.vstack([X_pos, X_neg])
 y = np.hstack([y_pos, y_neg])
+X = np.vstack([X_pos, X_neg])
+X = np.hstack([X, np.ones((X.shape[0], 1))])  # Add intercept term
 
 # Note: this example encodes labels as +1 and -1 (signed labels).
 # If you prefer 0/1 labels for probability-based losses, convert via:
@@ -201,7 +202,7 @@ x2_range = np.linspace(X[:, 1].min() - 1, X[:, 1].max() + 1, 100)
 x1_grid, x2_grid = np.meshgrid(x1_range, x2_range)
 
 # Compute the logistic regression decision boundary (p = 0.5)
-z = optimized_beta[0] * x1_grid + optimized_beta[1] * x2_grid
+z = optimized_beta[0] * x1_grid + optimized_beta[1] * x2_grid + optimized_beta[2]
 probability = sigmoid(z)
 
 # Create a plot with the data points and decision boundary
