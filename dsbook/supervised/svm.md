@@ -81,7 +81,7 @@ This formulation ensures that we are maximizing the margin while keeping all dat
 
 ### Soft-Margin SVM
 
-In real-world scenarios, data is often **not perfectly linearly separable**. To handle this, we introduce the concept of a **soft margin**. Instead of forcing every data point to be on the correct side of the hyperplane, we allow some points to fall inside the margin or even be misclassified. To measure this, we use the **hinge loss function**:
+In real-world scenarios, data is often not perfectly linearly separable. To handle this, we introduce the concept of a **soft margin**. Instead of forcing every data point to be on the correct side of the hyperplane, we allow some points to fall inside the margin or even be misclassified. To measure this, we use the **hinge loss function**:
 
 ```{math}
 \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b))
@@ -99,4 +99,4 @@ Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizin
 
 ### Support Vectors
 
-An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it—the **support vectors**. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.
+An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it, the **support vectors**. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.

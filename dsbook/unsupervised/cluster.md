@@ -31,7 +31,7 @@ One of the most common clustering algorithms is **k-Means**. It is a hard cluste
 
 ### Algorithm Overview
 - **Cluster Centers**: The cluster center $\mathbf{m}_i$ is defined as the arithmetic mean of all the data points belonging to the cluster.
-- **Distance Metric**: Typically, the distance metric used is Euclidean distance, defined as $||\mathbf{x}_p - \mathbf{m}_i||^2$.
+- **Distance Metric**: Typically, the distance metric used is Euclidean distance, defined as $||\mathbf{x}_p - \mathbf{m}_i||$.
 - **Cluster Assignment**: Each data point is assigned to the nearest cluster center:
   
   $$S_i^{(t)} = \{\mathbf{x}_p: ||\mathbf{x}_p - \mathbf{m}_i^{(t)}||^2 \le ||\mathbf{x}_p - \mathbf{m}_j^{(t)}||^2 \; \forall j \}$$
@@ -265,7 +265,19 @@ plt.show()
 
 ## Gaussian Mixture Models (GMM)
 
-Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
+Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. 
+This makes GMMs extremely flexible in modeling complex, multi-modal data distributions that a single Gaussian distribution cannot capture adequately.
+
+### Mathematical Formulation
+
+We model the our full data set as being generated from a mixture of $K$ Gaussian components. Each of the components being a MultiNormal distribution, $\mathcal{N}(\mathbf{x}|\mu_k, \Sigma_k)$, with its own mean, $\mu_k$, and covariance matrix, $\Sigma_k$ and each component having a mixing coefficient, $P_k$ that represents the proportion of data points that belong to that component.
+The probability density function of a GMM with $K$ components is given by:
+
+$$p(\mathbf{x}) = \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}|\mu_k, \Sigma_k)$$
+
+### EM Algorithm for GM Steps
+
+Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
 
 Here is a detailed description of the **Gaussian Mixture Models (GMM)** algorithm with the mathematics you provided, outlining its steps:
 
@@ -314,8 +326,6 @@ Here is a detailed description of the **Gaussian Mixture Models (GMM)** algorith
 
 5. **Convergence Check**:
    - Repeat the E and M steps until convergence, which occurs when the log-likelihood no longer increases or the parameter updates become negligible.
-
-
 
 ### Illustrations of GMM
 
