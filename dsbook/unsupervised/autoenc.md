@@ -1,14 +1,16 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
+
 # Autoencoders
 
 ## Introduction
@@ -82,8 +84,7 @@ Steps Summary of the code:
 4. **Plot the Latent Space Embeddings**:
    - After training, visualize the latent representations to see how well the model compresses the data back into 2D.
 
-
-```{code-cell}ipython3
+```{code-cell}
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -242,7 +243,7 @@ This property of creating gradients across the latent space is one of the reason
 
 Here, we provide an example implementation of a Variational Autoencoder (VAE) using the same synthetic data that we used for the autoencoder. In this example, we generate 2D points on a noisy circle, project them to a higher-dimensional space, and train the VAE to encode and decode the data effectively.
 
-```{code-cell}ipython3
+```{code-cell}
 import torch
 import torch.nn as nn
 import torch.optim as optim

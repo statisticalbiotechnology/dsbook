@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Hypothesis Testing
@@ -83,7 +84,7 @@ In permutation testing, we test the null hypothesis that there is no relationshi
 
 Below is an example of how to implement permutation testing for assessing the significance of differences between two samples.
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -129,14 +130,13 @@ plt.show()
 
 print(f"Observed difference in means: {observed_diff:.4f}")
 print(f"p-value from permutation test: {p_value:.4f}")
-
 ```
 
 ### Permutation Test for Model Significance
 
 Below is an example of how to implement permutation testing for assessing the significance of a regression model. Here we use the SSE of the model as a test statistics.
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 from scipy.optimize import minimize
 import seaborn as sns
@@ -194,7 +194,7 @@ When the population from which your samples are drawn is normally distributed, a
 
 Below is a Python script demonstrating how to perform a t-test on two sample datasets using the SciPy library.
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 from scipy.stats import ttest_ind
 
@@ -206,7 +206,6 @@ t_stat, p_value = ttest_ind(sample1, sample2)
 print(f"P-value: {p_value:.4f}")
 ```
 
-
 When we assume normality, as in t-tests, we gain sensitivity, especially for smaller sample sizes. The t-test uses the properties of the t-distribution to calculate p-values, and this assumption provides more power to detect differences when data truly follow a normal distribution. For smaller sample sizes, this assumption becomes particularly advantageous because the t-test can yield lower p-values, allowing subtle differences to be detected more effectively. However, if the assumption of normality is violated, the accuracy of the p-values is compromised, which could lead to misleading conclusions. This sensitivity-robustness trade-off is especially important in small-sample scenarios.
 
 ## One- vs Two-sided tests
@@ -217,7 +216,7 @@ A **one-sided test** is used when we want to determine if there is a difference 
 
 Here's how you could modify the permutation test to be one-sided for comparing `sample1` and `sample2`, checking if `sample2` has a larger mean:
 
-```{code-cell} ipython3
+```{code-cell}
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -314,7 +313,7 @@ The name "volcano plot" arises from the characteristic shape, where the data poi
 
 Here’s a Python script that generates random data to create a volcano plot:
 
-```{code-cell}ipython3
+```{code-cell}
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
@@ -373,4 +372,3 @@ This script simulates random fold changes and p-values to illustrate a volcano p
 - The blue vertical lines represent log2 fold changes of ±1, which could be used as an effect size threshold.
 
 This example shows how points that meet both criteria (large fold change and significant p-value) can be visually highlighted, making volcano plots a useful tool for identifying important differences in biological studies. Note that we have not corrected for multiple testing when performing these tests, something we will discuss in a separate chapter (and lecture).
-

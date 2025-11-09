@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Appendix: Some Maths
@@ -85,6 +86,15 @@ $$
 c_{ij} = \sum_{k} a_{ik} b_{kj}
 $$
 
+### L2-norm (Euclidean norm)
+
+The L2-norm of a vector $\mathbf{x} = [x_1,\dots,x_n]^T$ (also called the Euclidean norm) measures its length and is defined as:
+
+$$
+\|\mathbf{x}\|_2 = \sqrt{\sum_{i=1}^n x_i^2}.
+$$
+
+
 ### Projection
 
 The **projection** of vector $\mathbf{u}$ onto vector $\mathbf{v}$ is given by:
@@ -95,8 +105,9 @@ $$
 
 This represents the orthogonal projection of $\mathbf{u}$ in the direction of $\mathbf{v}$.
 
-```{code-cell}ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -129,7 +140,6 @@ plt.title('Projection of Vector $\mathbf{u}$ onto Vector $\mathbf{v}$')
 plt.xlabel('X axis')
 plt.ylabel('Y axis')
 plt.show()
-
 ```
 
 ### Eigenvalue and Eigenvector
@@ -222,23 +232,19 @@ $$
 ### Probabilistic Inference
 #### Likelihood
 
-The *likelihood function* expresses how well different parameter values explain the observed data. For continuous data, it is written as
-$$
-L(\theta \mid x) = p(x \mid \theta),
-$$
-and for discrete data as
-$$
-L(\theta \mid x) = \Pr(x \mid \theta).
-$$
-Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data ($x$) are fixed and ($\theta$) varies. The likelihood is not a probability distribution over (\theta); its role is to compare parameter values in light of the data.
+The *likelihood function* expresses how well different parameter values explain the observed data. For continuous data, it is written as $L(\theta \mid x) = p(x \mid \theta),$ and for discrete data as $L(\theta \mid x) = \Pr(x \mid \theta).$
+
+Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data ($x$) are fixed and ($\theta$) varies. The likelihood is not a probability distribution over ($\theta$); its role is to compare parameter values in light of the data.
 
 
 #### Maximum Likelihood
 
 The *maximum likelihood estimate (MLE)* is the parameter value that maximizes the likelihood function:
+
 $$
 \hat{\theta}^*_{\text{MLE}} = \arg\max_{\theta} L(\theta \mid x).
 $$
+
 It identifies the parameter that makes the observed data most probable (or most dense) under the model. MLEs are widely used because, under general conditions, they are consistent, efficient, and asymptotically normal. In practice, the likelihood is often maximized numerically using gradient-based or expectation–maximization algorithms.
 
 
@@ -250,31 +256,40 @@ When little information is available, weakly informative or noninformative prior
 #### Posterior Probability
 
 After observing data (x), the prior is updated using Bayes’ theorem:
+
 $$
 p(\theta \mid x) = \frac{p(x \mid \theta),p(\theta)}{p(x)} \quad \text{or} \quad
 \Pr(\theta \mid x) = \frac{\Pr(x \mid \theta),\Pr(\theta)}{\Pr(x)}.
 $$
+
 The resulting *posterior distribution* combines prior information with the information from the data through the likelihood.
 The denominator,
+
 $$
 p(x) = \int p(x \mid \theta),p(\theta),d\theta,
 $$
+
 (or the corresponding sum for discrete variables) is the *marginal likelihood* or *evidence*, ensuring that the posterior integrates or sums to one. The posterior forms the basis for Bayesian inference, from which we can compute summaries such as the posterior mean, variance, or mode.
 
 ### Relationships Between Random Variables
 #### Joint Probability Distributions
 
 A *joint probability distribution* describes the probability (or density) of two or more random variables taking specific values together. For two variables ($X$) and ($Y$),
+
 $$
 \Pr(X = x, Y = y) \quad \text{or} \quad p(x, y)
 $$
+
 denotes their joint distribution.
 From it, we can obtain:
+
 $$
 \Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
 p(x) = \int p(x, y),dy,
 $$
+
 and conditional relationships such as
+
 $$
 \Pr(Y = y \mid X = x) = \frac{\Pr(X = x, Y = y)}{\Pr(X = x)}, \quad
 p(y \mid x) = \frac{p(x, y)}{p(x)}.
@@ -283,13 +298,17 @@ $$
 #### Marginal Probability Distributions
 
 A *marginal probability distribution* gives the probability or density of a subset of variables, obtained by summing or integrating out the others from a joint distribution. For example, from a joint distribution of ($X$) and ($Y$):
+
 $$
 \Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
 p(x) = \int p(x, y),dy.
 $$
+
 This process is called *marginalization*. The resulting marginal describes the distribution of ($X$) alone, regardless of ($Y$).
 Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data,
+
 $$
 p(x) = \int p(x \mid \theta),p(\theta),d\theta,
 $$
+
 plays a key role as the normalizing constant in Bayes’ theorem and is sometimes referred to as the *evidence*.

@@ -1,13 +1,14 @@
 ---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.16.1
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
-jupytext:
-  formats: md:myst
-  text_representation:
-    extension: .md
-    format_name: myst
 ---
 
 # Multiple Hypothesis Corrections
@@ -138,8 +139,9 @@ This approach provides a more adaptive and refined way to estimate $\pi_0$, enha
 
 Below is a simulation of $p$ value distributions for multiple hypotheses, showcasing the challenge of distinguishing true effects from random variation:
 
-```{code-cell} ipython3
+```{code-cell}
 :tags: [hide-input]
+
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
