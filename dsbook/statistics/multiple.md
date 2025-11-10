@@ -209,7 +209,7 @@ In hypothesis testing, we want to determine a **threshold** that can help us ide
 
 When applying a significance threshold, we aim to find a balance between detecting true effects and minimizing errors. Specifically, we want to find a threshold that provides a good proportion of true findings while controlling the **False Discovery Rate (FDR)**.
 
-The **FDR** is defined as the expected proportion of false positives among all rejected hypotheses. Mathematically, it is approximately:
+The **FDR** is defined as the expected proportion of false positives among all rejected null hypotheses. This is approximately:
 
 ```{math}
 \text{FDR} \approx \frac{\text{FP}}{\text{TP + FP}}
