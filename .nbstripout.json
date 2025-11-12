@@ -1,8 +1,8 @@
 {
-  "drop_outputs": true,
+  "drop_outputs": false,
   "extra_keys": [
-    "cells/*/id",                
-    "cells/*/execution_count"     
+    "cells/*/execution_count",
+    "cells/*/id"
   ],
   "keep_keys": [
     "metadata/kernelspec",
