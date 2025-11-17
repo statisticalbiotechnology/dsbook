@@ -13,11 +13,13 @@ kernelspec:
 
 +++ {"id": "uwlylH9QdZIo"}
 
+NB! Don't run this notebook unless you have a GPU on your computer; it executes slowly on a CPU.
+
 # VAE analysis of two lung cancer sets
 
-Here we training a VAE of two different datasets within the TCGA. We will first merge the two datasets and subsequently try to separate the samples based on their latent variables. This is made in analogue with the notebook on PCA.
+Here we train a VAE on two different datasets from TCGA. We will first merge the two datasets and subsequently try to separate the samples based on their latent variables. This is made analogous to the notebook on PCA.
 
-First we retrieve our two TCGA lungcancer data from cbioportal.org. One of the sets are from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). We first load our dataset,  however, I have hiddden the code fort this, as you have seen rthat in previous examples
+First we retrieve our two TCGA lung cancer datasets from cbioportal.org. One of the sets is from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). We first load our datasets; the loading code is hidden here, but it is available in the module tcga_read.
 
 Particularly, we added code that is hidden in the other version of the notebook,that is not important for the understanding of the analysis, but can be found in the module tcga_read. Execute the code and proceed to next step.
 
@@ -41,7 +43,7 @@ lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.
 
 +++ {"id": "O4HT7jtTdZIv"}
 
-We now merge the datasets, and see too that we only include transcripts that are measured in all the carcinomas with an count larger than 0. Further we scale the measurements so that every gene expression value is scaled between 0 and 1, using sk-learns [MinMaxScaler()](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html).
+We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Further we scale the measurements so that every gene expression value is scaled between 0 and 1 using scikit-learn's MinMaxScaler.
 
 ```{code-cell} ipython3
 :id: nTGtXhUgdZIw
@@ -59,7 +61,7 @@ combined = pd.DataFrame(data=X,index=combined.index,columns=combined.columns)
 
 +++ {"id": "OgRZHdghdZIw"}
 
-We are setting up an istance of a machine learning framework, [PyTorch](https://en.wikipedia.org/wiki/PyTorch). It will help us fitting the needed neural network. We also define a dataloader, that will help us load the data for processing in the tensorlibrary, torch.
+We are setting up an instance of a machine learning framework, [PyTorch](https://en.wikipedia.org/wiki/PyTorch). It will help us fit the neural network. We also define a DataLoader that will help us load the data for processing in the tensor library, torch.
 
 ```{code-cell} ipython3
 :id: CIY4kACMdZIx
@@ -91,9 +93,7 @@ train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, 
 test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=False, **kwargs)
 ```
 
-Now we design the VAE. We use an architecure where 13046 features are first throtteled down to a lower number of hidden features (fc1) then to 12 features, which we predict both mean and variance for (fc21 and fc22).   
-
-We reparametrize those 12 variables, and then expand them to a larger number hiden nodes (fc3) and 13046 (fc4) features.
+Now we design the VAE. We use an architecture where ~13k features are first reduced to a lower number of hidden features (fc1) and then to 12 features, for which we predict both mean and variance (fc21 and fc22). We reparameterize those 12 variables, and then expand them to a larger number of hidden nodes (fc3) and back to the original feature dimension (fc4).
 ![](img/nn.svg)
 
 ```{code-cell} ipython3
@@ -127,7 +127,7 @@ class VAE(nn.Module):
         return self.decode(z), mu, logvar
 ```
 
-Next, we next select a gradient descent optimizer, [Adam](https://en.wikipedia.org/wiki/Stochastic_gradient_descent#Adam), and select a fuction to optimize, the loss_function, and we define a train and test procedure to use.
+Next, we select a gradient-based optimizer (Adam) and the loss function to optimize (reconstruction + KLD). The train and test procedures are defined below.
 
 ```{code-cell} ipython3
 input_dim = combined.shape[0]
@@ -187,7 +187,7 @@ for epoch in range(epochs):
 test(epoch)
 ```
 
-Note that we for this dataset have chosen to not use an independent testset. We have now trained our VAE. We can first evaluate it for the datapoints we trained it on, and get their embeddings in a vector, $y$.
+Note that we for this dataset have chosen to not use an independent testset. We have now trained our VAE. We can first evaluate it for the datapoints we trained it on, and get their embeddings in a vector, $z$.
 
 ```{code-cell} ipython3
 model.eval()
@@ -209,7 +209,7 @@ std = np.concatenate(std_batch, axis=0)
 
 +++ {"id": "CeKF0wIYdZIx"}
 
-We can now use the embeddings to describe our data. We first plot the differeces between the different latent variables for the different datasets
+We can now use the embeddings to describe our data. We first plot the differences between the different latent variables for the two datasets.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -269,8 +269,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-We see that variables 5 and 10 seem to be the most discriminating latent variables between the sets.
-Much like for the PCA we can use the embeddings to give a dimentionallity reduced description of each cancer's expression profile using those two variables.
+We see that variables 5 and 10 seem to be the most discriminating latent variables between the sets. Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
 
 ```{code-cell} ipython3
 :id: rvnYbO2ZdZIy
@@ -296,11 +295,11 @@ for name,set_ in transformed_patients.groupby("Set"):
 
 +++ {"id": "r6WhJwTDdZIz"}
 
-Here we see a quite good, but not perfect separation of the patients based on two latent variables.
+Here we see a good, but not perfect, separation of the patients based on two latent variables.
 
 ## Using the Decoder for generating example data
 
-Furter, we can use the network to generate "typical" expression profiles. We have marked the means of each sample with black triangles. We will now take these mean values of each patient group and use them as representation of each cancer type, and feed these two values for each patient group to the VAE's decoder.
+Further, we can use the network to generate "typical" expression profiles. We have marked the means of each sample group with black triangles. We will now take the mean latent vectors of each patient group and feed these values to the VAE's decoder.
 
 ```{code-cell} ipython3
 :id: zVFzjS1bdZI0
@@ -315,7 +314,7 @@ predicted = pd.DataFrame(data=x_fix.T, index=combined.index, columns=["LUSC", "L
 
 +++ {"id": "6JxtZLn6dZI1"}
 
-Using these generated profiles we may for instance identify the genes most differential between the generated LUSC and LUAD sample.
+Using these generated profiles we may, for instance, identify the genes most differentially expressed between the generated LUSC and LUAD profiles.
 
 ```{code-cell} ipython3
 :id: rdGnIpvgdZI1
@@ -327,7 +326,7 @@ predicted["diff"] = predicted["LUSC"] - predicted["LUAD"]
 
 +++ {"id": "qKnwZ3DUdZI1"}
 
-The genes that the dencoder find most different between the set means  can now be identified. First the gene lwith largest difference between the LUSC and LUAD in positive direction:
+The genes that the decoder finds most different between the set means can now be identified. First the gene with the largest positive difference between LUSC and LUAD:
 
 ```{code-cell} ipython3
 :id: ORn2eerZdZI2
@@ -336,21 +335,21 @@ The genes that the dencoder find most different between the set means  can now b
 predicted["diff"].idxmin(axis=0)
 ```
 
-Which is a [cancer related](https://www.proteinatlas.org/ENSG00000172731-LRRC20/cancer) protein.
+Which is a [cancer-related](https://www.proteinatlas.org/ENSG00000172731-LRRC20/cancer) protein.
 
 +++
 
-and then in negative direction (larger in LUAD than LUSC).
+and then in the negative direction (larger in LUAD than LUSC).
 
 ```{code-cell} ipython3
 predicted["diff"].idxmax(axis=0)
 ```
 
-Which is a [prognostic marker](https://www.proteinatlas.org/ENSG00000146054-TRIM7/cancer) for survival in LUAD
+Which is a [prognostic marker](https://www.proteinatlas.org/ENSG00000146054-TRIM7/cancer) for survival in LUAD.
 
 +++ {"id": "7-OJDYaFdZI2"}
 
-Here these two genes seems to be the largest differentiators beteen the genes in LUSC and LUAD. We can also note that as with PCA, the Gene KRT17 seems quite different between the cancer types:
+Here these two genes seem to be the largest differentiators between LUSC and LUAD. We can also note that, as with PCA, the gene KRT17 appears quite different between the cancer types:
 
 ```{code-cell} ipython3
 :id: SZ4Mo7rVdZI2
