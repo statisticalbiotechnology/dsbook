@@ -19,6 +19,15 @@ kernelspec:
 
 We first run the same steps as in the previous notebook on multiple testing.
 
+```{code-cell}
+:tags: [hide-cell]
+
+import importlib.util, sys
+def _has(pkg): return importlib.util.find_spec(pkg) is not None
+if not _has("gseapy"):
+    %pip install -q "gseapy"
+```
+
 ```{code-cell} ipython3
 ---
 slideshow:

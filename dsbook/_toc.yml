@@ -21,9 +21,9 @@ parts:
     numbered: True
     chapters:
     - file: statistics/significance
-    - file: statistics/testing
+    - file: statistics/testing.ipynb
     - file: statistics/multiple
-    - file: statistics/qvalue
+    - file: statistics/qvalue.ipynb
   - caption: Unsupervised Machine Learning
     numbered: True
     chapters:
@@ -32,12 +32,12 @@ parts:
     - file: unsupervised/pca
     - file: unsupervised/PCAofCarcinomas
     - file: unsupervised/autoenc
-    - file: unsupervised/VAEofCarcinomas
+    - file: unsupervised/VAEofCarcinomas.ipynb
   - caption: Network Analysis
     numbered: True
     chapters:
     - file: network/pathway
-    - file: network/gsea
+    - file: network/gsea.ipynb
   - caption: Appendix
     numbered: True
     chapters:
