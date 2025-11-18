@@ -1,3 +1,7 @@
 *.ipynb filter=nbstripout
 *.zpln filter=nbstripout
 *.ipynb diff=jupytext
+dsbook/network/gsea.ipynb -filter=nbstripout
+dsbook/statistics/testing.ipynb -filter=nbstripout
+dsbook/statistics/qvalue.ipynb -filter=nbstripout
+dsbook/unsupervised/VAEofCarcinomas.ipynb -filter=nbstripout
