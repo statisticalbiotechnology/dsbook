@@ -11,7 +11,6 @@ kernelspec:
   name: python3
 ---
 
-+++ {"id": "uwlylH9QdZIo"}
 
 NB! Don't run this notebook unless you have a GPU on your computer; it executes slowly on a CPU.
 
@@ -41,15 +40,13 @@ luad = tcga.get_expression_data(my_path + "../data/luad_tcga_pan_can_atlas_2018.
 lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/lusc_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
-+++ {"id": "O4HT7jtTdZIv"}
-
-We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Further we scale the measurements so that every gene expression value is scaled between 0 and 1 using scikit-learn's MinMaxScaler.
+We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Further we scale the measurements so that every gene expression value is scaled using scikit-learn's StandardScaler.
 
 ```{code-cell} ipython3
 :id: nTGtXhUgdZIw
 
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
 combined = pd.concat([lusc[lusc.index.notna()] , luad[luad.index.notna()]], axis=1, sort=False)
 # Drop rows with any missing values
 combined.dropna(axis=0, how='any', inplace=True)
@@ -59,13 +56,10 @@ X=scaler.fit_transform(np.log2(combined).T).T
 combined = pd.DataFrame(data=X,index=combined.index,columns=combined.columns)
 ```
 
-+++ {"id": "OgRZHdghdZIw"}
 
 We are setting up an instance of a machine learning framework, [PyTorch](https://en.wikipedia.org/wiki/PyTorch). It will help us fit the neural network. We also define a DataLoader that will help us load the data for processing in the tensor library, torch.
 
 ```{code-cell} ipython3
-:id: CIY4kACMdZIx
-
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, TensorDataset
@@ -73,7 +67,7 @@ from torch.nn import functional as F
 import numpy as np
 
 # Setting training parameters
-batch_size, lr, epochs, log_interval = 256, 1e-3, 2501, 500
+batch_size, lr, epochs, log_interval = 256, 1e-3, 501, 100
 hidden_dim, latent_dim = 2048, 12
 
 # Check if GPU is available
@@ -137,17 +131,15 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function(recon_x, x, mu, logvar):
-    BCE = F.binary_cross_entropy(recon_x, x, reduction='sum')
-
+    MSE = nn.functional.mse_loss(recon_x, x, reduction='sum')
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
     # Calculating the Kullback–Leibler divergence
     # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    #print(f"BCE={BCE}, KLD={KLD}")
-    return BCE + KLD
-
+    #print(f"MSE={MSE}, KLD={KLD}")
+    return MSE + KLD
 
 def train(epoch):
     model.train()
@@ -179,7 +171,7 @@ def test(epoch):
         print('====> Test set loss: {:.4f}'.format(test_loss))
 ```
 
-Now we are set to run the procedure for 2000 epochs.
+Now we are set to run the procedure for 500 epochs.
 
 ```{code-cell} ipython3
 for epoch in range(epochs):
@@ -206,8 +198,6 @@ x_hat = np.concatenate(x_batch, axis=0)
 z = np.concatenate(z_batch, axis=0)
 std = np.concatenate(std_batch, axis=0)
 ```
-
-+++ {"id": "CeKF0wIYdZIx"}
 
 We can now use the embeddings to describe our data. We first plot the differences between the different latent variables for the two datasets.
 
@@ -272,9 +262,6 @@ plt.show()
 We see that variables 5 and 10 seem to be the most discriminating latent variables between the sets. Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
 
 ```{code-cell} ipython3
-:id: rvnYbO2ZdZIy
-:outputId: fe7bfe90-fc1c-4b22-ce28-82887e6d1673
-
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 transformed_patients = pd.DataFrame(data=z,columns=[f"Latent Variable {ix+1}" for ix in range(latent_dim)],index=list(lusc.columns) + list(luad.columns))
@@ -282,7 +269,6 @@ transformed_patients["Set"]= (["LUSC" for _ in lusc.columns]+["LUAD" for _ in lu
 
 sns.set(rc={'figure.figsize':(10,10)})
 sns.set_style("white")
-#sns.set_context("talk")
 
 lm = sns.lmplot(x="Latent Variable 5",y="Latent Variable 10", hue='Set', data=transformed_patients, fit_reg=False)
 #for x, y, (w, h) in zip(transformed_patients["Latent Variable 1"], transformed_patients["Latent Variable 2"], std):
@@ -293,8 +279,6 @@ for name,set_ in transformed_patients.groupby("Set"):
     plt.scatter(means[name][5-1],means[name][10-1], marker='^',s=30,c='k')
 ```
 
-+++ {"id": "r6WhJwTDdZIz"}
-
 Here we see a good, but not perfect, separation of the patients based on two latent variables.
 
 ## Using the Decoder for generating example data
@@ -302,8 +286,6 @@ Here we see a good, but not perfect, separation of the patients based on two lat
 Further, we can use the network to generate "typical" expression profiles. We have marked the means of each sample group with black triangles. We will now take the mean latent vectors of each patient group and feed these values to the VAE's decoder.
 
 ```{code-cell} ipython3
-:id: zVFzjS1bdZI0
-:outputId: 931c26d8-c578-4a9c-c5de-2c139cdf10d1
 
 z_fix = torch.tensor(np.concatenate(([means["LUSC"]],[means["LUAD"]]), axis=0))
 
@@ -311,8 +293,6 @@ z_fix = z_fix.to(device)
 x_fix = model.decode(z_fix).cpu().detach().numpy()
 predicted = pd.DataFrame(data=x_fix.T, index=combined.index, columns=["LUSC", "LUAD"])
 ```
-
-+++ {"id": "6JxtZLn6dZI1"}
 
 Using these generated profiles we may, for instance, identify the genes most differentially expressed between the generated LUSC and LUAD profiles.
 
@@ -324,13 +304,10 @@ predicted["diff"] = predicted["LUSC"] - predicted["LUAD"]
 # predicted.sort_values(by='diff', ascending=False, inplace = True)
 ```
 
-+++ {"id": "qKnwZ3DUdZI1"}
 
 The genes that the decoder finds most different between the set means can now be identified. First the gene with the largest positive difference between LUSC and LUAD:
 
 ```{code-cell} ipython3
-:id: ORn2eerZdZI2
-:outputId: 34a12ca0-4017-4d0f-afde-b5bca0b22e50
 
 predicted["diff"].idxmin(axis=0)
 ```
@@ -347,12 +324,8 @@ predicted["diff"].idxmax(axis=0)
 
 Which is a [prognostic marker](https://www.proteinatlas.org/ENSG00000146054-TRIM7/cancer) for survival in LUAD.
 
-+++ {"id": "7-OJDYaFdZI2"}
-
 Here these two genes seem to be the largest differentiators between LUSC and LUAD. We can also note that, as with PCA, the gene KRT17 appears quite different between the cancer types:
 
 ```{code-cell} ipython3
-:id: SZ4Mo7rVdZI2
-
 predicted.loc["KRT17"]
 ```
