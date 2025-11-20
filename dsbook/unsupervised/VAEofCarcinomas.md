@@ -76,13 +76,13 @@ from torch.nn import functional as F
 import numpy as np
 
 # Setting training parameters
-batch_size, lr, epochs, log_interval = 256, 1e-3, 501, 100
-hidden_dim, latent_dim = 512, 12
+batch_size, lr, epochs, log_interval = 512, .5e-4, 201, 20
+hidden_dim, latent_dim = 512, 8
 
 # Check if GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(4711)
-kwargs = {'num_workers': 1, 'pin_memory': True} if torch.cuda.is_available() else {}
+kwargs = {'num_workers': 2, 'pin_memory': True} if torch.cuda.is_available() else {}
 
 
 # Convert combined DataFrame to a PyTorch tensor
@@ -98,7 +98,7 @@ train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, 
 test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=False, **kwargs)
 ```
 
-Now we design the VAE. We use an architecture where ~13k features are first reduced to a lower number of hidden features (fc1) and then to 12 features, for which we predict both mean and variance (fc21 and fc22). We reparameterize those 12 variables, and then expand them to a larger number of hidden nodes (fc3) and back to the original feature dimension (fc4).
+Now we design the VAE. We use an architecture where ~13k features are first reduced to a lower number of hidden features (fc1) and then to 8 features, for which we predict both mean and variance (fc31 and fc32). We reparameterize those 8 variables, and then expand them to a larger number of hidden nodes (fc4) and back to the original feature dimension (fc6).
 ![](img/nn.svg)
 
 ```{code-cell} ipython3
@@ -107,14 +107,17 @@ class VAE(nn.Module):
         super(VAE, self).__init__()
 
         self.fc1 = nn.Linear(input_dim, hidden_dim)       # Input layer of encoder
-        self.fc21 = nn.Linear(hidden_dim, latent_dim) # Output layer encoder (mean)
-        self.fc22 = nn.Linear(hidden_dim, latent_dim) # Output layer encoder (stdv)
-        self.fc3 = nn.Linear(latent_dim, hidden_dim)  # Input layer of decoder
-        self.fc4 = nn.Linear(hidden_dim, input_dim)       # Output layer of decoder
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)     
+        self.fc31 = nn.Linear(hidden_dim, latent_dim) # Output layer encoder (mean)
+        self.fc32 = nn.Linear(hidden_dim, latent_dim) # Output layer encoder (stdv)
+        self.fc4 = nn.Linear(latent_dim, hidden_dim)  # Input layer of decoder
+        self.fc5 = nn.Linear(hidden_dim, hidden_dim)  
+        self.fc6 = nn.Linear(hidden_dim, input_dim)       # Output layer of decoder
 
     def encode(self, x):
         h1 = torch.relu(self.fc1(x))
-        return self.fc21(h1), self.fc22(h1)
+        h2 = torch.relu(self.fc2(h1))
+        return self.fc31(h2), self.fc32(h2)
 
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5*logvar)         # Dividing a logged value by two results in the log of the sqrt of the value 
@@ -122,8 +125,9 @@ class VAE(nn.Module):
         return mu + eps*std
 
     def decode(self, z):
-        h3 = torch.relu(self.fc3(z))
-        out = self.fc4(h3)   
+        h4 = torch.relu(self.fc4(z))
+        h5 = torch.relu(self.fc5(h4))
+        out = self.fc6(h5)   
         return out
 
     def forward(self, x):
@@ -140,7 +144,7 @@ optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
-def loss_function(recon_x, x, mu, logvar, beta=1.0):
+def loss_function(recon_x, x, mu, logvar, beta=0.1):
     # reconstruction per feature
     recon_loss = F.mse_loss(recon_x, x, reduction='mean')
 
@@ -161,9 +165,9 @@ def train(epoch):
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
-        if epoch % log_interval == 0:
-            print('====> Epoch: {} Average loss: {:.4f}'.format(
-            epoch, train_loss / len(train_loader.dataset)))
+    if epoch % log_interval == 0:
+        print('====> Epoch: {} Average loss: {:.4f}'.format(
+        epoch, train_loss / len(train_loader.dataset)))
 
 
 def test(epoch):
@@ -176,7 +180,7 @@ def test(epoch):
     std = torch.exp(0.5 * logvar_).cpu().numpy()
 ```
 
-Now we are set to run the procedure for 500 epochs.
+Now we are set to run the procedure for 200 epochs.
 
 ```{code-cell} ipython3
 for epoch in range(epochs):
@@ -264,7 +268,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-We see that variables 5 and 10 seem to be the most discriminating latent variables between the sets. Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
+We see that variables 6 and 8 seem to be the most discriminating latent variables between the sets. Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -275,13 +279,10 @@ transformed_patients["Set"]= (["LUSC" for _ in lusc.columns]+["LUAD" for _ in lu
 sns.set(rc={'figure.figsize':(10,10)})
 sns.set_style("white")
 
-lm = sns.lmplot(x="Latent Variable 5",y="Latent Variable 10", hue='Set', data=transformed_patients, fit_reg=False)
-#for x, y, (w, h) in zip(transformed_patients["Latent Variable 1"], transformed_patients["Latent Variable 2"], std):
-#    lm.axes[0, 0].add_patch(Ellipse((x,y), w, h, fc='#CCCCCC', lw=1, alpha=0.5, zorder=1))
-means={}
+lm = sns.lmplot(x="Latent Variable 11",y="Latent Variable 8", hue='Set', data=transformed_patients, fit_reg=False)
+means={} 
 for name,set_ in transformed_patients.groupby("Set"):
-    means[name] = set_.mean(numeric_only=True).to_numpy()
-    plt.scatter(means[name][5-1],means[name][10-1], marker='^',s=30,c='k')
+    means[name] = set_.mean(numeric_only=True).to_numpy() plt.scatter(means[name][6-1],means[name][8-1], marker='^',s=30,c='k')
 ```
 
 Here we see a good, but not perfect, separation of the patients based on two latent variables.
