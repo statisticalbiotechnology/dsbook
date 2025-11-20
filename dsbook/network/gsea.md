@@ -11,11 +11,8 @@ kernelspec:
   name: python3
 ---
 
-+++ {"slideshow": {"slide_type": "slide"}}
-
 # Example of ORA and GSEA
 
-+++ {"slideshow": {"slide_type": "fragment"}}
 
 We first run the same steps as in the previous notebook on multiple testing.
 
@@ -65,8 +62,6 @@ pvalues.rename(columns = {list(pvalues)[0]: 'p', list(pvalues)[1]: '-log_p', lis
 qvalues = qvalue.qvalues(pvalues)
 ```
 
-+++ {"slideshow": {"slide_type": "slide"}}
-
 If we investigate a Volcano plot of the triple negative cancers vs. the other cancers, we see a large number of both up and down regulated genes. In this notebook we will examine if there are common patterns in the up and down regulation.
 
 ```{code-cell} ipython3
@@ -83,8 +78,6 @@ plt.ylabel("$-log_{10}(p)$")
 plt.show()
 ```
 
-+++ {"slideshow": {"slide_type": "slide"}}
-
 ### Over-representation analysis
 
 We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overrepresentation analysis. The module is unfortunately not implementing pathway analysis itself. It instead call a remote webserver[Enrichr](http://amp.pharm.mssm.edu/Enrichr/).  
@@ -94,10 +87,6 @@ In the analysis here we use the [KEGG](https://www.genome.jp/kegg/) database's d
 Here we select to use the $q$ values below $10^{-12}$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathwauys in KEGG.
 
 ```{code-cell} ipython3
----
-slideshow:
-  slide_type: fragment
----
 import gseapy as gp
 
 pathway_db=['KEGG_2019_Human']
@@ -117,35 +106,21 @@ enr=gp.enrichr(
 len(gene_list)
 ```
 
-+++ {"slideshow": {"slide_type": "slide"}}
-
-We clean up the results a bit by only keeping some of the resulting metics. We also multiple hypothesis correct our results, and list the terms with a FDR less than 20%.
+We clean up the results a bit by only keeping some of the resulting metrics. We also multiple hypothesis correct our results, and list the terms with a FDR less than 20%.
 
 ```{code-cell} ipython3
----
-slideshow:
-  slide_type: fragment
----
 kegg_enr = enr.results[["P-value","Term"]].rename(columns={"P-value": "p"})
 kegg_enr = qvalue.qvalues(kegg_enr)
 kegg_enr.loc[kegg_enr["q"]<0.20]
 ```
 
-+++ {"slideshow": {"slide_type": "fragment"}}
-
 The analysis seem to find overrepresentation of relatively few pathways, particularly given the significance of the differences between case and controll on transcript level.
-
-+++ {"slideshow": {"slide_type": "slide"}}
 
 ## Geneset Enrichment analysis
 
-Subsequently we us pygsea to perform a geneset enricment analysis (GSEA). This time we compare to pathways in GSEAs oncogenic signature database, [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp).
+Subsequently we us gseapy to perform a geneset enricment analysis (GSEA). This time we compare to pathways in GSEAs oncogenic signature database, [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp).
 
 ```{code-cell} ipython3
----
-slideshow:
-  slide_type: fragment
----
 classes = ["tripleNeg" if triple_negative_bool[sample_name] else "Respond" for sample_name in brca.columns]
 gs = gp.GSEA(data=brca, 
                  gene_sets='MSigDB_Oncogenic_Signatures', 
