@@ -109,15 +109,15 @@ Above is an illustration of the expected overlap (6%) of a pathway consisting of
 
 ## Gene Set Enrichment Analysis (GSEA)
 
-**Gene Set Enrichment Analysis (GSEA)** is a more sophisticated pathway analysis method compared to ORA. Unlike ORA, which relies on a predefined threshold to determine differentially expressed genes, GSEA considers the entire ranked list of genes, avoiding the need to impose an arbitrary cutoff.
+**Gene Set Enrichment Analysis (GSEA)** is a more sophisticated pathway analysis method compared to ORA, in that it makes use of quantative information. Unlike ORA, which relies on a predefined threshold to determine differentially expressed genes, GSEA considers the entire list of genes, sorted on differential abundances.
 
 In GSEA, gene sets corresponding to known biological pathways are tested for their enrichment at the top or bottom of a ranked gene list, typically based on differential expression scores. The idea is to determine whether the genes in a given pathway tend to be overrepresented among the most up- or down-regulated genes.
 
 ### Enrichment Score
 
-GSEA works by calculating an **enrichment score (ES)**, which quantifies the maximnal differences between the observed and expected cumulative distributions of gene ranks of the genes in a pathway; i.e. how unevenly distributed the genes from the gene set of interest appear in the list of all genes. Starting at the top of the ranked gene list, an enrichment score is computed by walking down the list, increasing when a gene is in the gene set and decreasing otherwise. I.e. it reflects how many genes encountered as compared to what you would expect if they where uniformly distributed among the genes.
+GSEA works by calculating an **enrichment score (ES)**, which quantifies the maximnal differences between the observed and expected cumulative distributions of gene ranks of the genes in a pathway; i.e. how unevenly distributed the genes from the gene set of interest appear in the list of all genes. Starting at the top of the ranked gene list, an enrichment score is computed by walking down the list, increasing when a gene is in the gene set and decreasing otherwise. I.e. it reflects how many genes encountered as compared to what you would expect if they were uniformly distributed among the genes.
 
-Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 130 genes. We also include 30 genes that are from two pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples, but in oposite direction. GSEA ranks the data and displays the position of the genes in the pathway as black lines among the genes not in the pathway, which are shown as white lines. If the black lines where evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the black lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes.
+Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 130 genes. We also include 30 genes that are from two pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples, but in oposite direction. GSEA ranks the data and displays the position of the genes in the pathway as colored vertical lines among the genes not in the pathway, which are shown as white lines. If the colored vertical lines were evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the colored vertical lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -180,12 +180,8 @@ The [**Kolmogorov-Smirnov (KS) test**](https://en.wikipedia.org/wiki/Kolmogorov%
 :width: 300px
 :name: fig-KS
 
-GSEA is using a KS-like test to evaluate if the expression of the genes in a pathway differes significantly from other genes expression pattern between the phenotypes (e.g. "Healthy" or "Disease"). 
+GSEA is using a KS-like test to evaluate if the expression of the genes in a pathway differs significantly from other genes expression pattern between the phenotypes (e.g. "Healthy" or "Disease"). 
 ```
 
 The test used in GSEA is in principle a **Kolmogorov-Smirnov (KS) test**. However, the authors are resigning to a slower permutation test, but the basics of the test statistics is similar.
 GSEA also corrects for multiple testing by calculating **false discovery rates (FDRs)**.
-
-## Summary
-
-Pathway analysis is a powerful tool for interpreting omics data in systems biology, enabling researchers to understand how changes in molecular profiles translate to biological processes. KEGG and Reactome are key resources that provide curated pathway information. Approaches like Over Representation Analysis and Gene Set Enrichment Analysis allow for the identification of pathways that are statistically enriched, shedding light on complex biological mechanisms. While ORA provides a straightforward way to identify overrepresented pathways, GSEA offers a more nuanced analysis that considers the complete distribution of gene ranks, reducing the bias introduced by arbitrary thresholds.
