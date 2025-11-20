@@ -58,7 +58,7 @@ Simplifying this further, we get:
 
 $$ P(X = a) = \frac{(a+b)! (c+d)! (a+c)! (b+d)!}{a! b! c! d! (a+b+c+d)!} $$
 
-This represents the probability of picking $a$ genes in the pathway from the gene list and $c$ genes not in the pathway. To calculate the p-value, we need to consider not just this particular outcome, but also all more extreme outcomes, i.e., those with an equal or more imbalanced distribution. Thus, the p-value is obtained by summing the probabilities of all outcomes that are at least as extreme as the observed outcome:
+This represents the probability of picking $a$ genes in, and $c$ genes not in the pathway from the gene list. To calculate the $p$ value, we need to consider not just this particular outcome, but also all more extreme outcomes, i.e., those with an equal or more imbalanced distribution. Thus, the $p$ value is obtained by summing the probabilities of all outcomes that are at least as extreme as the observed outcome:
 
 $$ p = \sum_{x \geq a} P(X = x) $$
 
