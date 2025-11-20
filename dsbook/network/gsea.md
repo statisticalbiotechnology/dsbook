@@ -84,7 +84,7 @@ We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overreprese
 
 In the analysis here we use the [KEGG](https://www.genome.jp/kegg/) database's definition of metabolomic pathways. This choice can easily be changed to other databases such as GO.
 
-Here we select to use the $q$ values below $10^{-12}$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathwauys in KEGG.
+Here we select to use the $q$ values below $10^{-12}$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathways in KEGG.
 
 ```{code-cell} ipython3
 import gseapy as gp
