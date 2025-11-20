@@ -40,11 +40,9 @@ luad = tcga.get_expression_data(my_path + "../data/luad_tcga_pan_can_atlas_2018.
 lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/lusc_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
-We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Further we scale the measurements so that every gene expression value is scaled using scikit-learn's StandardScaler.
+We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Subsequently we log our data and reduce our set to the 1k transcripts with highest variance. Further we scale the measurements so that every gene expression value is scaled using scikit-learn's StandardScaler.
 
 ```{code-cell} ipython3
-:id: nTGtXhUgdZIw
-
 from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 combined = pd.concat([lusc[lusc.index.notna()] , luad[luad.index.notna()]], axis=1, sort=False)
@@ -52,8 +50,19 @@ combined = pd.concat([lusc[lusc.index.notna()] , luad[luad.index.notna()]], axis
 combined.dropna(axis=0, how='any', inplace=True)
 combined = combined.loc[~(combined<=0.0).any(axis=1)]
 combined.index = combined.index.astype(str)
-X=scaler.fit_transform(np.log2(combined).T).T
-combined = pd.DataFrame(data=X,index=combined.index,columns=combined.columns)
+log_combined = np.log2(combined)
+var = log_combined.var(axis=1)
+top_k = 1000
+top_genes = var.nlargest(top_k).index
+
+log_combined = log_combined.loc[top_genes]
+scaler = StandardScaler()
+X = scaler.fit_transform(log_combined.T).astype(np.float32)
+combined_reduced = pd.DataFrame(
+    data=X.T,
+    index=log_combined.index,
+    columns=log_combined.columns,
+)
 ```
 
 
@@ -68,15 +77,17 @@ import numpy as np
 
 # Setting training parameters
 batch_size, lr, epochs, log_interval = 256, 1e-3, 501, 100
-hidden_dim, latent_dim = 2048, 12
+hidden_dim, latent_dim = 512, 12
 
 # Check if GPU is available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch.manual_seed(4711)
 kwargs = {'num_workers': 1, 'pin_memory': True} if torch.cuda.is_available() else {}
 
+
 # Convert combined DataFrame to a PyTorch tensor
-datapoints = torch.tensor(combined.to_numpy().T, dtype=torch.float32)
+datapoints = torch.tensor(combined_reduced.to_numpy().T, dtype=torch.float32)
+input_dim = datapoints.shape[1]
 labels = torch.tensor([1.0 for _ in lusc.columns] + [0.0 for _ in luad.columns], dtype=torch.float32)
 
 # Use TensorDataset to create a dataset
@@ -112,7 +123,7 @@ class VAE(nn.Module):
 
     def decode(self, z):
         h3 = torch.relu(self.fc3(z))
-        out = torch.sigmoid(self.fc4(h3))
+        out = self.fc4(h3)   
         return out
 
     def forward(self, x):
@@ -124,51 +135,45 @@ class VAE(nn.Module):
 Next, we select a gradient-based optimizer (Adam) and the loss function to optimize (reconstruction + KLD). The train and test procedures are defined below.
 
 ```{code-cell} ipython3
-input_dim = combined.shape[0]
 model = VAE(input_dim, hidden_dim, latent_dim).to(device)
 optimizer = optim.Adam(model.parameters(), lr=lr)
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
-def loss_function(recon_x, x, mu, logvar):
-    MSE = nn.functional.mse_loss(recon_x, x, reduction='sum')
-    # see Appendix B from VAE paper:
-    # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
-    # https://arxiv.org/abs/1312.6114
-    # Calculating the Kullback–Leibler divergence
-    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
-    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    #print(f"MSE={MSE}, KLD={KLD}")
-    return MSE + KLD
+def loss_function(recon_x, x, mu, logvar, beta=1.0):
+    # reconstruction per feature
+    recon_loss = F.mse_loss(recon_x, x, reduction='mean')
+
+    # KL per sample, then mean
+    kl_per_sample = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1)
+    kld = kl_per_sample.mean()
+
+    return recon_loss + beta * kld, recon_loss.item(), kld.item()
 
 def train(epoch):
     model.train()
     train_loss = 0
     for batch_idx, (data, _) in enumerate(train_loader):
-        data = data.to(device)
+        data = data.to(device, non_blocking=True)
         optimizer.zero_grad()
         recon_batch, mu, logvar = model(data)
-        loss = loss_function(recon_batch, data, mu, logvar)
+        loss, recon_loss, kld = loss_function(recon_batch, data, mu, logvar, beta=1.0)
         loss.backward()
-        train_loss += loss.item()
         optimizer.step()
-    if epoch % log_interval == 0:
-        print('====> Epoch: {} Average loss: {:.4f}'.format(
-          epoch, train_loss / len(train_loader.dataset)))
+        train_loss += loss.item()
+        if epoch % log_interval == 0:
+            print('====> Epoch: {} Average loss: {:.4f}'.format(
+            epoch, train_loss / len(train_loader.dataset)))
 
 
 def test(epoch):
     model.eval()
-    test_loss = 0
     with torch.no_grad():
-        for i, (data, _) in enumerate(test_loader):
-#        for i, (data, _) in enumerate(train_loader):
-            data = data.to(device)
-            recon_batch, mu, logvar = model(data)
-            test_loss += loss_function(recon_batch, data, mu, logvar).item()
-    if epoch % log_interval == 0:
-        test_loss /= len(test_loader.dataset)
-        print('====> Test set loss: {:.4f}'.format(test_loss))
+        X_tensor = datapoints.to(device)
+        x_hat_, mu_, logvar_ = model(X_tensor)
+    x_hat = x_hat_.cpu().numpy()
+    z = mu_.cpu().numpy()
+    std = torch.exp(0.5 * logvar_).cpu().numpy()
 ```
 
 Now we are set to run the procedure for 500 epochs.
@@ -288,18 +293,14 @@ Further, we can use the network to generate "typical" expression profiles. We ha
 ```{code-cell} ipython3
 
 z_fix = torch.tensor(np.concatenate(([means["LUSC"]],[means["LUAD"]]), axis=0))
-
 z_fix = z_fix.to(device)
 x_fix = model.decode(z_fix).cpu().detach().numpy()
-predicted = pd.DataFrame(data=x_fix.T, index=combined.index, columns=["LUSC", "LUAD"])
+predicted = pd.DataFrame(data=x_fix.T, index=combined_reduced.index, columns=["LUSC", "LUAD"])
 ```
 
 Using these generated profiles we may, for instance, identify the genes most differentially expressed between the generated LUSC and LUAD profiles.
 
 ```{code-cell} ipython3
-:id: rdGnIpvgdZI1
-:outputId: 3fcf9449-bfea-443c-d2fc-179054e1c906
-
 predicted["diff"] = predicted["LUSC"] - predicted["LUAD"]
 # predicted.sort_values(by='diff', ascending=False, inplace = True)
 ```
@@ -312,20 +313,8 @@ The genes that the decoder finds most different between the set means can now be
 predicted["diff"].idxmin(axis=0)
 ```
 
-Which is a [cancer-related](https://www.proteinatlas.org/ENSG00000172731-LRRC20/cancer) protein.
-
-+++
-
 and then in the negative direction (larger in LUAD than LUSC).
 
 ```{code-cell} ipython3
 predicted["diff"].idxmax(axis=0)
-```
-
-Which is a [prognostic marker](https://www.proteinatlas.org/ENSG00000146054-TRIM7/cancer) for survival in LUAD.
-
-Here these two genes seem to be the largest differentiators between LUSC and LUAD. We can also note that, as with PCA, the gene KRT17 appears quite different between the cancer types:
-
-```{code-cell} ipython3
-predicted.loc["KRT17"]
 ```
