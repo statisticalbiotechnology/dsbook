@@ -142,6 +142,8 @@ Thus, we can say:
 - $u^{(1)}$ is what you get (up to a scaling factor) when you **project $X$ on $v^{(1)}$**.
 - $v^{(1)}$ is what you get (up to a scaling factor) when you **project $X^T$ on $u^{(1)}$**.
 
+The entries of $v$ are often used as sample-specific scores (to illustrate how each sample projects onto a component), while the entries of $u$ act as gene-specific contributions (to show which genes contribute to that component). Plotting $v$ across samples and $u$ across genes are common ways to interpret principal components.
+
 ## Dimensionality Reduction and Explained Variance
 
 One of the key advantages of PCA is **dimensionality reduction**. By focusing only on the principal components that describe most of the variance in the data, PCA allows us to reduce the number of random variables under consideration. This is particularly useful when dealing with high-dimensional datasets, such as those encountered in genomics and transcriptomics, where the number of features (e.g., genes) can be overwhelming.
