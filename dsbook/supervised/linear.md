@@ -389,9 +389,9 @@ We can further extend this concept by introducing other types of kernel function
 
 ### Unifying Loss Minimization Across Models
 
-What is essential in all these models—whether linear, polynomial, or Gaussian—is that we continue to use the same framework of **minimizing a loss function** to find the best-fit parameters. The kernel-based approach simply transforms the input space, allowing us to apply non-linear transformations without changing the fundamental concept of minimizing error.
+What is essential in all these models, whether linear, polynomial, or Gaussian, is that we continue to use the same framework of minimizing a loss function to find the best-fit parameters. The kernel-based approach simply transforms the input space, allowing us to apply non-linear transformations without changing the fundamental concept of minimizing error.
 
-In the next chapter, we will explore **more advanced loss functions** and **regularization techniques**, which help control model complexity and prevent overfitting, particularly important in high-dimensional kernel-transformed spaces.
+In the next chapter, we will explore more advanced loss functions and regularization techniques, which help control model complexity and prevent overfitting, particularly important in high-dimensional kernel-transformed spaces.
 
 ```{code-cell}
 # Define a Gaussian basis function
@@ -409,7 +409,7 @@ def gaussian_model(x, params):
     basis = gaussian_basis(x, centers, width)
     return np.dot(basis, weights)
 
-N = 15  # Number of Gaussian bases to fit to our data
+N = 11  # Number of Gaussian bases to fit to our data
 
 # Optimize the parameters of our model using the same SSE loss function as before 
 result_gaussian = minimize_loss(loss, gaussian_model, x, y_non_linear, N*2+1)
@@ -423,4 +423,4 @@ plt.plot(xfit, yfit_gauss, color='r')
 plt.show()
 ```
 
-By focusing on the unified concept of **loss minimization**, we can see that even complex, non-linear models follow the same principles as basic linear regression—only the structure of the model and the basis functions (kernels) change.
+By focusing on the unified concept of loss minimization, we can see that even complex, non-linear models follow the same principles as basic linear regression—only the structure of the model and the basis functions (kernels) change.
