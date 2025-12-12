@@ -17,9 +17,9 @@ kernelspec:
 
 Autoencoders are a general framework used to learn efficient representations of data, often for dimensionality reduction or feature extraction. They operate by training a model to compress input data into a lower-dimensional representation and then reconstruct the original data from that compressed form. The primary goal of an autoencoder is not merely to copy the input, but rather to discover meaningful patterns and structures that capture the underlying features in a more compact representation.
 
-An autoencoder consists of two main components: the encoder and the decoder. The encoder is responsible for compressing the input into a latent space representation, often called the bottleneck, which is typically of lower dimension than the input. The decoder, in turn, reconstructs the original data from this latent representation. Mathematically, let $x$ be the input data, the encoder function $f_{\theta}$ maps $x$ to a latent vector $z$, while the decoder function $g_{\phi}$ reconstructs $x$ from $z$, such that:
+An autoencoder consists of two main components: the encoder and the decoder. The encoder is responsible for compressing the input into a latent space representation, often called the bottleneck, which is typically of lower dimension than the input. The decoder, in turn, reconstructs the original data from this latent representation. Mathematically, let $x$ be the input data, the encoder function $f_{\phi}$ maps $x$ to a latent vector $z$, while the decoder function $g_{\theta}$ reconstructs $x$ from $z$, such that:
 
-$$\hat{x} = g_{\phi}(f_{\theta}(x))$$
+$$\hat{x} = g_{\theta}(f_{\phi}(x))$$
 
 The model is trained to minimize the reconstruction loss, typically using a loss function like the mean squared error (MSE) between the original input $x$ and the reconstructed output $\hat{x}$:
 
@@ -191,7 +191,7 @@ The activation functions used in the encoder and decoder introduce non-linearity
 
 MLP-based autoencoders are a powerful tool for learning non-linear representations of data, which makes them well-suited for tasks involving complex, high-dimensional datasets. By stacking multiple hidden layers, the autoencoder can capture increasingly abstract features, enabling effective dimensionality reduction and feature extraction.
 
-### Variational Autoencoders (VAEs)
+## Variational Autoencoders (VAEs)
 
 Variational autoencoders (VAEs) are an extension of autoencoders designed to be used for generative purposes. In order to generate new data points from the latent space, it is important that the latent space is structured in a regular and continuous manner. To achieve this, VAEs introduce explicit regularization during the training process, which ensures that the latent space has desirable properties that facilitate generative tasks.
 
@@ -200,6 +200,116 @@ The decoder of the VAE acts as a generative model, which means that we can use i
 Similar to standard autoencoders, VAEs consist of an encoder and a decoder, and the model is trained to minimize the reconstruction error between the input and the reconstructed output. However, the key difference is that, instead of encoding the input as a single point in the latent space, VAEs encode the input as a probability distribution over the latent space. This modification helps introduce a regularization mechanism that ensures the latent space is organized in a way that allows for effective data generation.
 
 To make this process differentiable and enable backpropagation, VAEs use a technique called the **reparameterization trick**. Instead of sampling directly from the latent distribution, the reparameterization trick involves expressing the latent variable as a function of the mean and standard deviation.  We replace the sampling from the latent variable $z \sim N(\mu, \sigma)$ with a deterministic transformation $z = \mu + a \sigma$, where $a \sim N(0, 1)$. This transformation ensures that the gradient can flow through the sampling operation, allowing us to perform backpropagation effectively. 
+
+```{raw} html
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="800" height="200" viewBox="0 0 800 200">
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
+    </marker>
+
+    <style>
+      text {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        dominant-baseline: middle;
+        text-anchor: middle;
+      }
+      .small-label { font-size: 16px; font-weight: bold; }
+      .block-label { font-size: 14px; }
+      .prob-label  { font-size: 16px; }
+      .encoder { fill: #cfead0; stroke: black; stroke-width: 1.5; }
+      .decoder { fill: #d6e6ff; stroke: black; stroke-width: 1.5; }
+      .rblock  { fill: white; stroke: black; stroke-width: 1.2; }
+      .latent  { fill: #f4cccc; stroke: black; stroke-width: 1.2; }
+      .op      { font-size: 30px; font-weight: bold; }
+    </style>
+  </defs>
+
+  <!-- Reparameterization formula (use * instead of ⨂) -->
+  <text x="395" y="22" class="prob-label">z = μ + σ * ϵ</text>
+
+  <!-- Input -->
+  <rect x="20" y="80" width="50" height="60" class="rblock" />
+  <text x="45" y="110" class="small-label">x</text>
+
+  <!-- x -> encoder -->
+  <line x1="70" y1="110" x2="100" y2="110"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <!-- Encoder (left wide, right narrow) -->
+  <polygon class="encoder" points="100,50 220,65 220,155 100,170" />
+  <text x="160" y="95" class="block-label">Probabilistic</text>
+  <text x="160" y="115" class="block-label">Encoder</text>
+
+  <text x="160" y="38" class="prob-label">
+    f<tspan baseline-shift="sub">φ</tspan>(z|x)
+  </text>
+
+  <!-- μ, ε, σ -->
+  <rect x="285" y="60"  width="70" height="30" class="rblock" />
+  <text x="320" y="75"  class="small-label">μ</text>
+
+  <rect x="285" y="105" width="70" height="30" class="rblock" />
+  <text x="320" y="120" class="small-label">ϵ</text>
+
+  <rect x="285" y="150" width="70" height="30" class="rblock" />
+  <text x="320" y="165" class="small-label">σ</text>
+
+  <!-- encoder -> μ and σ -->
+  <line x1="220" y1="95"  x2="285" y2="75"
+        stroke="black" stroke-width="1.2" marker-end="url(#arrow)" />
+  <line x1="220" y1="130" x2="285" y2="165"
+        stroke="black" stroke-width="1.2" marker-end="url(#arrow)" />
+
+  <!-- Reparameterization operator -->
+  <!-- We treat ⨂ as a node with an effective radius ~18px for arrow docking -->
+  <text x="400" y="120" class="op">⨂</text>
+
+  <!-- μ, ε, σ -> ⨂ (dock at left edge of node, not center) -->
+  <!-- node center: (395,120), dock point: (377,120) -->
+  <line x1="355" y1="75"  x2="389" y2="120"
+        stroke="black" stroke-width="1.2" marker-end="url(#arrow)" />
+  <line x1="355" y1="120" x2="389" y2="120"
+        stroke="black" stroke-width="1.2" marker-end="url(#arrow)" />
+  <line x1="355" y1="165" x2="389" y2="120"
+        stroke="black" stroke-width="1.2" marker-end="url(#arrow)" />
+
+  <!-- z -->
+  <rect x="450" y="102" width="50" height="36" class="latent" />
+  <text x="475" y="120" class="small-label">z</text>
+
+  <!-- ⨂ -> z (dock from right edge of node) -->
+  <!-- dock point: (410,120) -->
+  <line x1="414" y1="120" x2="450" y2="120"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <!-- Decoder -->
+  <polygon class="decoder" points="535,65 655,50 655,170 535,155" />
+  <text x="595" y="95" class="block-label">Probabilistic</text>
+  <text x="595" y="115" class="block-label">Decoder</text>
+
+  <text x="595" y="38" class="prob-label">
+    g<tspan baseline-shift="sub">θ</tspan>(x|z)
+  </text>
+
+  <!-- z -> decoder -->
+  <line x1="500" y1="120" x2="535" y2="120"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+
+  <!-- Output -->
+  <rect x="700" y="80" width="50" height="60" class="rblock" />
+  <text x="725" y="110" class="small-label">x'</text>
+
+  <!-- decoder -> output -->
+  <line x1="655" y1="110" x2="700" y2="110"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+
+</svg>
+```
 
 In VAEs, the training process is as follows:
 
@@ -222,7 +332,7 @@ The regularization of the latent space helps achieve two key properties:
 
 Without the regularization term, the model could overfit and behave like a standard autoencoder, where the latent distributions become either too narrow (leading to punctual distributions) or too far apart (leading to gaps in the latent space). By enforcing the latent space to resemble a standard normal distribution, VAEs prevent overfitting and ensure that the latent space is well-structured for generation purposes.
 
-#### Intuitions about the Regularization of VAEs
+### Intuitions about the Regularization of VAEs
 
 The regularity expected from the latent space of a variational autoencoder is crucial to making the generative process effective. This regularity can be understood through two main properties listed above (**Continuity** and **Completeness**.) A key difference between a regular and an irregular latent space lies in the ability to satisfy these properties. The fact that VAEs encode inputs as distributions rather than single points is important but not sufficient on its own to ensure continuity and completeness. Without well-defined regularization, the model may ignore the distributional encoding and behave similarly to a standard autoencoder, which could lead to overfitting. This overfitting could occur if the encoder returns distributions with very small variances (effectively collapsing to single points) or if the means of the distributions are very far apart, leading to discontinuities in the latent space.
 
@@ -233,13 +343,13 @@ To address these issues, VAEs employ a regularization term that controls both th
 
 This type of regularization results in a latent space that has desirable generative properties. It helps prevent the model from placing data points too far apart, thus encouraging overlap in the latent representations, which is critical for achieving both continuity and completeness. The trade-off between the reconstruction loss and the KL divergence ensures that the model learns a latent space that balances reconstruction quality with a well-regularized structure.
 
-#### Creating a Gradient in the Latent Space
+### Creating a Gradient in the Latent Space
 
 The regularization of the latent space through the KL divergence creates a form of continuity that can be thought of as a "gradient" across the latent space. For example, if two encoded distributions originate from two different training samples, a point in the latent space that lies midway between their means should ideally decode into something that represents a blend of those two samples. This smooth transition across the latent space allows for meaningful interpolation, where points between different data clusters produce intermediate, plausible outputs.
 
 This property of creating gradients across the latent space is one of the reasons why VAEs are powerful generative models. By ensuring that points in the latent space correspond to smooth changes in the output, VAEs enable the generation of new, diverse samples that maintain a clear relationship with the training data. It is the balance between continuity and completeness, enforced by regularization, that allows VAEs to create new content effectively.
 
-#### Example Implementation of a VAE
+### Example Implementation of a VAE
 
 Here, we provide an example implementation of a Variational Autoencoder (VAE) using the same synthetic data that we used for the autoencoder. In this example, we generate 2D points on a noisy circle, project them to a higher-dimensional space, and train the VAE to encode and decode the data effectively.
 
