@@ -27,12 +27,112 @@ $$L(x, \hat{x}) = \lVert x - \hat{x} \rVert^2$$
 
 This objective ensures that the latent representation retains as much relevant information about the original data as possible while being compressed. The encoder-decoder architecture can introduce non-linearity through the use of activation functions such as ReLU or sigmoid, making autoencoders capable of capturing more complex relationships than purely linear methods.
 
-```{mermaid}
-flowchart LR
-    A["Input Data, $$x$$"] --> |Encoder| C["Latent Representation, $$z$$"]
-    C --> |"Decoder"|E["Reconstructed Data, $$\hat{x}$$"]
-    A --> L["Loss, $$L(x, \hat{x})$$"]
-    E --> L
+```{raw} html
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="900" height="210" viewBox="0 0 900 210">
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="black"/>
+    </marker>
+
+    <style>
+      text {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        dominant-baseline: middle;
+        text-anchor: middle;
+      }
+      .title {
+        font-size: 14px;
+        font-weight: bold;
+      }
+      .math {
+        font-size: 14px;
+      }
+      .encoder {
+        fill: #cfead0;
+        stroke: black;
+        stroke-width: 1.5;
+      }
+      .decoder {
+        fill: #d6e6ff;
+        stroke: black;
+        stroke-width: 1.5;
+      }
+      .node {
+        fill: white;
+        stroke: black;
+        stroke-width: 1.2;
+      }
+      .latent {
+        fill: #f4cccc;
+        stroke: black;
+        stroke-width: 1.2;
+      }
+      .loss {
+        fill: #fff2cc;
+        stroke: black;
+        stroke-width: 1.2;
+      }
+    </style>
+  </defs>
+
+  <!-- Input -->
+  <text x="80" y="22" class="title">Input</text>
+  <rect x="40" y="35" width="80" height="120" class="node"/>
+  <text x="80" y="95" class="math">x</text>
+
+  <!-- Arrow x -> encoder -->
+  <line x1="120" y1="95" x2="165" y2="95"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Encoder -->
+  <text x="240" y="22" class="title">Encoder</text>
+  <polygon class="encoder"
+           points="165,30 315,50 315,140 165,160"/>
+  <text x="240" y="95" class="math">f<tspan baseline-shift="sub">φ</tspan>(x)</text>
+
+  <!-- Arrow encoder -> z -->
+  <line x1="315" y1="95" x2="360" y2="95"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Latent -->
+  <text x="405" y="22" class="title">Latent</text>
+  <rect x="360" y="65" width="90" height="60" class="latent"/>
+  <text x="405" y="95" class="math">z</text>
+
+  <!-- Arrow z -> decoder -->
+  <line x1="450" y1="95" x2="495" y2="95"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Decoder -->
+  <text x="570" y="22" class="title">Decoder</text>
+  <polygon class="decoder"
+           points="495,50 645,30 645,160 495,140"/>
+  <text x="570" y="95" class="math">g<tspan baseline-shift="sub">θ</tspan>(z)</text>
+
+  <!-- Arrow decoder -> xhat -->
+  <line x1="645" y1="95" x2="700" y2="95"
+        stroke="black" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Reconstruction -->
+  <text x="745" y="22" class="title">Reconstruction</text>
+  <rect x="700" y="35" width="90" height="120" class="node"/>
+  <text x="745" y="95" class="math">x̂</text>
+
+  <!-- Loss -->
+  <rect x="430" y="165" width="160" height="30" class="loss"/>
+  <text x="510" y="180" class="math">L(x, x̂)</text>
+
+  <!-- Arrows to loss -->
+  <path d="M80 155 C80 185, 360 188, 430 180"
+        fill="none" stroke="black" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <path d="M745 155 C745 185, 640 188, 590 180"
+        fill="none" stroke="black" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+</svg>
 ```
 
 Autoencoders have several variations, such as denoising autoencoders, which add noise to the input data during training to make the representation more robust, and variational autoencoders (VAEs), which impose a probabilistic structure on the latent space for generative purposes.
