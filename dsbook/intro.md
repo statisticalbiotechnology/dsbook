@@ -1,8 +1,5 @@
 ---
 jupytext:
-  cell_metadata_filter: -all
-  main_language: python
-  notebook_metadata_filter: -all
   text_representation:
     extension: .md
     format_name: myst
@@ -12,7 +9,7 @@ jupytext:
 
 # Data Science for Biotechnology students
 
-[![Jupyter Book Badge](https://jupyterbook.org/badge.svg)](https://www.kaell.se/dsbook/intro.html)
+<a href="https://www.kaell.se/dsbook/intro.html"><img src="https://jupyterbook.org/badge.svg" alt="Jupyter Book Badge"></a>
 
 This book is written with KTH's course [CB2030, Systemsbiology](https://www.kth.se/student/kurser/kurs/CB2030) in mind.
 

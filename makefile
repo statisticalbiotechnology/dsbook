@@ -18,4 +18,4 @@ all: build
 # Build the book, but only after notebooks are up-to-date
 build: $(IPYNB_FILES)
 	@echo "Building Jupyter Book..."
-	@$(ACTIVATE_CONDA) && jupyter-book build dsbook/
+	@$(ACTIVATE_CONDA) && jupyter book build dsbook/

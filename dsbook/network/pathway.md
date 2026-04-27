@@ -167,7 +167,7 @@ gs.plot(["Pathway1", "Pathway2"], show_ranking=False)
 gs.res2d
 ```
 
-To assess the statistical significance of the observed enrichment score, GSEA uses a [sampling distribution](sec:statistics:sampling) of ES obtained through permutation. The ranked gene list is shuffled many times to generate a background distribution of ES values, which can then be used to calculate the p-value for the observed enrichment score.
+To assess the statistical significance of the observed enrichment score, GSEA uses a [sampling distribution](#sec:statistics:sampling) of ES obtained through permutation. The ranked gene list is shuffled many times to generate a background distribution of ES values, which can then be used to calculate the p-value for the observed enrichment score.
 
 
 For a more detailed explanation of the enrichment score, please check out the original paper, [Subramanian, et al.](https://www.pnas.org/doi/10.1073/pnas.0506580102).

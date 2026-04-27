@@ -1,11 +1,10 @@
-jupyter-book<=1.0.4
+jupyter-book>=2.0.0
 matplotlib
 seaborn
 scikit-learn
 numpy
 torch
 cptac
-sphinxcontrib-mermaid
 ipywidgets
 gseapy
 nbstripout

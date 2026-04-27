@@ -1,0 +1,15 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  id: c1a27082-ad4a-4239-8d4f-081d26577c18
+  # title:
+  # description:
+  # keywords: []
+  # authors: []
+  github: https://github.com/statisticalbiotechnology/dsbook
+  # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
+site:
+  template: book-theme
+  # options:
+  #   favicon: favicon.ico
+  #   logo: site_logo.png
