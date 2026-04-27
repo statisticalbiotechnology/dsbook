@@ -6,6 +6,9 @@ on:
     - master
     - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   deploy-book:
     runs-on: ubuntu-latest
@@ -36,8 +39,9 @@ jobs:
         key: jupyter-book-cache-${{ hashFiles('dsbook/requirements.txt') }}
 
     - name: Build the book
+      working-directory: dsbook
       run: |
-        jupyter book build dsbook/ --html
+        myst build --html
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
