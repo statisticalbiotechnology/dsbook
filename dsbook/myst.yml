@@ -10,6 +10,7 @@ project:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
 site:
   template: book-theme
+  url: https://statisticalbiotechnology.github.io/dsbook
   # options:
   #   favicon: favicon.ico
   #   logo: site_logo.png

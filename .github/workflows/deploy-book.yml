@@ -43,6 +43,8 @@ jobs:
 
     - name: Build the book
       working-directory: dsbook
+      env:
+        BASE_URL: /dsbook
       run: |
         myst build --html
 
