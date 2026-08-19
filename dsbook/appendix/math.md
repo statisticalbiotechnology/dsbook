@@ -177,18 +177,30 @@ $$
 
 #### Variance
 
-The **variance** measures the spread of a set of numbers from their mean. For a sample set $ X $, the variance $ \sigma^2 $ using the maximum likelihood estimate is defined as:
+The **variance** measures the spread of a set of numbers from their mean. For a sample set $ X $ with sample mean $ \mu $, the **maximum likelihood estimate** of the variance $ \sigma^2 $ is
 
 $$
-\sigma^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2
+\hat{\sigma}^2_{\text{MLE}} = \frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2 .
+$$
+
+Because the same data are used to estimate the mean $ \mu $, this estimate is biased (it tends to underestimate the variance). Dividing by $ n-1 $ instead (Bessel's correction) gives the **unbiased estimate**
+
+$$
+s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2 .
 $$
 
 #### Covariance
 
-**Covariance** is a measure of how much two random variables change together. For variables $ X $ and $ Y $, the covariance using the maximum likelihood estimate is defined as:
+**Covariance** is a measure of how much two random variables change together. For variables $ X $ and $ Y $, the **maximum likelihood estimate** of the covariance is
 
 $$
-\text{cov}(X, Y) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y)
+\widehat{\text{cov}}(X, Y) = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y) ,
+$$
+
+while the **unbiased estimate** uses $ n-1 $:
+
+$$
+\text{cov}(X, Y) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y) .
 $$
 
 #### Probability Distributions

@@ -400,7 +400,7 @@ plt.title("GMM with Diagonal Elliptical Cluster Boundaries")
 plt.show()
 ```
 
-Points near the cluster boundaries have lower certainty, reflected in smaller marker sizes.
+Points near the cluster boundaries are assigned with lower certainty, although all points are drawn at the same marker size here; it is the ellipses that show the extent of each component.
 
 2. **Flexible Cluster Shapes**: GMM can model elliptical clusters, with diffent standard deviations, unlike k-Means, which assumes spherical clusters with uniform cluster sizes.
 

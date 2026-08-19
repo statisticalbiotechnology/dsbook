@@ -13,7 +13,7 @@ kernelspec:
 
 # Cluster analysis of TCGA breast cancer sets
 
-Here we are perfoming a k-means analysis of two different datasets within the TCGA. 
+Here we are performing a cluster analysis, using k-means and Gaussian mixture models, of the TCGA breast cancer dataset. 
 
 First we retrieve the breast cancer RNAseq data as well as the clinical classification of the sets from cbioportal.org. The code for the retrieval of this data set is not important for the understanding of the analysis, but the code is kept for completness. Execute the code and proceed to next step.
 
@@ -35,7 +35,7 @@ brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'h
 brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
 ```
 
-Before any further analysis we clean our data. This includes removal of genes where no transcripts were found for any of the samples , i.e. their values are either [NaN](https://en.wikipedia.org/wiki/NaN) or zero. 
+Before any further analysis we clean our data. This includes removal of genes that were not reliably measured in every sample, i.e. genes having a [NaN](https://en.wikipedia.org/wiki/NaN) or a zero value in at least one sample. 
 
 The data is also log transformed. It is generally assumed that expression values follow a log-normal distribution, and hence the log transformation implies that the new values follow a nomal distribution.
 
@@ -166,7 +166,7 @@ plot_results(X_, dpgmm.predict(X_), dpgmm.means_, dpgmm.covariances_, 1,
              'Bayesian Gaussian Mixture\n(with a Dirichlet process prior)')
 ```
 
-The GMM to the left tries to apply five different component to the data that seem to origin from two sources. The Bayesian implementation correctly recognizes that there are just two components, and sucessfully captures their spread.
+The GMM at the top tries to apply five different components to the data, which seem to originate from two sources. The Bayesian implementation correctly recognizes that there are just two components, and sucessfully captures their spread.
 
 We use the same technique, however instead of clustering our 20,000 dimensional data, we select a subset of 15 known cancer associated genes.
 

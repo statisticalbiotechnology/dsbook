@@ -15,7 +15,7 @@ kernelspec:
 
 Here we are perfoming a PCA of two different datasets within the TCGA. We will first merge the two datasets and subsequently try to separate the samples based on their principal components.
 
-First we retrieve our two TCGA lungcancer data from cbioportal.org. One of the sets are from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). The code for the retrieval of this data set is not important for the understanding of the analysis, but can be found in the module tcga_read. Execute the code and proceed to next step.
+First we retrieve our two TCGA lungcancer data from cbioportal.org. One of the sets are from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). The code for the retrieval of this data set is not important for the understanding of the analysis, but can be found in the module `load_tcga`. Execute the code and proceed to next step.
 
 ```{code-cell} ipython3
 import pandas as pd
@@ -35,7 +35,7 @@ luad = tcga.get_expression_data(my_path + "../data/luad_tcga_pan_can_atlas_2018.
 lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/lusc_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
-We now merge the datasets, and see too that we only include transcripts that are measured in all the carcinomas with an count larger than 0.
+We now merge the datasets, and see too that we only include transcripts that are measured in all the carcinomas with an expression estimate larger than 0.
 
 ```{code-cell} ipython3
 combined = pd.concat([lusc, luad], axis=1, sort=False)

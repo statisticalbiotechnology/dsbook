@@ -147,6 +147,10 @@ To understand why the maximization of the variance in the components is equivale
 
 Mathematically, PCA can be expressed using Singular Value Decomposition (SVD), which decomposes the data matrix $X$ into three matrices: $U$, $S$, and $V^T$, such that:
 
+$$
+X = U S V^T
+$$
+
 Here, $U$ and $V$ contain the principal components (e.g. your gene-specific and sample-specific effects), and $S$ is a diagonal matrix of singular values. The first $k$ columns of $V$ define the principal components, and by projecting $X$ onto these components, we obtain the low-dimensional representation. The reconstruction of $X$ from these $k$ components can be seen as minimizing the reconstruction error in terms of mean squared error (MSE), making SVD and PCA equivalent to minimizing the MSE in an autoencoder framework.
 
 This perspective provides insight into how PCA is fundamentally related to linear autoencoders: both aim to represent data in a compressed form while preserving as much information as possible, with PCA focusing explicitly on maximizing variance and minimizing reconstruction error.
@@ -287,7 +291,7 @@ plt.show()
 
 In this implementation, the `Autoencoder` class defines both the encoder and decoder as sequential networks. The encoder compresses the input to a latent dimension, while the decoder reconstructs the input from the latent representation. The network is trained by minimizing the mean squared error (MSE) between the input and the reconstructed output.
 
-The activation functions used in the encoder and decoder introduce non-linearity, enabling the autoencoder to learn more complex mappings than PCA. The `ReLU` activation is commonly used in the hidden layers, while the output layer uses a `Sigmoid` activation to ensure the reconstructed values are in a specific range (e.g., [0, 1] for normalized data).
+The activation functions used in the encoder and decoder introduce non-linearity, enabling the autoencoder to learn more complex mappings than PCA. The `ReLU` activation is commonly used in the hidden layers. Here the output layer is left linear, since the reconstructed values are unbounded real numbers; a `Sigmoid` output layer is appropriate only when the data have been normalized to a fixed range such as [0, 1], as is common for image pixel intensities.
 
 MLP-based autoencoders are a powerful tool for learning non-linear representations of data, which makes them well-suited for tasks involving complex, high-dimensional datasets. By stacking multiple hidden layers, the autoencoder can capture increasingly abstract features, enabling effective dimensionality reduction and feature extraction.
 

@@ -44,7 +44,7 @@ brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz",
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-Before any further analysis we clean our data. This includes removal of genes where no transcripts were found for any of the samples , i.e. their values are either [NaN](https://en.wikipedia.org/wiki/NaN) or zero. 
+Before any further analysis we clean our data. This includes removal of genes that were not reliably measured in every sample, i.e. genes having a [NaN](https://en.wikipedia.org/wiki/NaN) or a zero value in at least one sample. 
 
 The data is also log transformed. It is generally assumed that expression values follow a log-normal distribution, and hence the log transformation implies that the new values follow a nomal distribution.
 
@@ -86,7 +86,7 @@ brca_clin
 
 ### Differential expression analysis
 
-The goal of the excercise is to determine which genes that are differentially expressed in so called tripple negative cancers as compared to other cancers. A breast cancer is triple negative when it does not express either [Progesterone receptors](https://en.wikipedia.org/wiki/Progesterone_receptor), [Estrogen receptors](https://en.wikipedia.org/wiki/Estrogen_receptor) or [Epidermal growth factor receptor 2](https://en.wikipedia.org/wiki/HER2/neu). Such cancers are known to behave different than other cancers, and are not amendable to regular [hormonal theraphies](https://en.wikipedia.org/wiki/Hormonal_therapy_(oncology)).
+The goal of the excercise is to determine which genes that are differentially expressed in so called tripple negative cancers as compared to other cancers. A breast cancer is triple negative when the tumour cells lack both [Progesterone receptors](https://en.wikipedia.org/wiki/Progesterone_receptor) and [Estrogen receptors](https://en.wikipedia.org/wiki/Estrogen_receptor), and do not overexpress [HER2](https://en.wikipedia.org/wiki/HER2/neu), the human epidermal growth factor receptor 2. Such cancers are known to behave different than other cancers, and are not amendable to regular [hormonal theraphies](https://en.wikipedia.org/wiki/Hormonal_therapy_(oncology)).
 
 We first create a vector of booleans, that track which cancers that are tripple negative. This will be needed as an input for subsequent significance estimation.
 

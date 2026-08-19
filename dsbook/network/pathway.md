@@ -36,7 +36,7 @@ One of the basic approaches to pathway analysis is **Over Representation Analysi
 
 ### Fisher's Exact Test
 
-A common statistical method used for ORA is **Fisher's exact test**, which is designed to determine if there are nonrandom associations between two categorical variables. In the context of pathway analysis, Fisher's exact test can be used to assess whether the number of genes from a given pathway in the input list is significantly larger than what would be expected by random chance. The null hypothesis in this context is that a gene in the pathway is as probable to appear in the gene list as it is to appear in the non-list.
+A common statistical method used for ORA is **Fisher's exact test**, which is designed to determine if there are nonrandom associations between two categorical variables. In the context of pathway analysis, Fisher's exact test can be used to assess whether the number of genes from a given pathway in the input list is significantly larger than what would be expected by random chance. The null hypothesis in this context is that a gene in the pathway is no more likely to appear in the gene list than a gene outside the pathway, i.e. that the odds ratio $ad/bc$ equals 1.
 
 Consider the following contingency table:
 
@@ -58,7 +58,7 @@ Simplifying this further, we get:
 
 $$ P(X = a) = \frac{(a+b)! (c+d)! (a+c)! (b+d)!}{a! b! c! d! (a+b+c+d)!} $$
 
-This represents the probability of picking $a$ genes in, and $c$ genes not in the pathway from the gene list. To calculate the $p$ value, we need to consider not just this particular outcome, but also all more extreme outcomes, i.e., those with an equal or more imbalanced distribution. Thus, the $p$ value is obtained by summing the probabilities of all outcomes that are at least as extreme as the observed outcome:
+This represents the probability of picking $a$ genes in, and $b$ genes not in the pathway from the gene list. To calculate the $p$ value, we need to consider not just this particular outcome, but also all more extreme outcomes, i.e., those with an equal or more imbalanced distribution. Thus, the $p$ value is obtained by summing the probabilities of all outcomes that are at least as extreme as the observed outcome:
 
 $$ p = \sum_{x \geq a} P(X = x) $$
 
@@ -117,7 +117,7 @@ In GSEA, gene sets corresponding to known biological pathways are tested for the
 
 GSEA works by calculating an **enrichment score (ES)**, which quantifies the maximnal differences between the observed and expected cumulative distributions of gene ranks of the genes in a pathway; i.e. how unevenly distributed the genes from the gene set of interest appear in the list of all genes. Starting at the top of the ranked gene list, an enrichment score is computed by walking down the list, increasing when a gene is in the gene set and decreasing otherwise. I.e. it reflects how many genes encountered as compared to what you would expect if they were uniformly distributed among the genes.
 
-Here is an illustration of the enrichment score. We generate a normal-distributed dataset of 30 samples covering 130 genes. We also include 30 genes that are from two pathway, that we simulate as "regulated" i.e. an additional random offset between the "Healthy" and the "Sick" samples, but in oposite direction. GSEA ranks the data and displays the position of the genes in the pathway as colored vertical lines among the genes not in the pathway, which are shown as white lines. If the colored vertical lines were evenly distributed the enrichment of the pathway genes would be zero, however, we devised the test in such a way that the colored vertical lines are more to the left of the distribution. This results in an increased enrichment score for the low ranked genes.
+Here is an illustration of the enrichment score. We generate a normally-distributed dataset of 30 samples covering 130 genes, of which 100 form an unregulated background and the remaining 30 belong to two pathways of 15 genes each. The pathway genes are simulated as "regulated", i.e. given an additional random offset between the "Healthy" and the "Sick" samples, but in opposite directions for the two pathways. GSEA ranks the data and displays the position of the genes of a pathway as colored vertical lines among the remaining genes. If the colored vertical lines were evenly distributed, the enrichment of the pathway genes would be close to zero. However, we devised the test so that the two pathways are shifted in opposite directions: the genes of one pathway fall preferentially at the top (left) of the ranked list, driving the running sum upwards and giving a large positive enrichment score, while the genes of the other fall preferentially at the bottom (right), giving a large negative enrichment score.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -167,7 +167,7 @@ gs.plot(["Pathway1", "Pathway2"], show_ranking=False)
 gs.res2d
 ```
 
-To assess the statistical significance of the observed enrichment score, GSEA uses a [sampling distribution](#sec:statistics:sampling) of ES obtained through permutation. The ranked gene list is shuffled many times to generate a background distribution of ES values, which can then be used to calculate the p-value for the observed enrichment score.
+To assess the statistical significance of the observed enrichment score, GSEA uses a [sampling distribution](#sec:statistics:sampling) of ES obtained through permutation. The phenotype labels are shuffled many times; for each shuffle the genes are re-ranked and the ES recomputed, generating a background distribution of ES values which can then be used to calculate the p-value for the observed enrichment score. Permuting the phenotype rather than the ranked gene list preserves the correlation structure between genes, which is why it is the recommended null.
 
 
 For a more detailed explanation of the enrichment score, please check out the original paper, [Subramanian, et al.](https://www.pnas.org/doi/10.1073/pnas.0506580102).
@@ -183,5 +183,5 @@ The [**Kolmogorov-Smirnov (KS) test**](https://en.wikipedia.org/wiki/Kolmogorov%
 GSEA is using a KS-like test to evaluate if the expression of the genes in a pathway differs significantly from other genes expression pattern between the phenotypes (e.g. "Healthy" or "Disease"). 
 ```
 
-The test used in GSEA is in principle a **Kolmogorov-Smirnov (KS) test**. However, the authors are resigning to a slower permutation test, but the basics of the test statistics is similar.
+The statistic used in GSEA is KS-like, but it is not the classic one: by default the running sum is *weighted*, stepping up by $|r_j|/\sum_{\rm hits}|r_j|$ at each pathway gene, where $r_j$ is that gene's ranking metric, and down by $1/(N-N_H)$ at each of the remaining genes, so that strongly ranked genes contribute more than marginal ones. Only the unweighted variant reduces to the classic KS statistic. Because this weighted statistic has no closed-form null distribution, and because the genes of a pathway are correlated rather than independent as the KS asymptotics assume, significance is assessed by permutation rather than read off from KS tables.
 GSEA also corrects for multiple testing by calculating **false discovery rates (FDRs)**.

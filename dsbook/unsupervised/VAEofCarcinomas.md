@@ -18,9 +18,9 @@ NB! Don't run this notebook unless you have a GPU on your computer; it executes 
 
 Here we train a VAE on two different datasets from TCGA. We will first merge the two datasets and subsequently try to separate the samples based on their latent variables. This is made analogous to the notebook on PCA.
 
-First we retrieve our two TCGA lung cancer datasets from cbioportal.org. One of the sets is from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). We first load our datasets; the loading code is hidden here, but it is available in the module tcga_read.
+First we retrieve our two TCGA lung cancer datasets from cbioportal.org. One of the sets is from [Lung Adenocarcinomas](https://en.wikipedia.org/wiki/Adenocarcinoma_of_the_lung) and the other is from [Lung Squamous Cell Carcinomas](https://en.wikipedia.org/wiki/Squamous-cell_carcinoma_of_the_lung). We first load our datasets; the loading code is hidden here, but it is available in the module `load_tcga`.
 
-Particularly, we added code that is hidden in the other version of the notebook,that is not important for the understanding of the analysis, but can be found in the module tcga_read. Execute the code and proceed to next step.
+Particularly, we added code that is hidden in the other version of the notebook,that is not important for the understanding of the analysis, but can be found in the module `load_tcga`. Execute the code and proceed to next step.
 
 ```{code-cell} ipython3
 import pandas as pd
@@ -98,7 +98,7 @@ train_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, 
 test_loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=False, **kwargs)
 ```
 
-Now we design the VAE. We use an architecture where ~13k features are first reduced to a lower number of hidden features (fc1) and then to 8 features, for which we predict both mean and variance (fc31 and fc32). We reparameterize those 8 variables, and then expand them to a larger number of hidden nodes (fc4) and back to the original feature dimension (fc6).
+Now we design the VAE. We use an architecture where the 1000 selected features are passed through two hidden layers (fc1, fc2) and then reduced to 8 latent features, for which we predict both the mean and the log-variance (fc31 and fc32). We reparameterize those 8 variables, and then expand them back through two hidden layers (fc4, fc5) to the original 1000-feature dimension (fc6).
 ![](img/nn.svg)
 
 ```{code-cell} ipython3
@@ -268,7 +268,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-We see that variables 6 and 8 seem to be the most discriminating latent variables between the sets. Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
+We see that variables 5 and 8 both separate the two sets well, with AUCs of 0.94 and 0.97. Note that not every latent variable is informative: variable 6, for instance, is at chance level (AUC 0.50). Much like for PCA, we can use the embeddings to give a dimensionality-reduced description of each cancer's expression profile using those two variables.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -279,10 +279,11 @@ transformed_patients["Set"]= (["LUSC" for _ in lusc.columns]+["LUAD" for _ in lu
 sns.set(rc={'figure.figsize':(10,10)})
 sns.set_style("white")
 
-lm = sns.lmplot(x="Latent Variable 11",y="Latent Variable 8", hue='Set', data=transformed_patients, fit_reg=False)
+lm = sns.lmplot(x="Latent Variable 5",y="Latent Variable 8", hue='Set', data=transformed_patients, fit_reg=False)
 means={} 
 for name,set_ in transformed_patients.groupby("Set"):
-    means[name] = set_.mean(numeric_only=True).to_numpy() plt.scatter(means[name][6-1],means[name][8-1], marker='^',s=30,c='k')
+    means[name] = set_.mean(numeric_only=True).to_numpy()
+    plt.scatter(means[name][5-1],means[name][8-1], marker='^',s=30,c='k')
 ```
 
 Here we see a good, but not perfect, separation of the patients based on two latent variables.
@@ -311,11 +312,11 @@ The genes that the decoder finds most different between the set means can now be
 
 ```{code-cell} ipython3
 
-predicted["diff"].idxmin(axis=0)
+predicted["diff"].idxmax(axis=0)
 ```
 
 and then in the negative direction (larger in LUAD than LUSC).
 
 ```{code-cell} ipython3
-predicted["diff"].idxmax(axis=0)
+predicted["diff"].idxmin(axis=0)
 ```

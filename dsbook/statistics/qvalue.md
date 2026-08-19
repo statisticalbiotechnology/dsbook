@@ -19,7 +19,7 @@ kernelspec:
 
 This notebook continues from where the previous notebook on [hypothesis testing](../testing/readme) ended.
 
-We would like to compare so called tripple negative cancers with other cancers. A breast cancer is triple negative when it does not express either [Progesterone receptors](https://en.wikipedia.org/wiki/Progesterone_receptor), [Estrogen receptors](https://en.wikipedia.org/wiki/Estrogen_receptor) or [Epidermal growth factor receptor 2](https://en.wikipedia.org/wiki/HER2/neu). Such cancers are known to behave different than other cancers, and are not amendable to regular [hormonal theraphies](https://en.wikipedia.org/wiki/Hormonal_therapy_(oncology)) in the TCGA breast cancer data set.
+We would like to compare so called tripple negative cancers with other cancers. A breast cancer is triple negative when the tumour cells lack both [Progesterone receptors](https://en.wikipedia.org/wiki/Progesterone_receptor) and [Estrogen receptors](https://en.wikipedia.org/wiki/Estrogen_receptor), and do not overexpress [HER2](https://en.wikipedia.org/wiki/HER2/neu), the human epidermal growth factor receptor 2. Such cancers are known to behave different than other cancers, and are not amendable to regular [hormonal theraphies](https://en.wikipedia.org/wiki/Hormonal_therapy_(oncology)) in the TCGA breast cancer data set.
 
 We first recreate the steps of the previous notebook.
 
@@ -97,7 +97,7 @@ def estimatePi0(p, numBoot=100, numLambda=100, maxLambda=0.95):
 
 We subsequently use Storey&Tibshirani to calculate first calculate, 
 
-$$ \hat{\rm FDR}(t) = \frac{\pi_0mp}{|\{p_i\le t\}|}, $$
+$$ \hat{\rm FDR}(t) = \frac{\pi_0mt}{|\{p_i\le t\}|}, $$
 
 and then smooth the $\rm FDR(t)$ estimates as, 
 

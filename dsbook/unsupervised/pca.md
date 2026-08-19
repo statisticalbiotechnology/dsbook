@@ -107,7 +107,7 @@ $$
 \| u \| = 1, \quad \| v \| = 1
 $$
 
-This approach makes the interpretation of the PCA decomposition more consistent, as $ s $ represents the variance captured by this component, and $ u $ and $ v $ describe the specific directions of variation in row and column space, respectively.
+This approach makes the interpretation of the PCA decomposition more consistent, as $ s $ captures the magnitude of the variation along this component, the variance explained being proportional to $ s^2 $, and $ u $ and $ v $ describe the specific directions of variation in row and column space, respectively.
 
 ## More principal components to your PCA
 
@@ -170,7 +170,7 @@ A practical use of the singular values is that they give the amount of variance 
 
 ## Affine Transformation and Interpretation
 
-PCA is an **affine transformation**, meaning that it can involve translation, rotation, and uniform scaling of the original data. Importantly, PCA maintains the relationships between points, straight lines, and planes, which allows for a meaningful geometric interpretation of the results. By transforming the data into a new set of axes aligned with the directions of maximum variance, PCA enables us to discover the key structural relationships while preserving important properties.
+PCA is an **affine transformation**, meaning that it can involve translation and rotation of the original data. Importantly, PCA maintains the relationships between points, straight lines, and planes, which allows for a meaningful geometric interpretation of the results. By transforming the data into a new set of axes aligned with the directions of maximum variance, PCA enables us to discover the key structural relationships while preserving important properties.
 
 ## Applications of PCA
 

@@ -230,4 +230,4 @@ plt.show()
 In this example:
 - **Logistic Loss** is minimized to fit a classification model.
 - The model predicts class labels $y = \pm 1$, based on the sign of $f(\mathbf{x})$.
-- The classification accuracy is calculated by comparing the predicted labels with the actual labels.
+- The fitted model is visualized as a probability contour over the feature space.

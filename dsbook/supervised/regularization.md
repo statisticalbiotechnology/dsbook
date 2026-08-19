@@ -40,13 +40,13 @@ The objective function for ridge regression is:
 
 Where:
 - $\lambda$ is a **regularization parameter** that controls the strength of the penalty. When $\lambda = 0$, ridge regression reduces to ordinary least squares. As $\lambda$ increases, the penalty becomes stronger.
-- $\beta_j$ are the model parameters (excluding the intercept).
+- $\beta_j$ are the model parameters. By convention the intercept is left out of the penalty, so that the fit does not depend on where the origin of $y$ happens to lie. Note that the simple implementations below penalize every coefficient of the polynomial model, including its constant term.
 
 The key idea here is that by penalizing the size of the parameters, we shrink them toward zero, which can help mitigate overfitting.
 
-### Ridge Regression Using Scikit-learn
+### Ridge Regression by Explicit Loss Minimization
 
-The **scikit-learn** package provides a `Ridge` class that implements ridge regression. Below is an example of how to apply ridge regression to a dataset.
+Here we implement the ridge loss explicitly and minimize it numerically, so that the penalty term stays visible. In practice you would normally reach for scikit-learn's `Ridge` class.
 
 ```{code-cell}
 from scipy.optimize import minimize
@@ -122,9 +122,9 @@ Where:
 
 LASSO is particularly useful when we have many features, as it can identify and retain only the most important ones.
 
-### LASSO Regression Using Scikit-learn
+### LASSO Regression by Explicit Loss Minimization
 
-The **scikit-learn** package provides a `Lasso` class for L1-regularized regression. Below is an example of LASSO applied to a dataset.
+Here we implement the LASSO loss explicitly and minimize it numerically. Note that this general-purpose optimizer drives coefficients close to zero without setting them exactly to zero; scikit-learn's `Lasso` class uses a coordinate-descent solver that does produce exact zeros.
 
 ```{code-cell}
 import numpy as np

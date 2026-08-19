@@ -115,6 +115,8 @@ How would we combine their expression values optimaly?
 
 Again we begin by standardize our features.
 
+Note that we select these genes using the labels of *all* samples, including the ones that will end up in the test set, and that the scaler below is likewise fitted on all samples. This is a mild form of data leakage, and it makes the performance we report below somewhat optimistic. A fully honest evaluation would repeat both the gene selection and the scaling inside every training fold.
+
 ```{code-cell} ipython3
 top6=brca.loc[qvalues.iloc[[1,2,5,6,9],:].index]
 scaler = StandardScaler()
@@ -122,7 +124,7 @@ X = scaler.fit_transform(top6.values.T) # Scale all gene expression values to st
 y = 2*pr_bool.values.astype(int) - 1           # transform from bool to -1 and 1
 ```
 
-We then separate 40% of our cancers into a separate test set. The function $GridSearchCV$ use cross validation (k=5) to select an optimal slack penalty $C$ out from a vector of differnt choices.
+We then separate 30% of our cancers into a separate test set. The function $GridSearchCV$ use cross validation (k=5) to select an optimal slack penalty $C$ out from a vector of differnt choices.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import GridSearchCV
