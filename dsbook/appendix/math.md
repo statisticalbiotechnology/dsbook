@@ -9,9 +9,21 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
+downloads:
+  - url: https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/appendix/math.ipynb&branch=main
+    title: Run on the KTH JupyterHub
+  - url: https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/appendix/math.ipynb
+    title: Run on Google Colab
+  - url: https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/appendix/math.ipynb
+    title: Run on Binder
 ---
 
 # Appendix: Some Maths
+
+<!-- launch-badges -->
+[![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/appendix/math.ipynb&branch=main)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/appendix/math.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/appendix/math.ipynb)
 
 ## Linear algebra
 

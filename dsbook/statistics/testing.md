@@ -9,11 +9,23 @@ kernelspec:
   display_name: jb
   language: python
   name: python3
+downloads:
+  - url: https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/testing.ipynb&branch=main
+    title: Run on the KTH JupyterHub
+  - url: https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/statistics/testing.ipynb
+    title: Run on Google Colab
+  - url: https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/statistics/testing.ipynb
+    title: Run on Binder
 ---
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
 # Differential expression anlaysis of the TCGA breast cancer set
+
+<!-- launch-badges -->
+[![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/testing.ipynb&branch=main)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/statistics/testing.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/statistics/testing.ipynb)
 
 First we retrieve the breast cancer RNAseq data as well as the clinical classification of the sets from cbioportal.org. 
 

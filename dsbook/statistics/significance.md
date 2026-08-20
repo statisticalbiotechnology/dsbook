@@ -9,9 +9,21 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
+downloads:
+  - url: https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/significance.ipynb&branch=main
+    title: Run on the KTH JupyterHub
+  - url: https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/statistics/significance.ipynb
+    title: Run on Google Colab
+  - url: https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/statistics/significance.ipynb
+    title: Run on Binder
 ---
 
 # Hypothesis Testing
+
+<!-- launch-badges -->
+[![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/significance.ipynb&branch=main)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/statistics/significance.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/statistics/significance.ipynb)
 
 Hypothesis testing is a statistical procedure used to determine if a sample data set provides sufficient evidence to reject a stated null hypothesis ($H_0$) in favor of an alternative hypothesis ($H_1$). This method is fundamental in science for drawing inferences about populations based on sample data. It allows researchers to make data-driven decisions and evaluate the likelihood that their observations are due to random chance or a genuine effect.
 

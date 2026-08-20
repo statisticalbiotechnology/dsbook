@@ -10,9 +10,21 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
+downloads:
+  - url: https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/supervised/multireg.ipynb&branch=main
+    title: Run on the KTH JupyterHub
+  - url: https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/supervised/multireg.ipynb
+    title: Run on Google Colab
+  - url: https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/supervised/multireg.ipynb
+    title: Run on Binder
 ---
 
 # Multiple Regression Example
+
+<!-- launch-badges -->
+[![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/supervised/multireg.ipynb&branch=main)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/supervised/multireg.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/supervised/multireg.ipynb)
 
 In this example, we apply multiple regression to analyze the relationship between several proteins and a clinical variable, BMI (Body Mass Index). We perform Ridge Regression using regularization to prevent overfitting, and visualize how well the model predicts BMI from the selected protein features.
 

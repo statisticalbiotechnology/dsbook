@@ -8,6 +8,10 @@ project:
   # authors: []
   github: https://github.com/statisticalbiotechnology/dsbook
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
+  jupyter: true
+  downloads:
+    - url: https://193.10.159.40.nip.io/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook&branch=main
+      title: Run on the KTH JupyterHub
 site:
   template: book-theme
   url: https://statisticalbiotechnology.github.io/dsbook
