@@ -1,0 +1,3 @@
+# Binder builds from the repository root, but this book's real
+# dependency list lives in dsbook/requirements.txt
+-r ../dsbook/requirements.txt

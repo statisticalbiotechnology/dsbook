@@ -31,13 +31,12 @@ parts:
     - file: unsupervised/cluster_brca
     - file: unsupervised/pca
     - file: unsupervised/PCAofCarcinomas
-    - file: unsupervised/autoenc
-    - file: unsupervised/VAEofCarcinomas.ipynb
   - caption: Network Analysis
     numbered: True
     chapters:
     - file: network/pathway
     - file: network/gsea.ipynb
+    - file: network/fba
   - caption: Appendix
     numbered: True
     chapters:
