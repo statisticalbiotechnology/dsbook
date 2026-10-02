@@ -24,13 +24,14 @@ parts:
     - file: statistics/testing.ipynb
     - file: statistics/multiple
     - file: statistics/qvalue.ipynb
+    - file: statistics/iprg.ipynb
   - caption: Unsupervised Machine Learning
     numbered: True
     chapters:
-    - file: unsupervised/cluster
-    - file: unsupervised/cluster_brca
     - file: unsupervised/pca
-    - file: unsupervised/PCAofCarcinomas
+    - file: unsupervised/pca_pbmc
+    - file: unsupervised/cluster
+    - file: unsupervised/cluster_pbmc
   - caption: Network Analysis
     numbered: True
     chapters:
