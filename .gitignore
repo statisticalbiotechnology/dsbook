@@ -3,3 +3,4 @@
 **/*_tcga_pub2015
 *.tsv.gz
 dsbook/data/*
+dsbook/supervised/brc.txt

@@ -275,22 +275,22 @@ It identifies the parameter that makes the observed data most probable (or most 
 #### Prior Probability
 
 The *prior probability* ($\Pr(\theta)$) (or density ($p(\theta)$)) represents our beliefs about parameter values before any data are observed. Priors can encode earlier experimental knowledge, theoretical limits, or subjective expectations.
-When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density ($p(\theta)$) satisfying ($\int p(\theta),d\theta = 1$); in discrete models, it is a probability mass function ($\Pr(\theta)$) summing to one.
+When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density ($p(\theta)$) satisfying ($\int p(\theta)\,d\theta = 1$); in discrete models, it is a probability mass function ($\Pr(\theta)$) summing to one.
 
 #### Posterior Probability
 
 After observing data (x), the prior is updated using Bayes’ theorem:
 
 $$
-p(\theta \mid x) = \frac{p(x \mid \theta),p(\theta)}{p(x)} \quad \text{or} \quad
-\Pr(\theta \mid x) = \frac{\Pr(x \mid \theta),\Pr(\theta)}{\Pr(x)}.
+p(\theta \mid x) = \frac{p(x \mid \theta)\,p(\theta)}{p(x)} \quad \text{or} \quad
+\Pr(\theta \mid x) = \frac{\Pr(x \mid \theta)\,\Pr(\theta)}{\Pr(x)}.
 $$
 
 The resulting *posterior distribution* combines prior information with the information from the data through the likelihood.
 The denominator,
 
 $$
-p(x) = \int p(x \mid \theta),p(\theta),d\theta,
+p(x) = \int p(x \mid \theta)\,p(\theta)\,d\theta,
 $$
 
 (or the corresponding sum for discrete variables) is the *marginal likelihood* or *evidence*, ensuring that the posterior integrates or sums to one. The posterior forms the basis for Bayesian inference, from which we can compute summaries such as the posterior mean, variance, or mode.
@@ -309,7 +309,7 @@ From it, we can obtain:
 
 $$
 \Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
-p(x) = \int p(x, y),dy,
+p(x) = \int p(x, y)\,dy,
 $$
 
 and conditional relationships such as
@@ -325,14 +325,14 @@ A *marginal probability distribution* gives the probability or density of a subs
 
 $$
 \Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
-p(x) = \int p(x, y),dy.
+p(x) = \int p(x, y)\,dy.
 $$
 
 This process is called *marginalization*. The resulting marginal describes the distribution of ($X$) alone, regardless of ($Y$).
 Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data,
 
 $$
-p(x) = \int p(x \mid \theta),p(\theta),d\theta,
+p(x) = \int p(x \mid \theta)\,p(\theta)\,d\theta,
 $$
 
 plays a key role as the normalizing constant in Bayes’ theorem and is sometimes referred to as the *evidence*.
