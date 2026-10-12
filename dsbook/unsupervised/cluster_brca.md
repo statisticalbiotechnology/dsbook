@@ -43,8 +43,8 @@ else:
 sys.path.append(my_path) # Read local modules for tcga access and qvalue calculations
 import load_tcga as tcga
 
-brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/brca_tcga_pub2015.tar.gz',"data_mrna_seq_v2_rsem.txt")
-brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
+brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_mrna_seq_v2_rsem.txt")
+brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
 ```
 
 Before any further analysis we clean our data. This includes removal of genes that were not reliably measured in every sample, i.e. genes having a [NaN](https://en.wikipedia.org/wiki/NaN) or a zero value in at least one sample. 

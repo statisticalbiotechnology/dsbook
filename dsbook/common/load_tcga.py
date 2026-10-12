@@ -10,6 +10,7 @@ def download_and_extract_gz(url, gz_path, extract_to="../data/"):
     if not os.path.exists(gz_path):
         print(f"Downloading {gz_path}...")
         response = requests.get(url, stream=True)
+        response.raise_for_status()  # else an S3 error page gets saved and cached as the .tar.gz
         with open(gz_path, "wb") as handle:
             for chunk in response.iter_content(chunk_size=8192):
                 handle.write(chunk)

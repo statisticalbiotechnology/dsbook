@@ -42,13 +42,13 @@ sys.path.append(my_path) # Read local modules for tcga access and qvalue calcula
 import load_tcga as tcga
 import qvalue 
 
-brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/brca_tcga_pub2015.tar.gz',"data_mrna_seq_v2_rsem.txt")
+brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
 Then we read the clinical information of the samples and extract the PR status of our samples.
 
 ```{code-cell} ipython3
-brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
+brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
 brca.dropna(axis=0, how='any', inplace=True)
 brca = brca.loc[~(brca<=0.0).any(axis=1)]
 brca = pd.DataFrame(data=np.log2(brca),index=brca.index,columns=brca.columns)

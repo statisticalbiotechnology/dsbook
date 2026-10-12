@@ -47,9 +47,6 @@ The objective function for ridge regression is:
 \mathcal{l}_{ridge} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j \beta_j^2
 ```
 
-```{include} ../_includes/honey1.html
-```
-
 Where:
 - $\lambda$ is a **regularization parameter** that controls the strength of the penalty. When $\lambda = 0$, ridge regression reduces to ordinary least squares. As $\lambda$ increases, the penalty becomes stronger.
 - $\beta_j$ are the model parameters. By convention the intercept is left out of the penalty, so that the fit does not depend on where the origin of $y$ happens to lie. Note that the simple implementations below penalize every coefficient of the polynomial model, including its constant term.

@@ -48,8 +48,8 @@ else:
 sys.path.append(my_path) # Read local modules for tcga access and qvalue calculations
 import load_tcga as tcga
 
-luad = tcga.get_expression_data(my_path + "../data/luad_tcga_pan_can_atlas_2018.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/luad_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
-lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.tar.gz", 'https://cbioportal-datahub.s3.amazonaws.com/lusc_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
+luad = tcga.get_expression_data(my_path + "../data/luad_tcga_pan_can_atlas_2018.tar.gz", 'https://datahub.assets.cbioportal.org/luad_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
+lusc = tcga.get_expression_data(my_path + "../data/lusc_tcga_pan_can_atlas_2018.tar.gz", 'https://datahub.assets.cbioportal.org/lusc_tcga_pan_can_atlas_2018.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
 We now merge the datasets, and ensure that we only include transcripts that are measured in all samples with counts greater than zero. Subsequently we log our data and reduce our set to the 1k transcripts with highest variance. Further we scale the measurements so that every gene expression value is scaled using scikit-learn's StandardScaler.
