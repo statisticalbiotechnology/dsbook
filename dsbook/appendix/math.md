@@ -258,7 +258,7 @@ $$
 
 The *likelihood function* expresses how well different parameter values explain the observed data. For continuous data, it is written as $L(\theta \mid x) = p(x \mid \theta),$ and for discrete data as $L(\theta \mid x) = \Pr(x \mid \theta).$
 
-Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data ($x$) are fixed and ($\theta$) varies. The likelihood is not a probability distribution over ($\theta$); its role is to compare parameter values in light of the data.
+Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data $x$ are fixed and $\theta$ varies. The likelihood is not a probability distribution over $\theta$; its role is to compare parameter values in light of the data.
 
 
 #### Maximum Likelihood
@@ -274,8 +274,8 @@ It identifies the parameter that makes the observed data most probable (or most 
 
 #### Prior Probability
 
-The *prior probability* ($\Pr(\theta)$) (or density ($p(\theta)$)) represents our beliefs about parameter values before any data are observed. Priors can encode earlier experimental knowledge, theoretical limits, or subjective expectations.
-When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density ($p(\theta)$) satisfying ($\int p(\theta)\,d\theta = 1$); in discrete models, it is a probability mass function ($\Pr(\theta)$) summing to one.
+The *prior probability* $\Pr(\theta)$ (or density $p(\theta)$) represents our beliefs about parameter values before any data are observed. Priors can encode earlier experimental knowledge, theoretical limits, or subjective expectations.
+When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density $p(\theta)$ satisfying $\int p(\theta)\,d\theta = 1$; in discrete models, it is a probability mass function $\Pr(\theta)$ summing to one.
 
 #### Posterior Probability
 
@@ -298,7 +298,7 @@ $$
 ### Relationships Between Random Variables
 #### Joint Probability Distributions
 
-A *joint probability distribution* describes the probability (or density) of two or more random variables taking specific values together. For two variables ($X$) and ($Y$),
+A *joint probability distribution* describes the probability (or density) of two or more random variables taking specific values together. For two variables $X$ and $Y$,
 
 $$
 \Pr(X = x, Y = y) \quad \text{or} \quad p(x, y)
@@ -321,14 +321,14 @@ $$
 
 #### Marginal Probability Distributions
 
-A *marginal probability distribution* gives the probability or density of a subset of variables, obtained by summing or integrating out the others from a joint distribution. For example, from a joint distribution of ($X$) and ($Y$):
+A *marginal probability distribution* gives the probability or density of a subset of variables, obtained by summing or integrating out the others from a joint distribution. For example, from a joint distribution of $X$ and $Y$:
 
 $$
 \Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
 p(x) = \int p(x, y)\,dy.
 $$
 
-This process is called *marginalization*. The resulting marginal describes the distribution of ($X$) alone, regardless of ($Y$).
+This process is called *marginalization*. The resulting marginal describes the distribution of $X$ alone, regardless of $Y$.
 Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data,
 
 $$
