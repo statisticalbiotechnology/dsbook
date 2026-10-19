@@ -38,6 +38,7 @@ parts:
     - file: network/pathway
     - file: network/gsea.ipynb
     - file: network/fba
+    - file: network/gem_ecoli
   - caption: Appendix
     numbered: True
     chapters:
