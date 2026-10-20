@@ -10,6 +10,7 @@ IPYNB_FILES := $(MD_FILES:.md=.ipynb)
 # These are re-executed whenever their .md changes, so figures stay in sync with
 # the source. All other .ipynb are synced without execution and stripped at commit.
 EXEC_IPYNB := dsbook/network/fba.ipynb \
+              dsbook/network/gem_ecoli.ipynb \
               dsbook/network/gsea.ipynb \
               dsbook/statistics/testing.ipynb \
               dsbook/statistics/qvalue.ipynb \

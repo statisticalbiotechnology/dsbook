@@ -6,3 +6,4 @@ dsbook/statistics/testing.ipynb -filter
 dsbook/statistics/qvalue.ipynb -filter
 dsbook/unsupervised/VAEofCarcinomas.ipynb -filter
 dsbook/network/fba.ipynb -filter
+dsbook/network/gem_ecoli.ipynb -filter
