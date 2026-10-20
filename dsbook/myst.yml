@@ -14,7 +14,6 @@ project:
       title: Run on the KTH JupyterHub
 site:
   template: book-theme
-  url: https://statisticalbiotechnology.github.io/dsbook
   # options:
   #   favicon: favicon.ico
   #   logo: site_logo.png

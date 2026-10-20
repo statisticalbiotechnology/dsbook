@@ -18,7 +18,7 @@ downloads:
     title: Run on Binder
 ---
 
-# $q$ Value calculations in a yeast knockout experiment
+# $q$ Value calculations in a comparison of two mouse strains
 
 <!-- launch-badges -->
 [![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://nbserv.duckdns.org/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/qvalue.ipynb&branch=main)
@@ -31,13 +31,12 @@ downloads:
 
 This notebook continues from where the previous notebook on [hypothesis testing](./testing.md) ended.
 
-We again compare the *snf2* knockout yeast strain to its isogenic wild type, using the highly replicated RNA-seq benchmark of the Barton group, with 48 biological replicates of each condition ([Gierliński et al., 2015](https://doi.org/10.1093/bioinformatics/btv425); [Schurch et al., 2016](https://doi.org/10.1261/rna.053959.115); ENA accession [PRJEB5348](https://www.ebi.ac.uk/ena/browser/view/PRJEB5348); count matrices from [bartongroup/profDGE48](https://github.com/bartongroup/profDGE48)).
+We again compare the striatum of the two inbred mouse strains C57BL/6J (B6, 10 mice) and DBA/2J (D2, 11 mice), from the RNA-seq experiment of [Bottomly et al. (2011)](https://doi.org/10.1371/journal.pone.0017820), using the gene count table prepared by the [ReCount](https://doi.org/10.1186/1471-2105-12-449) project.
 
 We first recreate the steps of the previous notebook. Since we will repeat the testing several times in this notebook, we write the $t$ test in a vectorised form that tests all genes in a single call, rather than looping over the rows of the table.
 
 ```{code-cell} ipython3
 import os
-import tarfile
 import urllib.request
 
 import numpy as np
@@ -47,38 +46,24 @@ from scipy.stats import ttest_ind
 data_dir = "../data" if os.path.isdir("../data") else "data"
 os.makedirs(data_dir, exist_ok=True)
 
-base_url = "https://raw.githubusercontent.com/bartongroup/profDGE48/master/Preprocessed_data/"
-
-def read_count_data(condition, file_name):
-    "Download (once) and read the per-replicate count files of one condition."
+recount_url = "https://bowtie-bio.sourceforge.net/recount/"
+for folder, file_name in [("countTables/", "bottomly_count_table.txt"),
+                          ("phenotypeTables/", "bottomly_phenodata.txt")]:
     local_file = os.path.join(data_dir, file_name)
     if not os.path.exists(local_file):
-        urllib.request.urlretrieve(base_url + file_name, local_file)
-    columns = {}
-    with tarfile.open(local_file) as tar:
-        for member in tar.getmembers():
-            if not member.isfile():
-                continue
-            sample = condition + "_" + member.name.split("_")[1]
-            counts = pd.read_csv(tar.extractfile(member), sep="\t",
-                                 header=None, index_col=0, names=["gene", sample])
-            columns[sample] = counts[sample]
-    return pd.DataFrame(columns).sort_index(axis=1)
+        urllib.request.urlretrieve(recount_url + folder + file_name, local_file)
 
-yeast = pd.concat([read_count_data("WT", "WT_countdata.tar.gz"),
-                   read_count_data("Snf2", "Snf2_countdata.tar.gz")], axis=1)
+mouse = pd.read_csv(os.path.join(data_dir, "bottomly_count_table.txt"), sep="\t", index_col=0)
+pheno = pd.read_csv(os.path.join(data_dir, "bottomly_phenodata.txt"), sep=" ", index_col=0)
 
-counter_rows = ["no_feature", "ambiguous", "too_low_aQual", "not_aligned", "alignment_not_unique"]
-yeast = yeast.drop(index=counter_rows)
-yeast.dropna(axis=0, how="any", inplace=True)
-yeast = yeast.loc[~(yeast <= 0.0).any(axis=1)]
-
-log_counts = np.log(yeast)
+mouse = mouse.loc[(mouse >= 10).all(axis=1)]
+log_counts = np.log(mouse)
 size_factors = np.exp(log_counts.sub(log_counts.mean(axis=1), axis=0).median(axis=0))
-expr = np.log2(yeast.div(size_factors, axis=1))
+expr = np.log2(mouse.div(size_factors, axis=1))
 
-wt_samples = [s for s in expr.columns if s.startswith("WT")]
-snf2_samples = [s for s in expr.columns if s.startswith("Snf2")]
+strain = pheno.loc[expr.columns, "strain"]
+b6_samples = list(expr.columns[strain == "C57BL/6J"])
+d2_samples = list(expr.columns[strain == "DBA/2J"])
 
 def get_significance_two_groups(data, group_a, group_b):
     "Welch t test of every gene, comparing the samples of group_a to those of group_b."
@@ -87,11 +72,10 @@ def get_significance_two_groups(data, group_a, group_b):
     return pd.DataFrame({"p": p, "-log_p": -np.log10(p), "log_FC": log_fold_change.values},
                         index=data.index)
 
-pvalues = get_significance_two_groups(expr, snf2_samples, wt_samples)
-pvalues = pvalues.loc[~pvalues.index.duplicated(keep='first')]
+pvalues = get_significance_two_groups(expr, d2_samples, b6_samples)
 ```
 
-When plotting the $p$ value distribution below, we see an enrichment of low $p$ values. These are the tests of the genes that adhere to the alternative hypothesis. We also see a uniform distribution of the $p$ values in the higher end of the distribution i.e. $p$ values of 0.3-1.0. These are likely stemming from genes adhering to $H_0$
+When plotting the $p$ value distribution below, we see an enrichment of low $p$ values. These are the tests of the genes that adhere to the alternative hypothesis. We also see a uniform distribution of the $p$ values in the higher end of the distribution i.e. $p$ values of 0.5-1.0. These are likely stemming from genes adhering to $H_0$
 
 ```{code-cell} ipython3
 import seaborn as sns
@@ -166,7 +150,9 @@ def qvalues(pvalues):
 qv = qvalues(pvalues)
 ```
 
-We note a very low $\pi_0$, indicating that a large majority of all yeast genes respond to the deletion of *SNF2*. That is a biologically reasonable result — Snf2 is the ATPase of the SWI/SNF chromatin remodelling complex, a global regulator of transcription — but it is also a consequence of the enormous statistical power of 48 replicates per condition. With this many replicates, even very small and biologically uninteresting expression differences become detectable.
+The estimated $\pi_0$ of about 0.5 says that roughly half of the expressed genes differ in their expression between the two strains. Given that the strains differ at millions of positions in their genomes, many of them in sequences that regulate gene expression, that is not unreasonable. One might worry that some of the differences are technical: the reads were aligned to the reference genome, which is a B6 genome, so reads from D2 genes carrying many sequence differences could align less well and make those genes look lower expressed in D2. Bottomly et al. tested this by realigning the D2 reads to a D2 version of the genome, and found that the effect on their results was minimal.
+
+Note that $\pi_0$ and the $q$ values answer different questions. $\pi_0$ estimates *how many* genes are differentially expressed in total, while a $q$ value tells us *which* genes we can single out with a controlled error rate. Many of the expression differences are too small to be pinned down gene by gene with ten mice per strain, even though their combined effect on the $p$ value distribution is clearly visible. (Bottomly et al. used a test designed for count data, and reported 1,727 differentially expressed genes at $q<0.01$ out of the 16,183 genes they tested.)
 
 We can list the differential genes, in descending order of significance.
 
@@ -180,7 +166,7 @@ A plot of the number of differentially expressed genes as a function of $q$ valu
 ```{code-cell} ipython3
 sns.lineplot(x=pvalues["q"],y=list(range(pvalues.shape[0])),errorbar=None,lw=3)
 plt.xlim(0,0.1);
-plt.ylim();
+plt.ylim(0, (pvalues["q"] < 0.1).sum());
 plt.ylabel("Number of differential genes");
 ```
 
@@ -202,7 +188,7 @@ sns.set_style("white")
 sns.set_context("talk")
 ax = sns.relplot(data=pvalues,x="log_FC",y="-log_p",hue="Significant",aspect=1.5,height=6)
 plt.axhline(p_treshold)
-ax.set(xlabel="$log_2(snf2/WT)$", ylabel="$-log_{10}(p)$");
+ax.set(xlabel="$log_2(D2/B6)$", ylabel="$-log_{10}(p)$");
 ```
 
 +++
@@ -211,34 +197,35 @@ ax.set(xlabel="$log_2(snf2/WT)$", ylabel="$-log_{10}(p)$");
 
 A $p$ value histogram that is enriched near zero, and a $\pi_0$ well below one, are easy to produce. The harder question is whether we should *believe* them: how do we know that the machinery above is not manufacturing findings out of technical artefacts?
 
-Most data sets cannot answer that question, because we never know which genes are truly differentially expressed. This data set can. The 48 wild type replicates are all the same strain, grown and sequenced in the same way. If we arbitrarily declare 24 of them to be "group A" and the remaining 24 to be "group B", we have built an experiment in which the null hypothesis is true for *every single gene*. Any finding is by construction a false positive.
+Most data sets cannot answer that question, because we never know which genes are truly differentially expressed. This data set lets us construct such a case. The ten B6 mice are inbred, i.e. genetically almost identical, and were all treated the same way. If we split them into two groups of five, we have built an experiment in which the null hypothesis is true for *every single gene*. Any finding is by construction a false positive.
+
+The B6 mice were sequenced on three different flow cells (the `experiment` column of the sample table in the previous notebook). To keep the comparison fair, we alternate the mice of each flow cell between the two groups, so that both groups contain mice from all three flow cells.
 
 ```{code-cell} ipython3
 sns.set_context("notebook")
-rng = np.random.default_rng(7)
-shuffled_wt = list(rng.permutation(wt_samples))
-group_a, group_b = shuffled_wt[:24], shuffled_wt[24:]
+flow_cell = pheno["experiment.number"]
+b6_by_flow_cell = sorted(b6_samples, key=lambda s: flow_cell[s])
+group_a, group_b = b6_by_flow_cell[0::2], b6_by_flow_cell[1::2]
 
 null_pvalues = get_significance_two_groups(expr, group_a, group_b)
-null_pvalues = null_pvalues.loc[~null_pvalues.index.duplicated(keep='first')]
 
 m = null_pvalues.shape[0]
 bins = 20
 fig, ax = plt.subplots(1, 2, figsize=(13, 4.5), sharey=False)
 ax[0].hist(null_pvalues["p"], bins=bins, range=(0, 1), color="steelblue")
 ax[0].axhline(m / bins, color="k", ls="--", lw=1)
-ax[0].set_title("WT vs WT, 24 vs 24 (all $H_0$)")
+ax[0].set_title("B6 vs B6, 5 vs 5 (all $H_0$)")
 ax[1].hist(pvalues["p"], bins=bins, range=(0, 1), color="indianred")
 ax[1].axhline(m / bins, color="k", ls="--", lw=1)
-ax[1].set_title("snf2 vs WT, 48 vs 48")
+ax[1].set_title("D2 vs B6, 11 vs 10")
 for a in ax:
     a.set_xlabel("$p$"); a.set_ylabel("Number of genes")
 plt.tight_layout();
 ```
 
-The difference is striking. The wild type against wild type comparison gives a flat histogram, at the height $m/20$ that a uniform distribution predicts (dashed line), with no spike at all near zero. That is exactly what the theory says a collection of true null hypotheses should look like, and it is a direct, empirical validation of the $t$ test we have been using on these data.
+The difference is striking. The B6 against B6 comparison has no spike at all near zero, so the test does not manufacture findings out of nothing. The histogram is, however, not perfectly flat either: small $p$ values are *rarer* than the uniform distribution predicts (the dashed line marks the height $m/20$ of a uniform distribution), and intermediate ones more common. The reason is the flow cells. Each of our two groups contains mice from all three flow cells, so the differences between flow cells inflate the variance *within* each group, while they cancel out in the difference *between* the group means. The $t$ statistics therefore come out smaller than they should, and the $p$ values larger. In other words, the test becomes *conservative*. The same applies to the comparison between the strains, as Bottomly et al. spread the mice of both strains over all three flow cells, so we lose some power there too.
 
-Running the same $q$ value machinery on this null experiment should therefore estimate $\pi_0$ close to one, and report essentially no findings.
+Running the same $q$ value machinery on this null experiment should therefore report no findings.
 
 ```{code-cell} ipython3
 null_qv = qvalues(null_pvalues)
@@ -248,9 +235,27 @@ for threshold in (0.01, 0.05, 0.10, 0.20):
 print("smallest q value in the null experiment: %.3f" % null_qv["q"].min())
 ```
 
-The estimated $\pi_0$ is close to one and no gene survives any reasonable $q$ value threshold, whereas the real comparison produced thousands of findings. The multiple hypothesis correction is not simply throwing away everything, nor is it rubber-stamping noise.
+No gene survives any reasonable $q$ value threshold, whereas the real comparison produced hundreds of findings at $q<0.01$. The multiple hypothesis correction is not simply throwing away everything, nor is it rubber-stamping noise. Note, though, that the estimated $\pi_0$ comes out below one, as the estimate assumes that the true nulls give a flat histogram, which they do not quite do here.
 
-A caveat worth keeping in mind: individual splits of the wild type replicates fluctuate somewhat more than pure theory predicts. The 48 replicates were not all handled on the same day, so they are not perfectly exchangeable, and a split that happens to separate two batches will show a mild enrichment of small $p$ values. Try re-running the two cells above with a different seed to see this for yourself. This residual structure is precisely the kind of thing that a three-versus-three experiment has no way of detecting.
+### A batch effect
+
+The care we took to balance the flow cells was not a formality. Below we instead compare the four B6 mice sequenced on flow cell 6 to the six sequenced on flow cells 4 and 7. The null hypothesis is still true for every gene in a biological sense, as all ten mice are B6, but now the two groups also differ in *how* they were processed.
+
+```{code-cell} ipython3
+batch_a = [s for s in b6_samples if flow_cell[s] == 6]
+batch_b = [s for s in b6_samples if flow_cell[s] != 6]
+batch_pvalues = get_significance_two_groups(expr, batch_a, batch_b)
+
+plt.figure(figsize=(6.5, 4.5))
+plt.hist(batch_pvalues["p"], bins=bins, range=(0, 1), color="darkorange")
+plt.axhline(m / bins, color="k", ls="--", lw=1)
+plt.title("B6 flow cell 6 vs B6 flow cells 4 and 7")
+plt.xlabel("$p$"); plt.ylabel("Number of genes");
+batch_qv = qvalues(batch_pvalues)
+print(f"genes with q < 0.05: {int((batch_qv['q'] < 0.05).sum())}")
+```
+
+Now the histogram shows a clear spike of small $p$ values, $\pi_0$ is estimated well below one, and the $q$ value machinery even reports a few significant genes, although none of them is differentially expressed in a biological sense. The $t$ test cannot tell a difference caused by biology from a difference caused by the processing of the samples. Batch effects thus cut both ways: when the batches are confounded with the groups they create false findings, and when they are spread over the groups they inflate the variance and cost power, as we saw above. This is why a good experimental design spreads the conditions evenly over the processing batches, as Bottomly et al. did for the two strains, and why more advanced analyses include the batch as an explanatory variable in the model, rather than leaving it in the noise.
 
 +++
 
@@ -289,8 +294,8 @@ def plot_pi0_hat(p,s,xlow,xhigh,ylow,yhigh,ax):
   ax.set_ylabel("$\pi_0(\lambda)$");
 
 fig, ax = plt.subplots(1,2,figsize=(12, 4))
-plot_pi0_hat(pvalues,s,0,1,0,0.6,ax[0])
-plot_pi0_hat(pvalues,s,0.95,1,0.1,0.35,ax[1])
+plot_pi0_hat(pvalues,s,0,1,0,1.05,ax[0])
+plot_pi0_hat(pvalues,s,0.95,1,0,1.05,ax[1])
 ```
 
 We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare the it to the bootstrapping estimate.

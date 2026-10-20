@@ -481,10 +481,10 @@ Overall, the EM algorithm is a versatile approach that adapts to models of vario
 ## Comparison between k-Means and GMM
 
 The following table highlights the similarities and differences between the k-Means and GMM algorithms in terms of their iteration steps:
-`````{div} full-width
+`````{div}
+:class: col-page-right
 ````{list-table}
 :header-rows: 1
-:widths: 5 20 20
 
 * - Step
   - $k$-Means
