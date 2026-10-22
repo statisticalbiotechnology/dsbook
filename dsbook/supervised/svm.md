@@ -55,11 +55,11 @@ A key objective in Linear SVMs is to find $\mathbf{w}$ and $b$ that maximize the
 
 If the data is perfectly **linearly separable** (i.e., there exists a hyperplane that separates the classes without any overlap), we can create two parallel hyperplanes, one for each class. The region between these two hyperplanes is called the **margin**, and the hyperplane exactly in the middle of this margin is called the **maximum-margin hyperplane**.
 
-```{figure} https://upload.wikimedia.org/wikipedia/commons/7/72/SVM_margin.png
+```{figure} ./img/SVM_margin.png
 :width: 300px
 :align: right
 Maximum-margin hyperplane and margins.\
-Image by Larhmam, CC BY-SA 4.0
+Image by Larhmam, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0), via [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:SVM_margin.png)
 ```
 
 

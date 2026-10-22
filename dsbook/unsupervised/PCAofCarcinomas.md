@@ -88,7 +88,7 @@ sns.set_style("white")
 sns.lmplot(x="Sample-specific 1",y="Sample-specific 2", hue='Set', data=transformed_patients, fit_reg=False)
 ```
 
-Here we see a non-complete separation of the patients based on their two first sample-specific effects. This means that the patients gene expression differ and that diference is covered by the first two principal components.
+Here we see a non-complete separation of the patients based on their two first sample-specific effects. This means that the patients gene expression differ and that difference is covered by the first two principal components.
 
 Lets explore which genes that are most reponsible for that difference. We can do so by investigating their Gene-specific vectors.
 
