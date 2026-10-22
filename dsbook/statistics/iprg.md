@@ -27,12 +27,15 @@ downloads:
 
 ## Why we need a ground truth
 
-In the [previous section](./qvalue.md) we *estimated* false discovery rates, but we could not
-check the estimates: we do not know which genes are truly differentially expressed, so the
-$q$ values had to be taken largely on faith. A procedure that reports $q=0.01$ makes a promise
-about the long run frequency of errors, and that promise should be testable.
+In the [previous section](./qvalue.md) we *estimated* false discovery rates. The B6 against B6
+comparison let us check that the procedure reports nothing when every gene follows the null
+hypothesis, but such a null experiment only checks the null side: it contains no true findings,
+and in the comparison of the two strains we do not know which genes are truly differentially
+expressed. A procedure that reports $q=0.01$ makes a promise about the long run frequency of
+errors among its findings, and that promise should be testable.
 
-A *spike-in* experiment lets us test it. One prepares a complex but constant biological
+A *spike-in* experiment, which contains known true positives as well as true nulls, lets us
+test it. One prepares a complex but constant biological
 background, and adds a small number of foreign proteins at concentrations chosen, and
 therefore known, by the experimenter. Only the spiked-in proteins should differ between the
 samples. We can then run a complete differential abundance analysis and afterwards count how
@@ -187,8 +190,8 @@ proteins below $p=0.05$ is a little under the 5% that a uniform null would give.
 background is a proper — indeed mildly conservative — null. Five of the six spiked proteins
 sit at the extreme left edge.
 The sixth is VAC2, which was spiked at 65 and 55 fmol in the two conditions — a genuine but
-only 1.2-fold difference that three replicates cannot resolve. It is a true positive that no
-method could reasonably be expected to find.
+only 1.2-fold difference that three replicates cannot resolve. It will end up as a false
+negative, but not one that any method could reasonably be expected to avoid.
 
 ## $q$ values
 
@@ -205,8 +208,8 @@ results.head(8)
 
 The estimate $\hat{\pi}_0\approx 1$ says that essentially none of the proteins are
 differentially abundant, which is the correct answer: 6 out of 3025 is $0.2\%$. Contrast this
-with the knockout comparison of the previous section, where $\hat{\pi}_0$ came out far below
-one.
+with the comparison of the two mouse strains in the previous section, where $\hat{\pi}_0$ came
+out at about $0.5$.
 
 ## The payoff: estimated FDR against the true FDP
 
@@ -286,7 +289,7 @@ with six true positives simply cannot resolve an FDR of $0.05$.
 
 Condition 1 versus 3 is the real outlier. At $q\le0.1$ roughly two thirds of the accepted
 proteins are background, and its $\hat{\pi}_0$ comes out around $0.6$ — the estimator
-concluded that a third of the yeast proteins were differentially abundant. Printing $\pi_0$
+concluded that more than a third of the yeast proteins were differentially abundant. Printing $\pi_0$
 and the behaviour of the background for every comparison shows where the problem lies.
 
 ```{code-cell} ipython3
@@ -309,17 +312,10 @@ it flags are not errors of statistics but of our labelling of the truth. A bench
 about the whole pipeline — sample preparation, quantification, normalisation and statistics
 together — not only about the last step.
 
-## What to take away
-
-* Estimated $q$ values can be checked, and on a well behaved comparison of this benchmark they
-  are accurate to within the resolution the benchmark allows.
-* $\hat{\pi}_0$ is itself informative: a value near one is the signature of a data set in which
-  almost nothing changes, and a much lower value on data where little *should* change warns
-  that the experiment, not the biology, is producing signal.
-* Spike-in benchmarks have limits. Six true positives is very few, their concentrations were
-  chosen for convenience rather than realism, and peptides from the same protein do not give
-  independent measurements, so the effective number of tests is smaller than the number of rows.
-* FDR control in proteomics is in practice applied twice: to the peptide-spectrum matches
-  during identification, where decoy databases provide an artificial null, and to the
-  quantitative comparison, as here. Errors from the first stage propagate into the second,
-  which is a further reason to validate whole pipelines on data such as this.
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Describe how a spike-in experiment creates a known ground truth, and contrast the false discovery proportion (FDP), which can be read off a single data set when the truth is known, with the FDR, which is an expectation.
+2. Calculate the FDP among the top $k$ findings of a ranked list with known truth, and explain why the FDP is so granular when a benchmark contains only a few true positives.
+3. Interpret a calibration plot of true FDP against estimated FDR ($q$ value threshold): points on the diagonal are calibrated, points below it are conservative and points above it are anti-conservative.
+4. Argue that an estimated $\pi_0$ well below one, in data where almost nothing should change, points to a problem in the experiment or the pipeline (a null that is not a null) rather than in the FDR estimation.
+:::

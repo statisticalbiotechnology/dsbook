@@ -126,15 +126,15 @@ import matplotlib.pyplot as plt
 u = np.array([1, 3])
 v = np.array([3, 1])
 
-# Recalculate the projection of u onto the new v
+# Projection of u onto v, and the component of u orthogonal to v
 proj_u_on_v = np.dot(u, v) / np.dot(v, v) * v
 orthogonal_component = u - proj_u_on_v
 
-# Update plot with new vector v and its projection
+# Plot u, v and the projection of u onto v
 plt.figure(figsize=(6, 6))
 plt.quiver(0, 0, u[0], u[1], angles='xy', scale_units='xy', scale=1, color='r', label=r'$\mathbf{u}=(1,3)^T$')
 plt.quiver(0, 0, v[0], v[1], angles='xy', scale_units='xy', scale=1, color='b', label=r'$\mathbf{v}=(3,1)^T$')
-plt.quiver(0, 0, proj_u_on_v[0], proj_u_on_v[1], angles='xy', scale_units='xy', scale=1, color='g', label='proj$_{\mathbf{v}} \mathbf{u}$')
+plt.quiver(0, 0, proj_u_on_v[0], proj_u_on_v[1], angles='xy', scale_units='xy', scale=1, color='g', label=r'proj$_{\mathbf{v}} \mathbf{u}$')
 
 # Plot orthogonal line as a dotted line segment
 end_point = proj_u_on_v + orthogonal_component
@@ -148,7 +148,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 # Add a grid, legend, and labels
 plt.grid(True)
 plt.legend()
-plt.title('Projection of Vector $\mathbf{u}$ onto Vector $\mathbf{v}$')
+plt.title(r'Projection of Vector $\mathbf{u}$ onto Vector $\mathbf{v}$')
 plt.xlabel('X axis')
 plt.ylabel('Y axis')
 plt.show()
@@ -181,7 +181,7 @@ $$
 
 #### Mean
 
-The **mean** or expected value of a set of numbers is the average of all the values. For a set $ X = \{x_1, x_2, \dots, x_n\} $, the mean $ \mu $ is calculated as:
+The **mean** of a set of numbers is the average of all the values. For a set $ X = \{x_1, x_2, \dots, x_n\} $, the mean $ \mu $ is calculated as:
 
 $$
 \mu = \frac{1}{n} \sum_{i=1}^n x_i
@@ -225,7 +225,7 @@ $$
 f(x) = \frac{1}{b-a} \quad \text{for } x \in [a, b]
 $$
 
-#### Normal Distribution
+##### Normal Distribution
 
 The **normal distribution** is a probability distribution that is symmetric about the mean, showing that data near the mean are more frequent in occurrence than data far from the mean. Its pdf is given by:
 
@@ -235,7 +235,7 @@ $$
 
 #### Probability Density Function (PDF)
 
-The **probability density function** (pdf) of a continuous random variable is a function that describes the likelihood of the random variable taking on a specific value. The area under the pdf curve between two values represents the probability of the variable falling within that range.
+The **probability density function** (pdf) of a continuous random variable is a function that describes how densely the probability is concentrated around each value of the random variable; the probability of any single exact value is zero. The area under the pdf curve between two values represents the probability of the variable falling within that range.
 
 #### Cumulative Distribution Function (CDF)
 
@@ -266,7 +266,7 @@ Although the likelihood has the same mathematical form as a probability or densi
 The *maximum likelihood estimate (MLE)* is the parameter value that maximizes the likelihood function:
 
 $$
-\hat{\theta}^*_{\text{MLE}} = \arg\max_{\theta} L(\theta \mid x).
+\hat{\theta}_{\text{MLE}} = \arg\max_{\theta} L(\theta \mid x).
 $$
 
 It identifies the parameter that makes the observed data most probable (or most dense) under the model. MLEs are widely used because, under general conditions, they are consistent, efficient, and asymptotically normal. In practice, the likelihood is often maximized numerically using gradient-based or expectation–maximization algorithms.
@@ -279,7 +279,7 @@ When little information is available, weakly informative or noninformative prior
 
 #### Posterior Probability
 
-After observing data (x), the prior is updated using Bayes’ theorem:
+After observing data $x$, the prior is updated using Bayes’ theorem:
 
 $$
 p(\theta \mid x) = \frac{p(x \mid \theta)\,p(\theta)}{p(x)} \quad \text{or} \quad
@@ -305,14 +305,7 @@ $$
 $$
 
 denotes their joint distribution.
-From it, we can obtain:
-
-$$
-\Pr(X = x) = \sum_y \Pr(X = x, Y = y), \quad
-p(x) = \int p(x, y)\,dy,
-$$
-
-and conditional relationships such as
+From it, we can obtain the marginal distributions (see below) and conditional relationships such as
 
 $$
 \Pr(Y = y \mid X = x) = \frac{\Pr(X = x, Y = y)}{\Pr(X = x)}, \quad
@@ -329,10 +322,15 @@ p(x) = \int p(x, y)\,dy.
 $$
 
 This process is called *marginalization*. The resulting marginal describes the distribution of $X$ alone, regardless of $Y$.
-Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data,
+Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data, $p(x)$, plays a key role as the normalizing constant in Bayes’ theorem (see above) and is sometimes referred to as the *evidence*.
 
-$$
-p(x) = \int p(x \mid \theta)\,p(\theta)\,d\theta,
-$$
-
-plays a key role as the normalizing constant in Bayes’ theorem and is sometimes referred to as the *evidence*.
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Calculate the transpose of a matrix, the dot product $\mathbf{a}^T \mathbf{b}$ and the outer product $\mathbf{a} \mathbf{b}^T$ of two vectors, and the product of two matrices using $c_{ij} = \sum_{k} a_{ik} b_{kj}$.
+2. Calculate the L2-norm $\|\mathbf{x}\|_2$ of a vector and the projection $\text{proj}_{\mathbf{v}} \mathbf{u}$ of one vector onto another.
+3. Define an eigenvalue $\lambda$ and eigenvector $\mathbf{v}$ of a matrix through $\mathbf{A} \mathbf{v} = \lambda \mathbf{v}$, and the gradient $\nabla f(\mathbf{x})$ as the vector of partial derivatives that points in the direction of steepest ascent.
+4. Calculate the mean, variance and covariance of a small dataset, and explain the difference between the maximum likelihood estimates (dividing by $n$) and the unbiased estimates (dividing by $n-1$).
+5. Write down the pdfs of the uniform and normal distributions, explain how a pdf and a cdf $F(x) = P(X \leq x)$ give probabilities, and calculate the expectation value $E[X]$ of a discrete random variable.
+6. Calculate marginal and conditional probabilities from a joint distribution, by summing or integrating out the other variable.
+7. Contrast a likelihood $L(\theta \mid x)$, where the data are fixed and $\theta$ varies, with a probability distribution over $\theta$. Define the maximum likelihood estimate, and identify the prior, likelihood, posterior and evidence in Bayes' theorem.
+:::

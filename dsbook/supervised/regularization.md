@@ -239,3 +239,11 @@ The **L2 norm** (also written $\ell_2$-norm) is
 ```
 
 which corresponds geometrically to the Euclidean length of the vector.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Explain what overfitting is, why a flexible model fitted to few data points tends to overfit, and why penalizing large parameters counteracts it.
+2. Write down the loss functions for ridge (L2), LASSO (L1) and elastic net regression. Explain what the regularization parameter $\lambda$ does, including what happens at $\lambda = 0$ and as $\lambda$ grows.
+3. Contrast ridge and LASSO: ridge shrinks all parameters, while LASSO can set some exactly to zero and so selects features. Argue which one suits a given problem.
+4. Explain where the names L1 and L2 come from, in terms of vector norms.
+:::

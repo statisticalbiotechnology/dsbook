@@ -9,6 +9,8 @@ kernelspec:
   display_name: jb
   language: python
   name: python3
+execute:
+  skip: true  # built by hand: run `make` locally and commit the executed .ipynb
 downloads:
   - url: https://nbserv.duckdns.org/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/network/gsea.ipynb&branch=main
     title: Run on the KTH JupyterHub
@@ -91,7 +93,7 @@ airway = np.log2(airway)
 airway.shape
 ```
 
-Two remarks on that filter. First, the matrix is quantified as FPKM rather than as raw counts; FPKM is a poor basis for a count-based differential-expression model, but both the $t$-test we use below and the rank-based enrichment scores of GSEA only care about the relative ordering of samples and genes, so it serves our purpose. Second, the gene-level FPKM values contain a handful of all-or-nothing artefacts, where a gene is reported at several thousand FPKM in one condition and at exactly zero in the other. Requiring at least 1 FPKM in *all* eight libraries removes them and leaves us with around eleven thousand robustly expressed genes.
+Two remarks on that filter. First, the matrix is quantified as FPKM rather than as raw counts; FPKM is a poor basis for a count-based differential-expression model, but the $t$-test we use below and the signal-to-noise metric that GSEA ranks the genes by are both computed from the log-transformed expression values themselves and do not assume count data, so it serves our purpose. Second, the gene-level FPKM values contain a handful of all-or-nothing artefacts, where a gene is reported at several thousand FPKM in one condition and at exactly zero in the other. Requiring at least 1 FPKM in *all* eight libraries removes them and leaves us with around eleven thousand robustly expressed genes.
 
 ## Differential expression, dexamethasone versus untreated
 
@@ -135,11 +137,11 @@ qvalues.loc[["FKBP5", "PER1", "TSC22D3", "DUSP1"]]
 
 All four are up by roughly a factor of 8--16 with $q$ values around 1%. The experiment worked, and any pathway method we apply should recover this.
 
-Note also how modest the $q$ values are. With four pairs the $t$ statistic rests on three degrees of freedom, so even a perfectly consistent eight-fold change cannot be declared significant with much confidence, and no gene in this experiment reaches a $q$ value below $10^{-2}$. That is a property of the sample size rather than of the effect sizes, and it is why the thresholds we use below are far less stringent than they would be for a cohort of hundreds of patients.
+Note also how modest the $q$ values are. With four pairs the $t$ statistic rests on three degrees of freedom, so even a perfectly consistent eight-fold change cannot be declared significant with much confidence: the smallest $q$ value in this experiment is about $2 \cdot 10^{-3}$, and only some two hundred genes reach a $q$ value below $10^{-2}$. That is a property of the sample size rather than of the effect sizes, and it is why the thresholds we use below are far less stringent than they would be for a cohort of hundreds of patients.
 
 ## Over-representation analysis
 
-We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overrepresentation analysis. The module is unfortunately not implementing pathway analysis itself. It instead call a remote webserver [Enrichr](https://maayanlab.cloud/Enrichr/).
+We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overrepresentation analysis. The module unfortunately does not implement the pathway analysis itself. It instead calls a remote webserver, [Enrichr](https://maayanlab.cloud/Enrichr/).
 
 In the analysis here we use the [KEGG](https://www.genome.jp/kegg/) database's definition of biological pathways. This choice can easily be changed to other databases such as GO.
 
@@ -152,7 +154,6 @@ pathway_db=['KEGG_2019_Human']
 background=set(qvalues.index)
 gene_list = list(qvalues.loc[qvalues["q"]<0.01,"q"].index)
 
-output_enrichr=pd.DataFrame()
 enr=gp.enrichr(
                 gene_list=gene_list,
                 gene_sets=pathway_db,
@@ -165,7 +166,7 @@ enr=gp.enrichr(
 len(gene_list)
 ```
 
-We clean up the results a bit by only keeping some of the resulting metrics. We also multiple hypothesis correct our results, and list the terms with a FDR less than 20%.
+We clean up the results a bit by only keeping some of the resulting metrics. We also correct the results for multiple hypothesis testing, and list the terms with an FDR less than 20%.
 
 ```{code-cell} ipython3
 kegg_enr = enr.results[["P-value","Term"]].rename(columns={"P-value": "p"})
@@ -173,7 +174,7 @@ kegg_enr = qvalue.qvalues(kegg_enr)
 kegg_enr.loc[kegg_enr["q"]<0.20]
 ```
 
-The analysis seem to find overrepresentation of relatively few pathways, given how convincing the differential expression was. The strongest term, *Mineral absorption*, is driven by the metallothioneins *MT2A*, *MT1X* and *MT1E*, which are indeed classically induced by glucocorticoids -- but it is a somewhat oblique way of describing a drug response, and nothing that we would call a glucocorticoid pathway comes out at all.
+The analysis seems to find overrepresentation of relatively few pathways, given how convincing the differential expression was. The strongest term, *Mineral absorption*, is driven by the metallothioneins *MT2A*, *MT1X* and *MT1E*, which are indeed classically induced by glucocorticoids -- but it is a somewhat oblique way of describing a drug response, and nothing that we would call a glucocorticoid pathway comes out at all.
 
 ```{code-cell} ipython3
 enr.results.sort_values("P-value").head(5)[["Term", "P-value", "Genes"]]
@@ -181,9 +182,9 @@ enr.results.sort_values("P-value").head(5)[["Term", "P-value", "Genes"]]
 
 This is the characteristic failure mode of ORA. The 200-odd genes that pass the threshold are a thin slice of a response in which thousands of genes shift a little, and by cutting at $q<0.01$ we threw away all the information about *how much* each gene moved and in which direction.
 
-## Geneset Enrichment analysis
+## Gene set enrichment analysis
 
-Subsequently we use gseapy to perform a geneset enrichment analysis (GSEA), which uses the whole ranked list instead of a thresholded one. This time we compare to the *hallmark* collection of [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp), fifty carefully curated sets that each summarise a coherent biological state.
+Subsequently we use gseapy to perform a gene set enrichment analysis (GSEA), which uses the whole ranked list instead of a thresholded one. This time we compare to the *hallmark* collection of [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp), fifty carefully curated sets that each summarise a coherent biological state.
 
 We put the dexamethasone samples first so that a *positive* enrichment score means "up in dexamethasone".
 
@@ -201,14 +202,13 @@ gs = gp.GSEA(data=airway,
                  threads=4, # Number of allowed parallel processes
                  seed=42,
                  format='png',)
-                 # ascending=True)
 gs.run()
 gs.res2d[["Term","ES","NES","NOM p-val","FDR q-val"]].head(8)
 ```
 
 ### Why the permutation null matters here
 
-Look closely at the nominal $p$ values: several of them cluster tightly just above $0.016$, and none falls below it. That is not a coincidence. Permuting the phenotype labels of eight samples into two groups of four can produce at most $\binom{8}{4}=70$ distinct assignments, of which only 35 are distinct up to swapping the group names. The permutation $p$ value can therefore not be resolved beyond roughly $1/70$, no matter how many permutations we ask for, and the FDR estimates inherit that coarseness.
+Look closely at the nominal $p$ values: several of them cluster tightly just above $0.016$, and none falls below it. That is not a coincidence. Permuting the phenotype labels of eight samples into two groups of four can produce at most $\binom{8}{4}=70$ distinct assignments, of which only 35 are distinct up to swapping the group names. The permutation $p$ value can therefore not be resolved beyond roughly $1/70$, no matter how many permutations we ask for, and the FDR estimates inherit that coarseness. Strictly, our design is paired, and permutations that respect the pairing can only swap the labels within each donor, which gives just $2^4 = 16$ assignments and an even coarser resolution.
 
 Phenotype permutation is the right null whenever it is affordable, because it preserves the correlation between genes. With very few samples per group -- the usual rule of thumb is fewer than seven -- it simply runs out of resolution, and the recommended fallback is to permute the *gene sets* instead: the ranked list is kept fixed and random gene sets of the same size are drawn to build the null. This is a weaker null, as it treats genes as independent and so tends to be anti-conservative for sets of co-regulated genes, but it is the only one with enough resolution here.
 
@@ -236,7 +236,7 @@ significant = gs_res[gs_res["FDR q-val"].astype(float)<0.25]
 significant[["Term","ES","NES","NOM p-val","FDR q-val"]]
 ```
 
-Where ORA found almost nothing, GSEA reports a couple of dozen hallmark sets, all of them up in dexamethasone. Two of the strongest are exactly the positive controls we hoped for, although they are not labelled the way a pharmacologist would label them:
+Where ORA found almost nothing, GSEA reports about twenty hallmark sets, all of them up in dexamethasone. Two of the strongest are exactly the positive controls we hoped for, although they are not labelled the way a pharmacologist would label them:
 
 * **Adipogenesis** is a glucocorticoid signature in disguise. Dexamethasone is a standard ingredient of the cocktail used to drive adipocyte differentiation in culture, so the hallmark set is populated with genes that the glucocorticoid receptor induces directly.
 * **Androgen Response** is a steroid-receptor set, and the nuclear receptors share a large part of their target repertoire; *FKBP5* sits in its leading edge.
@@ -265,7 +265,7 @@ The lesson is the one that makes GSEA worth the extra machinery over ORA: the en
 
 ### Visualising the enrichment
 
-The package we are using for accessing GSEA, gseapy, has some built in plotting routine for illustrating the enrichment for any given pathway.
+The package we are using for accessing GSEA, gseapy, has some built-in plotting routines for illustrating the enrichment for any given pathway.
 
 ```{code-cell} ipython3
 axs = gs.plot(terms=gs_res.Term[0])
@@ -287,3 +287,11 @@ genes = gs_res.Lead_genes[i].split(";")[:25]
 # Make sure that ``ofname`` is not None, if you want to save your figure to disk
 ax = heatmap(df = gs.heatmat.loc[genes], z_score=0, title=gs_res.Term[i], figsize=(14,4))
 ```
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Explain why a paired $t$-test is used when each donor contributes one treated and one untreated sample, and how known glucocorticoid-receptor targets such as *FKBP5* serve as a positive control.
+2. Explain why ORA with a $q < 0.01$ cut-off found few pathways in the dexamethasone data while GSEA found many, in terms of the information about size and direction of change that the threshold throws away.
+3. Calculate how many distinct ways the phenotype labels of a small experiment can be permuted, such as $\binom{8}{4} = 70$ for four against four samples, and explain how this limits the permutation $p$ value. Explain why gene-set permutation is then used, and why it tends to be anti-conservative.
+4. Interpret a GSEA hit through its leading-edge genes, and explain how a gene set named after a stimulus, such as TNF-alpha Signaling via NF-kB, can come out enriched because inhibitors of that pathway are induced.
+:::

@@ -162,3 +162,9 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 ```
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Set up a multiple regression where clinical variables (tumour grade, lymph-node status and tumour size) together explain the expression of a gene.
+2. Use residual plots and plots of predicted against actual values to compare two models of the same response, such as a size-only model against a model with grade, node status and size.
+:::

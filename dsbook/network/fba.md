@@ -290,3 +290,14 @@ For a deeper treatment, the primer [What is flux balance analysis?](https://doi.
 3. In the FVA output, the two isozyme fluxes each ranged over $[0, 15]$. Does this mean either range endpoint is biologically plausible? What extra information would pin the split down?
 4. Our knockout of the respiration complex left 21% of ATP production. Would you call it essential? Discuss how the essentiality cutoff $\theta$ trades false positives against false negatives, e.g. when nominating drug targets.
 5. A metabolic network diagram (topology only) and a GEM (with stoichiometry) both contain glycolysis. Give a concrete question the GEM can answer that the diagram cannot.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Describe the three layers of a genome-scale metabolic model (GEM): mass-balanced reactions, gene-protein-reaction (GPR) rules, and bounds with exchange reactions. Explain what its stoichiometry adds compared with a pathway diagram that records only topology.
+2. Write down the stoichiometric matrix $S$ of a small reaction network, with one row per metabolite and one column per reaction, negative entries for consumed and positive entries for produced metabolites.
+3. Explain the pseudo-steady-state assumption $Sv = 0$, why it removes the need for kinetic parameters, and why it leaves a whole space of feasible flux distributions rather than a single solution.
+4. Write down FBA as a linear program, maximizing $Z = c^T v$ subject to $Sv = 0$ and $lb \le v \le ub$. Argue for a suitable objective, such as biomass or ATP production, and explain why maximizing a nutrient uptake is not meaningful.
+5. Calculate the optimal fluxes of the toy model by hand, with unlimited and with capped oxygen uptake, and explain how the result reproduces overflow metabolism and the Warburg effect.
+6. Explain why an FBA optimum is often not unique, and interpret the flux ranges $[v_i^{\min}, v_i^{\max}]$ from flux variability analysis (FVA).
+7. Identify which reactions a gene knockout disables from the GPR rules (`and` for enzyme complexes, `or` for isozymes), and judge whether the gene is essential with the criterion $Z^{KO} \le \theta \cdot Z^{WT}$.
+:::

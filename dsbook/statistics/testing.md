@@ -117,7 +117,7 @@ sample_info
 
 The goal of the exercise is to determine which genes are differentially expressed in the striatum of D2 mice as compared to B6 mice.
 
-We first create a vector of booleans, that track which samples that are from D2 mice. This will be needed as an input for subsequent significance estimation.
+We first create a vector of booleans that tracks which samples are from D2 mice. This will be needed as an input for subsequent significance estimation.
 
 ```{code-cell} ipython3
 ---
@@ -130,7 +130,7 @@ d2_bool
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-Next, for each gene that has been measured, we calculate (1) log of the average Fold Change difference between the two strains, and (2) the significance of the difference between the strains.
+Next, for each gene that has been measured, we calculate (1) the log fold change between the two strains, i.e. the difference between the mean log$_2$ expression values of the two strains, and (2) the significance of the difference between the strains.
 
 An easy way to do so is by defining a separate function, `get_significance_two_groups(row)`, that can do such calculations for any row of the `expr` DataFrame, and subsequently we use the function `apply` for the function to execute on each row of the DataFrame. For the significance test we use a $t$ test, which is provided by the function [`ttest_ind`.](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html)
 
@@ -267,4 +267,12 @@ This is also a warning about how to read the literature. A gene that appears in 
 
 +++ {"slideshow": {"slide_type": "fragment"}}
 
-Finally, note that even the flat part of the histograms contains a substantial number of genes below $p<0.05$ that are not differentially expressed. Out of $m$ tested genes we expect $0.05m$ false positives at that threshold, regardless of the number of replicates. How to deal with that problem is the topic of the [next chapter](./multiple.md).
+Finally, note that even the flat part of the histograms contains a substantial number of genes below $p<0.05$ that are not differentially expressed. If all $m$ tested genes were null, we would expect $0.05m$ false positives at that threshold, regardless of the number of replicates. As some of the genes are truly differentially expressed, $0.05m$ is an upper bound on the expected number of false positives. How to deal with that problem is the topic of the [next chapter](./multiple.md).
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Explain why the counts of an RNA-seq experiment are filtered for lowly expressed genes, divided by a per-sample size factor and log transformed before a $t$ test is applied to each gene.
+2. Calculate how many genes you would expect below $p<0.05$ if all $m$ tested genes followed $H_0$, and compare it with the observed number of genes below that threshold.
+3. Interpret a $p$ value histogram as a mixture of a flat part from genes that follow $H_0$ and a spike near zero from genes that are differentially expressed.
+4. Explain how the number of replicates affects statistical power and the stability of the findings, and argue why a gene reported in one three-versus-three study but not in another is not necessarily a contradiction.
+:::

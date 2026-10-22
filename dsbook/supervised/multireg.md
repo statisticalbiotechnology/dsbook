@@ -143,3 +143,10 @@ plt.show()
 * **Visual Evaluation**: If the points lie close to the red line, the model’s predictions are accurate. Deviations from this line represent prediction errors.
 
 This example demonstrates how multiple regression can be extended with regularization to improve model generalization, particularly when working with clinical and proteomic datasets.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Set up a multiple regression where several predictors, here protein levels, together predict a clinical variable such as BMI.
+2. Fit such a model by minimizing a ridge loss, and explain why the intercept is left out of the penalty.
+3. Judge how well a fitted model predicts by plotting predicted against actual values.
+:::

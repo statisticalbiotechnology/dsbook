@@ -34,20 +34,20 @@ MLPs are widely used in supervised learning tasks such as classification and reg
 
 An **artificial neuron** is a fundamental building block of neural networks. It is inspired by the biological neuron and functions as a mathematical model that takes multiple inputs, processes them, and produces an output. The artificial neuron makes a linear combination of its input that is forwarded to a non-linear activation function. This can be expressed as:
 
-$$ f(\mathbf{x};\mathbf{w}) = g(\sum_{i=1}^n w_i x_i + b) $$
+$$ f(\mathbf{x};\mathbf{w},b) = g(\sum_{i=1}^n w_i x_i + b) $$
 
 This expression can be broken down into these two steps:
 
-**Linear combination**: Each input is multiplied by a weight, and then all the weighted inputs are summed together. Additionally, a bias term is added to the sum. Mathematically, this can be represented as:
+1. **Linear combination**: Each input is multiplied by a weight, and then all the weighted inputs are summed together. Additionally, a bias term is added to the sum. Mathematically, this can be represented as:
 
-$$ z = \sum_{i=1}^n w_i x_i + b $$
+   $$ z = \sum_{i=1}^n w_i x_i + b $$
    
-Where:
+   Where:
    - $x_i$ are the inputs
    - $w_i$ are the weights
    - $b$ is the bias term
 
-2. **Activation Function**: The weighted sum is passed through an **activation function**, $g(x)$, to introduce non-linearity. Common activation functions include:
+2. **Activation Function**: The weighted sum is passed through an **activation function**, $g(z)$, to introduce non-linearity. Common activation functions include:
 
    - **Sigmoid**: Maps the input to a value between 0 and 1.
 
@@ -79,7 +79,7 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 1. **Forward Pass**: Input data passes through the network, and predictions are generated.
 2. **Loss Calculation**: A loss function (e.g., mean squared error for regression or cross-entropy for classification) is used to measure the error between the predictions and true labels.
-3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are the updated using optimization techniques, often gradient descent-based techniques. A more detailed description can be found in the [wikipedia entry](https://en.wikipedia.org/wiki/Backpropagation).
+3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are then updated using optimization techniques, often gradient descent-based techniques. A more detailed description can be found in the [wikipedia entry](https://en.wikipedia.org/wiki/Backpropagation).
 
 ## Example: Training an MLP on Artificial Data
 
@@ -130,7 +130,7 @@ weights_out = np.random.randn(n_hidden_2, n_output)  # Second hidden to output l
 bias_out = np.zeros((1, n_output))
 
 # Training parameters
-learning_rate = 0.01
+learning_rate = 1.0
 n_epochs = 1000
 
 # Training loop
@@ -143,12 +143,13 @@ for epoch in range(n_epochs):
     z_out = np.dot(a2, weights_out) + bias_out
     y_pred = sigmoid(z_out)  # Output prediction
 
-    # Compute loss (binary cross-entropy)
+    # Compute loss (binary cross-entropy, averaged over the training points)
     loss = -np.mean(y_train * np.log(y_pred) + (1 - y_train) * np.log(1 - y_pred))
 
     # Backward pass (gradient computation using chain rule)
     # Gradient of loss w.r.t. output layer activation (y_pred)
-    d_loss_y_pred = -(y_train / y_pred) + ((1 - y_train) / (1 - y_pred))
+    # (divided by the number of training points, as the loss is a mean)
+    d_loss_y_pred = (-(y_train / y_pred) + ((1 - y_train) / (1 - y_pred))) / len(y_train)
     # Gradient of sigmoid activation w.r.t. z_out (output layer input)
     d_y_pred_z_out = sigmoid_derivative(z_out)
     # Chain rule: Gradient of loss w.r.t. z_out
@@ -217,7 +218,7 @@ plt.ylabel("Feature 2")
 plt.show()
 ```
 
-We could have simplified the task by using the **`MLPClassifier`** from `sklearn` to simplify the process (, but without seeing the inner workings of the classifier). For the ones of you intereste, see below.
+We could have simplified the task by using the **`MLPClassifier`** from `sklearn` (but then without seeing the inner workings of the classifier). For those of you interested, see below.
 
 ```{code-cell}
 :tags: [hide-cell]
@@ -281,3 +282,13 @@ plt.show()
 ## A workbench for MLPs
 
 TensorFlow provides a nice workbench for MLPs, where you can investigate the influence of different selections of input features, architectures, and regularization on performance on different datatypes. [Try it out!](https://playground.tensorflow.org/)
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Write down the output of an artificial neuron, $f(\mathbf{x};\mathbf{w},b) = g(\sum_{i=1}^n w_i x_i + b)$, and calculate it by hand for given inputs, weights, bias and activation function.
+2. Describe the sigmoid, ReLU and tanh activation functions, including the range of values each one outputs, and explain that the activation function is what makes a neuron non-linear.
+3. Describe the structure of an MLP: an input layer with one neuron per feature, one or more fully connected hidden layers, and an output layer whose number of neurons depends on the task.
+4. Describe the steps of training an MLP: the forward pass, the loss calculation, the backward pass where backpropagation uses the chain rule to compute the gradients of the loss with respect to the weights, and the gradient descent update of the weights.
+5. Explain how the number and size of the hidden layers affect the capacity of an MLP and its risk of overfitting, and what happens when the learning rate is too high or too low.
+6. Explain why an MLP, unlike a linear classifier, can find a curved decision boundary that separates classes that are not linearly separable, such as the two half-moons in the example.
+:::

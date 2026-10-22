@@ -85,7 +85,7 @@ sns.histplot(x=pvalues["p"],kde=False)
 plt.xlim(0,1.0);
 ```
 
-### $q$ value esitmation
+### $q$ value estimation
 We define a function for the calculation of $\pi_0$. Here we use a different method than the one described in Storey&Tibshirani. The details of this method, known as the *bootstrap method*, are given in [Storey 2002](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/1467-9868.00346)
 
 ```{code-cell} ipython3
@@ -114,18 +114,18 @@ def estimatePi0(p, numBoot=100, numLambda=100, maxLambda=0.95):
     return pi0s[minIx]
 ```
 
-We subsequently use Storey&Tibshirani to calculate first calculate, 
+Following Storey&Tibshirani, we subsequently first calculate, 
 
 $$ \hat{\rm FDR}(t) = \frac{\pi_0mt}{|\{p_i\le t\}|}, $$
 
-and then smooth the $\rm FDR(t)$ estimates as, 
+and then make the $\hat{\rm FDR}(t)$ estimates monotone by taking the minimum over all thresholds at least as large as $p_i$, 
 
 $$\hat{q}(p_i)=\min_{t \ge p_i}\hat{\rm FDR}(t).$$
 
 ```{code-cell} ipython3
 def qvalues(pvalues):
     m = pvalues.shape[0] # The number of p-values
-    pvalues.sort_values("p",inplace=True) # sort the pvalues in acending order
+    pvalues.sort_values("p",inplace=True) # sort the pvalues in ascending order
     pi0 = estimatePi0(list(pvalues["p"].values))
     print("pi_0 estimated to " + str(pi0))
     
@@ -160,18 +160,18 @@ We can list the differential genes, in descending order of significance.
 qv
 ```
 
-## Displaying number of findings as a function of $q$ value (a $p$-$q$ plot)
-A plot of the number of differentially expressed genes as a function of $q$ value gives the same message.
+## Displaying number of findings as a function of $q$ value
+A plot of the number of differentially expressed genes as a function of the $q$ value threshold shows how many genes we can report at each FDR level.
 
 ```{code-cell} ipython3
-sns.lineplot(x=pvalues["q"],y=list(range(pvalues.shape[0])),errorbar=None,lw=3)
+sns.lineplot(x=pvalues["q"],y=list(range(1, pvalues.shape[0] + 1)),errorbar=None,lw=3)
 plt.xlim(0,0.1);
 plt.ylim(0, (pvalues["q"] < 0.1).sum());
 plt.ylabel("Number of differential genes");
 ```
 
 ## Volcano plots revisited
-We often see that Volcano plots are complemented with FDR tresholds. Here we complement the previous lecture's volcano plot with coloring indicating if transcripts are significantly differentially abundant at a FDR-treshhold of $0.01$.
+We often see that Volcano plots are complemented with FDR thresholds. Here we complement the previous lecture's volcano plot with coloring indicating if transcripts are significantly differentially abundant at an FDR threshold of $0.01$.
 
 ```{code-cell} ipython3
 qv["Significant"] = qv["q"]<0.01
@@ -261,16 +261,16 @@ Now the histogram shows a clear spike of small $p$ values, $\pi_0$ is estimated 
 
 ## Spline estimation of $\pi_0$
 
-Storey and Tibshirani outlines an other procedure for estimating $\pi_0$ than the bootstrap procedure used above, i.e. using 
+Storey and Tibshirani outline another procedure for estimating $\pi_0$ than the bootstrap procedure used above, i.e. using 
 $\hat{\pi_0}(\lambda) = \frac{|\{p>\lambda \}|}{m(1-\lambda)}$.
 
-Below, we almost follow the article's described procedure (please try to find the difference on how we select which lambdas we evaluate). Furthermore we fit a [qubic spline](https://en.wikipedia.org/wiki/Smoothing_spline) to these $\pi_0$ estimates.
+Below, we almost follow the article's described procedure (please try to find the difference on how we select which lambdas we evaluate). Furthermore we fit a [cubic spline](https://en.wikipedia.org/wiki/Smoothing_spline) to these $\pi_0$ estimates.
 
 ```{code-cell} ipython3
 from scipy.interpolate import UnivariateSpline
 
 m = pvalues.shape[0] # The number of p-values
-pvalues.sort_values("p",inplace=True,ascending=False) # sort the pvalues in decending order
+pvalues.sort_values("p",inplace=True,ascending=False) # sort the pvalues in descending order
 num_p = -1
 for ix in pvalues.index:
     num_p += 1
@@ -282,7 +282,7 @@ pvalues.sort_values("p",inplace=True) # sort the pvalues in ascending order
 s = UnivariateSpline(pvalues["p"],pvalues["pi0_hat"], k=3,s=10)
 ```
 
-We plot the estimates (blue) as well as the spline fit (red) for two different intevalls of $\lambda$. You will see the need of a smoother, particularly in the region near 1.0.
+We plot the estimates (blue) as well as the spline fit (red) for two different intervals of $\lambda$. You will see the need of a smoother, particularly in the region near 1.0.
 
 ```{code-cell} ipython3
 def plot_pi0_hat(p,s,xlow,xhigh,ylow,yhigh,ax):
@@ -290,17 +290,25 @@ def plot_pi0_hat(p,s,xlow,xhigh,ylow,yhigh,ax):
   sns.lineplot(x=pvalues["p"],y=s(pvalues["p"]),errorbar=None,lw=3,ax=ax, color='r')
   ax.set_xlim(xlow,xhigh);
   ax.set_ylim(ylow,yhigh);
-  ax.set_xlabel("$\lambda $");
-  ax.set_ylabel("$\pi_0(\lambda)$");
+  ax.set_xlabel(r"$\lambda $");
+  ax.set_ylabel(r"$\pi_0(\lambda)$");
 
 fig, ax = plt.subplots(1,2,figsize=(12, 4))
 plot_pi0_hat(pvalues,s,0,1,0,1.05,ax[0])
 plot_pi0_hat(pvalues,s,0.95,1,0,1.05,ax[1])
 ```
 
-We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare the it to the bootstrapping estimate.
+We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare it to the bootstrapping estimate.
 
 ```{code-cell} ipython3
 print("Spline estimate of pi_0: " + str(s(1)))
 print("Bootstrap estimate of pi_0: " + str(estimatePi0(list(pvalues["p"].values))))
 ```
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Interpret an estimated $\pi_0$ in its biological context, and contrast what $\pi_0$ tells you (how many genes differ in total) with what $q$ values tell you (which individual genes can be called at a controlled error rate).
+2. Explain how a ground-truth null experiment, such as splitting genetically identical B6 mice into two groups, checks whether an analysis manufactures findings, and describe the $p$ value histogram and $q$ values you expect from it.
+3. Explain why processing batches, such as flow cells, make a $t$ test conservative when they are spread evenly over the groups, but create false findings when they are confounded with the groups. Identify both situations from a $p$ value histogram.
+4. Argue why a good experimental design spreads the conditions evenly over the processing batches, and judge whether a given design confounds batch with condition.
+:::

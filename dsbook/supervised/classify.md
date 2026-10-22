@@ -48,7 +48,7 @@ The **hinge loss** is commonly used in [support vector machines (SVMs)](./svm.md
 \mathcal{L}_{\text{hinge}} = \sum_i \max(0, 1 - y_i f(\mathbf{x}_i))
 ```
 
-This loss penalizes any data points where the predicted value $f(\mathbf{x}_i)$ does not match the true label $y_i$. If $y_i f(\mathbf{x}_i) \geq 1$, the prediction is correct and there is no penalty. If $y_i f(\mathbf{x}_i) < 1$, there is a penalty proportional to the misclassification.
+This loss penalizes any data points where the predicted value $f(\mathbf{x}_i)$ does not match the true label $y_i$ with a sufficient margin. If $y_i f(\mathbf{x}_i) \geq 1$, the prediction is correct with a margin and there is no penalty. If $y_i f(\mathbf{x}_i) < 1$, there is a penalty proportional to $1 - y_i f(\mathbf{x}_i)$. This means that misclassified points are penalized, but so are correctly classified points that lie too close to the decision boundary ($0 < y_i f(\mathbf{x}_i) < 1$).
 
 ```{code-cell}
 :tags: [hide-input]
@@ -116,7 +116,7 @@ The probably most used **loss function** for classification tasks is **cross-ent
 \mathcal{L}_{\text{cross-entropy}} = - \frac{1}{N} \sum_{i=1}^N \left( y_i \log(f(\mathbf{x}_i)) + (1 - y_i) \log(1 - f(\mathbf{x}_i)) \right)
 ```
 
-For the mathematically inclinded reader, this is the negative log‑likelihood of a [Bernoulli model](https://en.wikipedia.org/wiki/Bernoulli_distribution), so minimizing it corresponds to maximum likelihood estimation for probabilistic predictions.
+For the mathematically inclined reader, this is the negative log‑likelihood of a [Bernoulli model](https://en.wikipedia.org/wiki/Bernoulli_distribution), so minimizing it corresponds to maximum likelihood estimation for probabilistic predictions.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -228,7 +228,7 @@ sns.scatterplot(x=X[:, 0], y=X[:, 1], hue=y, palette="coolwarm", s=60, edgecolor
 
 
 # Add the decision boundary (p = 0.5)
-# plt.contour(x1_grid, x2_grid, probability, levels=[0.5], colors='black', linestyles='--')
+plt.contour(x1_grid, x2_grid, probability, levels=[0.5], colors='black', linestyles='--')
 
 plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
@@ -242,4 +242,13 @@ plt.show()
 In this example:
 - **Logistic Loss** is minimized to fit a classification model.
 - The model predicts class labels $y = \pm 1$, based on the sign of $f(\mathbf{x})$.
-- The fitted model is visualized as a probability contour over the feature space.
+- The fitted model is visualized as a probability contour over the feature space, with the decision boundary ($p = 0.5$) as a dashed line.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Explain how regression can be used for classification by encoding the classes as signed labels $y_i \in \{-1, +1\}$ or indicator labels $y_i \in \{0, 1\}$, and predicting the class from the sign of $f(\mathbf{x})$.
+2. Write down the hinge loss, the logistic loss and the cross-entropy loss, state which label encoding each one assumes, and calculate each loss by hand for a single data point.
+3. Interpret plots of the hinge and logistic losses against $f(\mathbf{x})$ for $y = +1$ and $y = -1$. Explain why both losses grow for predictions on the wrong side, and why the hinge loss is exactly zero once $y_i f(\mathbf{x}_i) \geq 1$.
+4. Explain how logistic regression uses the sigmoid function to turn the linear function $f(\mathbf{x}_i) = \mathbf{x}_i^\top \beta$ into the probability $P(y_i = +1 | \mathbf{x}_i)$, and calculate this probability for a given value of $f(\mathbf{x}_i)$.
+5. Interpret a plot of the predicted probability over the feature space, and identify the decision boundary as the points where $f(\mathbf{x}) = 0$, that is, where the probability is 0.5.
+:::

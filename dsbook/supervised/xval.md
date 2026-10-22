@@ -108,7 +108,7 @@ In the above code, we create a simple quadratic dataset, and fit both a linear r
 
 ### Cross Validation to the Rescue
 
-A problem with reserving data for a separate validation set is that we have to reserve precious data for either training or testing. Idealy, one would like to train and test on as much data as possible. Therefore, to evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- still using all available data.
+A problem with reserving data for a separate validation set is that we have to reserve precious data for either training or testing. Ideally, one would like to train and test on as much data as possible. Therefore, to evaluate how well a model will perform on new, unseen data, it’s important to use validation techniques such as cross validation. Cross validation is a strategy that partitions the available data into multiple subsets, or folds, allowing the model to be trained on one subset and validated on another. This ensures that each data point is eventually used both for training and validation. The method allows us to assess how well a model generalizes to unseen data, providing an estimate of the expected accuracy on new samples -- still using all available data.
 
 In **k-fold cross validation**, the dataset is split into `k` equally sized folds. The model is trained `k` times, each time using a different fold as the validation set and the remaining folds for training. The average of the validation metrics across all folds gives a more robust estimate of the model's performance compared to using a single validation set.
 
@@ -120,9 +120,9 @@ Imagine we have a dataset with **six data points**, represented as `A`, `B`, `C`
 - **Fold 2**: Training on `[A, B, E, F]`, Validation on `[C, D]`
 - **Fold 3**: Training on `[A, B, C, D]`, Validation on `[E, F]`
 
-Each fold is used for validation once, and the model is trained on the remaining data. This way, every data point contributes to both training and evaluation, reducing the risk of overfitting and improving the robustness of the performance estimate.
+Each fold is used for validation once, and the model is trained on the remaining data. This way, every data point contributes to both training and evaluation, which makes it easier to detect overfitting and improves the robustness of the performance estimate.
 
-Here is a code example illustrating three-fold cross validation with six data points:
+Here is a code example illustrating three-fold cross validation with six data points. Note that the code shuffles the data before splitting it, so its folds differ from the ones listed above:
 
 ```{code-cell}
 from sklearn.model_selection import KFold
@@ -162,9 +162,9 @@ flowchart TB
     end
 
     %% Fold 1
-    A --> T1
+    A -. Test .-> V1
     B --> T1
-    C -. Test .-> V1
+    C --> T1
 
     %% Fold 2
     A --> T2
@@ -172,14 +172,14 @@ flowchart TB
     C --> T2
 
     %% Fold 3
-    A -. Test .-> V3
+    A --> T3
     B --> T3
-    C --> T3
+    C -. Test .-> V3
 ```
 
 ### Cross Validation to detect overfitting
 
-In the following code, we demonstrate how to use **scikit-learn's KFold cross validation** with three-fold cross validation for a simple linear regression model:
+In the following code, we demonstrate how to use **scikit-learn's KFold cross validation** with three-fold cross validation to compare a second-degree and an eighth-degree polynomial regression model:
 
 ```{code-cell}
 from sklearn.model_selection import KFold
@@ -201,7 +201,7 @@ for train_index, test_index in kf.split(x):
     y_pred = pipeline_2.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
     scores_2.append(mse)
-    # Fit and test eigth degree polynomial
+    # Fit and test eighth degree polynomial
     pipeline_8.fit(x_train, y_train)
     y_pred = pipeline_8.predict(x_test)
     mse = mean_squared_error(y_test, y_pred)
@@ -221,7 +221,7 @@ Hyperparameters are parameters of the machine learning model that are not learne
 
 Grid search is a brute-force method for finding the optimal hyperparameter values for a given model. It involves specifying a grid of hyperparameter values and then training and evaluating the model for each combination of parameters. The combination that yields the best performance on the validation set is selected as the final set of hyperparameters.
 
-Let’s consider an example where we are training a Lasso regression model, and we want to determine the optimal value for the hyperparameter, $\alpha$. Lasso regression is a linear model that includes L1 regularization, which helps to prevent overfitting by adding a penalty to the magnitude of the parameters, effectively setting some of them to zero. With grid search, we define a range of possible values for $\alpha$ and iterate over each value, training and evaluating the model at each step.
+Let’s consider an example where we are training a Lasso regression model, and we want to determine the optimal value for the hyperparameter, $\alpha$. Lasso regression is a linear model that includes L1 regularization, which helps to prevent overfitting by adding a penalty to the magnitude of the parameters, effectively setting some of them to zero. Here $\alpha$ plays the same role as the regularization parameter $\lambda$ in the [regularization chapter](./regularization.md); scikit-learn calls it $\alpha$. With grid search, we define a range of possible values for $\alpha$ and iterate over each value, training and evaluating the model at each step.
 
 The following code demonstrates the use of **GridSearchCV** in scikit-learn to perform a grid search over the regularization parameter of a Lasso regression model:
 
@@ -262,7 +262,7 @@ for i, estimator in enumerate(grid_search.cv_results_['params']):
     print(f"Alpha: {alpha}, parameters for model {i + 1}: {lasso.coef_}")
 ```
 
-In the code above, we generate synthetic data from a second-order polynomial with Gaussian noise. We specify a grid of values for the regularization parameter $\alpha$. The `GridSearchCV` function performs cross validation for each value of $\alpha$ and returns the value that yields the best performance. Note that we set the parameter `cv=3` to perform three-fold cross validation, which helps to reduce bias and variance in the results.
+In the code above, we generate synthetic data from a second-order polynomial with Gaussian noise. We specify a grid of values for the regularization parameter $\alpha$. The `GridSearchCV` function performs cross validation for each value of $\alpha$ and returns the value that yields the best performance. Note that we set the parameter `cv=3` to perform three-fold cross validation, so that each value of $\alpha$ is evaluated on data that were not used to fit the model.
 
 ### Nested Cross Validation
 
@@ -291,4 +291,14 @@ nested_scores = cross_val_score(grid_search, x, y, cv=outer_cv)
 print(f"Nested cross-validated MSE: {-nested_scores.mean():.2f} (+/- {nested_scores.std():.2f})")
 ```
 
-In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance. As you see from above, a feature of the cross validation is that it provides posibility to calculate variance estimates of performance figures, since you have calculated the error over a number of predictors for number of validation sets.
+In this code, the outer loop (`outer_cv`) splits the dataset into 5 folds. For each split, the inner loop (`inner_cv`) uses 3-fold cross validation to perform a grid search over the hyperparameters. This ensures that hyperparameters are optimized on an independent portion of the data, leading to a more accurate and unbiased estimate of model performance. As you see from above, a feature of cross validation is that it makes it possible to estimate the variance of the performance figures, since the error is calculated for several models, each on its own validation set.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Explain what overfitting and underfitting are, and identify them from the training and validation errors of models of different complexity, such as a linear, a quadratic and an eighth-degree polynomial model.
+2. Explain why a model's performance must be estimated on data that were not used to train it.
+3. Describe k-fold cross validation, and write out by hand how a small dataset, such as six data points in three folds, is split so that every point is used for validation exactly once.
+4. Explain the advantages of cross validation over a single validation set: all data are used for both training and validation, and the spread over the folds gives an estimate of the variance of the performance.
+5. Define a hyperparameter, contrast it with the parameters learned from the training data, and describe how grid search with cross validation selects a hyperparameter such as the LASSO regularization parameter $\alpha$.
+6. Explain why the validation performance of the best setting in a grid search is optimistic, and describe how nested cross validation, with an inner loop for tuning and an outer loop for evaluation, avoids this.
+:::

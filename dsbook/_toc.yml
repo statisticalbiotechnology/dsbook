@@ -15,7 +15,7 @@ parts:
     - file: supervised/classify
     - file: supervised/xval
     - file: supervised/svm
-    - file: supervised/supervisedML
+    - file: supervised/supervisedML.ipynb
     - file: supervised/mlp
   - caption: Statistics
     numbered: True

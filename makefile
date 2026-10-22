@@ -12,6 +12,7 @@ IPYNB_FILES := $(MD_FILES:.md=.ipynb)
 EXEC_IPYNB := dsbook/network/fba.ipynb \
               dsbook/network/gem_ecoli.ipynb \
               dsbook/network/gsea.ipynb \
+              dsbook/supervised/supervisedML.ipynb \
               dsbook/statistics/testing.ipynb \
               dsbook/statistics/qvalue.ipynb \
               dsbook/unsupervised/VAEofCarcinomas.ipynb

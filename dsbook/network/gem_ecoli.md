@@ -152,7 +152,7 @@ pd.DataFrame({
 }).round(3)
 ```
 
-The objective value is a growth rate in h⁻¹. Aerobically both models predict a growth rate close to the roughly 0.7–0.9 h⁻¹ measured for *E. coli* in glucose minimal medium. Without oxygen, the curated model grows more slowly, as real *E. coli* does by fermentation. The CarveMe model does not grow at all, even though *E. coli* is a facultative anaerobe.
+The objective value is a growth rate in h⁻¹. Aerobically, the curated model predicts a growth rate within the roughly 0.7–0.9 h⁻¹ measured for *E. coli* in glucose minimal medium, while the CarveMe model predicts a somewhat faster growth of about 1 h⁻¹. Without oxygen, the curated model grows more slowly, as real *E. coli* does by fermentation. The CarveMe model does not grow at all, even though *E. coli* is a facultative anaerobe.
 
 To find out why, we can test the biomass components one at a time. For each metabolite consumed by the biomass reaction, we add a temporary *demand* reaction that drains it, make that the objective, and check whether the network can produce it without oxygen:
 
@@ -244,7 +244,7 @@ for name, pred in predicted.items():
                   "precision": precision_score(y_true, y_pred),
                   "recall": recall_score(y_true, y_pred),
                   "MCC": matthews_corrcoef(y_true, y_pred)}
-performance = pd.DataFrame(rows).T
+performance = pd.DataFrame.from_dict(rows, orient="index")
 performance.round(2)
 ```
 
@@ -319,7 +319,7 @@ pd.set_option("display.max_colwidth", None)
 pd.DataFrame(rows).T
 ```
 
-The results match what is known about these organisms' lifestyles. *E. coli* makes all twenty amino acids itself. *Mycoplasma genitalium* has one of the smallest genomes of any free-living cell and takes nearly everything from its host, so its model needs most of the amino acids supplied. *Buchnera* is a more interesting case. Its genome shows that the endosymbiont has kept the pathways for the amino acids that are *essential* to its aphid host, which feeds on phloem sap that is poor in them, while it imports several non-essential ones from the host ([Shigenobu et al. 2000](https://doi.org/10.1038/35024074)). Four of the five auxotrophies the model predicts are for amino acids that animals can make themselves (asparagine, aspartate, glutamine and tyrosine), so the model largely reproduces this pattern. The exception is valine. Each prediction is also a hypothesis that could be tested experimentally, or checked against more careful curation of these pathways.
+The results match what is known about these organisms' lifestyles. *E. coli* makes all twenty amino acids itself. *Mycoplasma genitalium* has one of the smallest genomes of any organism that can be grown in pure culture, and as a parasite it takes nearly everything from its host, so its model needs most of the amino acids supplied. *Buchnera* is a more interesting case. Its genome shows that the endosymbiont has kept the pathways for the amino acids that are *essential* to its aphid host, which feeds on phloem sap that is poor in them, while it imports several non-essential ones from the host ([Shigenobu et al. 2000](https://doi.org/10.1038/35024074)). Four of the five auxotrophies the model predicts are for amino acids that animals can make themselves (asparagine, aspartate, glutamine and tyrosine), so the model largely reproduces this pattern. The exception is valine. Each prediction is also a hypothesis that could be tested experimentally, or checked against more careful curation of these pathways.
 
 This kind of model is also the starting point for the omics integration we discussed in the previous chapter. If a model of an organism exists, even an automatically built one, then transcriptomics, proteomics or metagenomics data for that organism can be mapped onto its reactions through the GPR rules. CarveMe models are used this way in community modeling of the gut microbiome, where most species have no curated model.
 
@@ -330,3 +330,11 @@ This kind of model is also the starting point for the omics integration we discu
 3. Both models were evaluated only on the genes they contain, and they contain different genes. Why does this make a direct comparison of their accuracies difficult? How would you set up a fairer comparison?
 4. Suppose you have the genome of a newly isolated soil bacterium and a list of the carbon sources it can grow on. How would you use this information when building and validating a CarveMe model?
 5. The *Buchnera* model is auxotrophic for valine, an amino acid that is essential for the aphid. Is this a model error, or could it reflect real biology? What would you look for in the genome annotation and in the literature to decide?
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Contrast bottom-up curated reconstruction of a GEM (such as *i*ML1515) with top-down automatic reconstruction (CarveMe), and explain why a curated model can contain knowledge that is not in the genome, such as a reaction without an associated gene.
+2. Judge a model's essentiality predictions against knockout data using a confusion matrix, precision, recall and the Matthews correlation coefficient (MCC). Explain why accuracy is misleading when only a small fraction of the genes are essential.
+3. Explain why a gene needed only to make a compound that is absent from the biomass reaction cannot be predicted as essential, and hence why the objective function is part of the model.
+4. Describe how a growth medium is set through the uptake bounds of exchange reactions, and how removing a single amino acid from the medium predicts an auxotrophy.
+:::

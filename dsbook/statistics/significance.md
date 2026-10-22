@@ -31,7 +31,7 @@ Hypothesis testing is a statistical procedure used to determine if a sample data
 
 ### Null Hypothesis ($H_0$) and Alternative Hypothesis ($H_1$)
 
-In hypothesis testing, we begin by stating two competing hypotheses about population or a set of populations:
+In hypothesis testing, we begin by stating two competing hypotheses about a population or a set of populations:
 - **Null Hypothesis ($H_0$)**: This is a statement suggesting there is no effect, relationship, or difference. It represents the status quo or a baseline assumption. For example, in a clinical trial, $H_0$ might state that a new drug has no effect compared to a placebo (i.e. the patients in placebo population are not different than the one in the population of treated patients).
 - **Alternative Hypothesis ($H_1$)**: This hypothesis reflects what the researcher aims to prove. It suggests that there is an effect, a relationship, or a difference. In the clinical trial example, $H_1$ would state that the new drug has a beneficial effect compared to the placebo.
 
@@ -146,7 +146,7 @@ print(f"p-value from permutation test: {p_value:.4f}")
 
 ### Permutation Test for Model Significance
 
-Below is an example of how to implement permutation testing for assessing the significance of a regression model. Here we use the SSE of the model as a test statistics.
+Below is an example of how to implement permutation testing for assessing the significance of a regression model. Here we use the SSE of the model as a test statistic.
 
 ```{code-cell}
 import numpy as np
@@ -169,7 +169,7 @@ def loss(params, x, y):
     return np.sum((y - linear_model(params, x))**2)
 
 # Fit the model to the original data
-initial_params = np.random.randn(2)
+initial_params = rng.randn(2)
 result = minimize(loss, initial_params, args=(x, y))
 observed_loss = result.fun
 
@@ -179,7 +179,7 @@ permuted_losses = []
 
 for _ in range(n_permutations):
     # Shuffle y and fit the model to the permuted data
-    y_permuted = np.random.permutation(y)
+    y_permuted = rng.permutation(y)
     permuted_result = minimize(loss, initial_params, args=(x, y_permuted))
     permuted_losses.append(permuted_result.fun)
 
@@ -210,8 +210,6 @@ Below is a Python script demonstrating how to perform a t-test on two sample dat
 import numpy as np
 from scipy.stats import ttest_ind
 
-# Generate synthetic data for two independent samples
-
 # Perform a two-sample t-test (on the same sample we used previously)
 t_stat, p_value = ttest_ind(sample1, sample2)
 
@@ -222,11 +220,9 @@ When we assume normality, as in t-tests, we gain sensitivity, especially for sma
 
 ## One- vs Two-sided tests
 
-Here’s a brief explanation of the difference between one-sided and two-sided tests:
-
 A **one-sided test** is used when we want to determine if there is a difference in a specific direction (e.g., whether one group mean is greater than the other). In contrast, a **two-sided test** checks if there is any difference between the groups, regardless of direction (i.e., whether one mean is greater or less than the other). A two-sided test is more conservative because it tests for deviations in both directions, while a one-sided test focuses on a predetermined outcome.
 
-Here's how you could modify the permutation test to be one-sided for comparing `sample1` and `sample2`, checking if `sample2` has a larger mean:
+Below, the permutation test is modified to be one-sided, comparing `sample1` and `sample2` to check if `sample2` has a larger mean:
 
 ```{code-cell}
 import numpy as np
@@ -283,7 +279,7 @@ display(Math(rf"p (H_0: \Delta = 0): {two_p_value:.4f}"))
 
 In this **one-sided permutation test**, we are specifically testing if `sample2` has a larger mean than `sample1`. The observed difference and permuted differences are not taken as absolute values, and the p-value is computed based on the proportion of permutations where `perm_sample2 - perm_sample1` is greater than or equal to the observed difference. This makes it a one-sided test focusing on whether `sample2` is greater (or smaller) than `sample1`.
 
-If you test the efficiency of a drug, you are usually interested in whether the drug has a positive effect on patients, without considering whether it could have a negative effect. In such cases, a one-sided test is appropriate. On the other hand, in differential gene expression analysis, you often want to investigate both upregulation and downregulation of genes between patient groups, making a two-sided test more suitable.
+If you test the efficacy of a drug, you are usually interested in whether the drug has a positive effect on patients, without considering whether it could have a negative effect. In such cases, a one-sided test is appropriate. On the other hand, in differential gene expression analysis, you often want to investigate both upregulation and downregulation of genes between patient groups, making a two-sided test more suitable.
 
 ## Overview of the workflow in frequentist testing procedures
 
@@ -303,7 +299,7 @@ The diagram represents the process of statistical inference from a population to
 
 3. **Statistical Model**: A statistical model is built to describe the relationship between the statistic (X̄) and the population parameter (μ). This model helps us quantify uncertainty, and potentially correct for errors or biases, and ultimately use sample information to make inferences about the population.
 
-4. **Inference about Population Parameter**: Using the statistical model, we then make inferences about the population parameter. The goal is to make a statements about the true value of the population parameter (μ), based on the information contained in the sample and the statistical modeling of the errors.
+4. **Inference about Population Parameter**: Using the statistical model, we then make inferences about the population parameter. The goal is to make statements about the true value of the population parameter (μ), based on the information contained in the sample and the statistical modeling of the errors.
 
 ## Volcano Plots and Their Interpretation
 
@@ -323,7 +319,7 @@ The name "volcano plot" arises from the characteristic shape, where the data poi
 
 ### Example Script for Generating a Volcano Plot
 
-Here’s a Python script that generates random data to create a volcano plot:
+The script below simulates expression data for a set of genes and draws a volcano plot:
 
 ```{code-cell}
 import pandas as pd
@@ -333,7 +329,7 @@ from scipy.stats import ttest_ind
 # Parameters
 num_genes = 1000
 sample_size = 5
-mu, sigma = 4.0, 0.5
+mu, sigma = 4.0, 0.5  # mean and standard deviation of the log2 expression values
 
 # Random number generator
 rng = np.random.RandomState(42)
@@ -348,8 +344,8 @@ for i in range(num_genes):
     sample1 = rng.normal(mu, sigma, sample_size)
     sample2 = rng.normal(mu + offset, sigma, sample_size)
     
-    # Calculate fold change as the difference in means (log2)
-    fold_change = np.log2(np.mean(sample2)) - np.log2(np.mean(sample1))
+    # Calculate the log2 fold change as the difference in mean log2 expression
+    fold_change = np.mean(sample2) - np.mean(sample1)
     
     # Perform a t-test to calculate p-value
     _, p_value = ttest_ind(sample1, sample2, alternative='two-sided')
@@ -363,9 +359,13 @@ data = pd.DataFrame(gene_data, columns=['FoldChange', 'PValue'])
 # Convert p-values to -log10(p-value)
 data['negLog10PValue'] = -np.log10(data['PValue'])
 
+# Mark the genes that pass both the p value and the fold change thresholds
+passing = (data['PValue'] < 0.05) & (data['FoldChange'].abs() > 1)
+
 # Create the volcano plot
 plt.figure(figsize=(10, 6))
-plt.scatter(data['FoldChange'], data['negLog10PValue'], alpha=0.6, edgecolors='w', linewidth=0.5)
+plt.scatter(data.loc[~passing, 'FoldChange'], data.loc[~passing, 'negLog10PValue'], color='grey', alpha=0.6, edgecolors='w', linewidth=0.5)
+plt.scatter(data.loc[passing, 'FoldChange'], data.loc[passing, 'negLog10PValue'], color='darkorange', alpha=0.8, edgecolors='w', linewidth=0.5, label='p-value < 0.05 and |Fold Change| > 1')
 plt.axhline(-np.log10(0.05), color='red', linestyle='--', label='p-value = 0.05')
 plt.axvline(-1, color='blue', linestyle='--', label='Fold Change = -1')
 plt.axvline(1, color='blue', linestyle='--', label='Fold Change = 1')
@@ -377,10 +377,22 @@ plt.legend()
 plt.show()
 ```
 
-This script simulates random fold changes and p-values to illustrate a volcano plot:
+This script simulates log2 expression values for 1,000 genes in two groups of five samples, where each gene is given a random offset between the groups, and calculates a fold change and a $t$-test p-value for each gene to illustrate a volcano plot:
 - The **x-axis** shows log2-transformed fold changes.
 - The **y-axis** shows the negative log10-transformed p-values.
 - The red horizontal line indicates a significance threshold (p-value = 0.05).
 - The blue vertical lines represent log2 fold changes of ±1, which could be used as an effect size threshold.
+- The orange points are the genes that pass both thresholds.
 
 This example shows how points that meet both criteria (large fold change and significant p-value) can be visually highlighted, making volcano plots a useful tool for identifying important differences in biological studies. Note that we have not corrected for multiple testing when performing these tests, something we will discuss in a separate chapter (and lecture).
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Define the null hypothesis $H_0$, the alternative hypothesis $H_1$, a test statistic and its sampling distribution under $H_0$, and identify them in a comparison of two groups such as treated and placebo patients.
+2. Define the $p$ value and the significance level $\alpha$, and interpret a $p$ value correctly: it is neither the probability that $H_0$ is true nor a measure of effect size or practical significance.
+3. Define false positives (type I errors) and false negatives (type II errors), and explain how the choice of $\alpha$ trades one against the other.
+4. Describe the steps of a permutation test, both for a difference in means and for the SSE of a regression model. Calculate the permutation $p$ value as the fraction of permuted test statistics that are at least as extreme as the observed one.
+5. Explain how a $t$-statistic is formed from the difference in means and its estimated standard error. Contrast the $t$-test with a permutation test: assuming normality gives more power in small samples, but misleading $p$ values when the assumption fails.
+6. Contrast one-sided and two-sided tests, identify which tail or tails of the null distribution each one uses, and argue which one fits a given study, such as a drug trial or a differential expression analysis.
+7. Interpret a volcano plot, with the $\log_2$ fold change on the x-axis and $-\log_{10} p$ on the y-axis, and identify the features that have both a large effect size and a small $p$ value.
+:::

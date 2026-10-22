@@ -107,8 +107,18 @@ The goal for a soft-margin SVM is to minimize the following expression:
 \lambda \| \mathbf{w} \|^2 + \left[ \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b)) \right]
 ```
 
-Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A smaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications. Nothe that in the example in next chapter, we will use a slightly different formulation, in terms of a parameter $C$ that plays the inverse role of $\lambda$. Rescaling the objective above by $1/(2\lambda)$ turns it into $\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n \max(0, 1 - y_i(\mathbf{w}^T\mathbf{x}_i - b))$, the form used by scikit-learn, with $C = \frac{1}{2n\lambda}$. A large $C$ therefore corresponds to a small $\lambda$, i.e. a strong emphasis on classifying every training point correctly.
+Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A smaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications. Note that in the example in the next chapter, we will use a slightly different formulation, in terms of a parameter $C$ that plays the inverse role of $\lambda$. Rescaling the objective above by $1/(2\lambda)$ turns it into $\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n \max(0, 1 - y_i(\mathbf{w}^T\mathbf{x}_i - b))$, the form used by scikit-learn, with $C = \frac{1}{2n\lambda}$. A large $C$ therefore corresponds to a small $\lambda$, i.e. a strong emphasis on classifying every training point correctly.
 
 ### Support Vectors
 
-An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it, the **support vectors**. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.
+An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it, the **support vectors**. For a soft-margin SVM, the support vectors also include the points that fall inside the margin or on the wrong side of it. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.
+
+:::{dropdown} What you should know after reading this chapter
+You should be able to:
+1. Define a hyperplane $\mathbf{w}^T \mathbf{x} - b = 0$, and explain the roles of the normal vector $\mathbf{w}$ and the offset $b$.
+2. Explain what the margin of a linear SVM is, and why maximizing the margin width $\frac{2}{\| \mathbf{w} \|}$ amounts to minimizing $\| \mathbf{w} \|$.
+3. Write down the hard-margin SVM optimization problem, and use its constraint $y_i (\mathbf{w}^T \mathbf{x}_i - b) \geq 1$ to judge by hand whether a given point lies on the correct side of the margin.
+4. Explain why a soft margin is needed when the classes are not linearly separable, and calculate the hinge loss $\max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b))$ for points outside the margin, inside the margin and on the wrong side of the hyperplane.
+5. Write down the soft-margin objective, and explain how $\lambda$ trades a wide margin against errors on the training points. Explain why a large $C$ in the alternative formulation corresponds to a small $\lambda$.
+6. Define support vectors, and explain why only they determine the maximum-margin hyperplane.
+:::
