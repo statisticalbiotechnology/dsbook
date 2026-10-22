@@ -224,20 +224,18 @@ By adding penalties (as in L1 and L2 regularization), we shrink the size of the 
 
 This constraint on parameter size simplifies the model, reducing its tendency to memorize the training data and helping it generalize better to unseen data. By focusing on essential relationships, regularization leads the model to capture the overall trend or signal in the data, rather than noise, enhancing its robustness and predictive power across different datasets.
 
-Here is a short section you can insert into your book text on why we refer to **L1** and **L2** regularization.
-
 ### Why “L1” and “L2” Regularization?
 
 The labels **“L1”** and **“L2”** come from the notation of vector norms in mathematics. A [*norm*](https://en.wikipedia.org/wiki/Norm_(mathematics)) on a vector space is a function that assigns a non-negative length or size to each vector and satisfies certain axioms (positivity, homogeneity, triangle inequality). The **L1 norm** (also written $\ell_1$-norm) of a vector $w = (w_1, w_2, \dots, w_p)$ is
 
 ```{math}
-||w||_1 = \sum*{i=1}^p |w_i|.
+||w||_1 = \sum_{i=1}^p |w_i|.
 ```
 
-The **L2 norm** (or (\ell_2)-norm) is
+The **L2 norm** (also written $\ell_2$-norm) is
 
 ```{math}
-||w||_2 = \sqrt{ \sum*{i=1}^p w_i^2 },
+||w||_2 = \sqrt{ \sum_{i=1}^p w_i^2 },
 ```
 
 which corresponds geometrically to the Euclidean length of the vector.
