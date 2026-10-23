@@ -28,14 +28,15 @@ downloads:
 
 ## Introduction to Regularization
 
-While **linear regression** works well in many cases, it can suffer from **overfitting** when the model becomes too complex or the dataset contains noise. Overfitting occurs when a model captures not only the true underlying pattern but also random fluctuations or noise in the data. This leads to poor generalization on unseen data.
+While **linear regression** works well in many cases, it can suffer from **overfitting** when the model is flexible relative to the amount of data, for example when a high-degree polynomial is fitted to a few noisy data points. Overfitting occurs when a model captures not only the true underlying pattern but also random fluctuations or noise in the data. This leads to poor generalization on unseen data.
 
-One way to combat overfitting is to apply **regularization**, which modifies the loss function by adding a penalty for large model parameters. The idea is to constrain the model's flexibility and encourage simpler models that generalize better.
+One way to combat overfitting is to apply **regularization**, which modifies the loss function by adding a penalty for large model parameters. Large parameters are a typical symptom of overfitting: they make the model react strongly to small changes in the input, and so to the noise in the training data. The penalty constrains the model's flexibility and encourages simpler models that generalize better.
 
-In this chapter, we will introduce two commonly used regularization techniques:
+In this chapter, we will introduce two commonly used regularization techniques and their combination:
 
 - **Ridge Regression** (also known as L2 regularization)
 - **LASSO Regression** (also known as L1 regularization)
+- **Elastic Net**, which combines the two
 
 ## Ridge Regression (L2 Regularization)
 
@@ -44,18 +45,16 @@ In **ridge regression**, we modify the ordinary least squares loss function by a
 The objective function for ridge regression is:
 
 ```{math}
-\mathcal{l}_{ridge} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j \beta_j^2
+\mathcal{L}_{\text{ridge}} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j \beta_j^2
 ```
 
 Where:
 - $\lambda$ is a **regularization parameter** that controls the strength of the penalty. When $\lambda = 0$, ridge regression reduces to ordinary least squares. As $\lambda$ increases, the penalty becomes stronger.
-- $\beta_j$ are the model parameters. By convention the intercept is left out of the penalty, so that the fit does not depend on where the origin of $y$ happens to lie. Note that the simple implementations below penalize every coefficient of the polynomial model, including its constant term.
-
-The key idea here is that by penalizing the size of the parameters, we shrink them toward zero, which can help mitigate overfitting.
+- $\beta_j$ are the model parameters. By convention the intercept is left out of the penalty, so that the fit does not depend on where the origin of $y$ happens to lie. Note that our own implementations below penalize every coefficient of the polynomial model, including its constant term, while scikit-learn's `ElasticNet`, used at the end of the chapter, leaves its intercept unpenalized.
 
 ### Ridge Regression by Explicit Loss Minimization
 
-Here we implement the ridge loss explicitly and minimize it numerically, so that the penalty term stays visible. In practice you would normally reach for scikit-learn's `Ridge` class.
+Here we implement the ridge loss explicitly and minimize it numerically, so that the penalty term stays visible. In practice you would normally reach for scikit-learn's `Ridge` class. As data, we use 20 noisy points from a polynomial curve, and we fit a polynomial of degree 7 to them, with and without the penalty.
 
 ```{code-cell}
 from scipy.optimize import minimize
@@ -64,35 +63,36 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Generate synthetic data
-rng = np.random.RandomState(1)
-N=20
+rng = np.random.RandomState(16)
+N = 20
 x = rng.rand(N)
-y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(N)
-y_non_linear = 4 * x**2 - 10 * x**4  + 6 * x**6 + 0.1 * rng.randn(N)
+y_non_linear = 4 * x**2 - 10 * x**4 + 6 * x**6 + 0.1 * rng.randn(N)
 
 # Define the polynomial model function
 def polynomial_model(x, params, degree=7):
     x_poly = np.vstack([x**i for i in range(degree + 1)]).T
     return np.dot(x_poly, params)
 
+# Minimize a loss function, starting from a random, but reproducible, initial guess
 def minimize_loss(loss, model, x, y, num_params):
-    initial_params = np.random.randn(num_params)
+    initial_params = np.random.RandomState(0).randn(num_params)
     return minimize(loss, initial_params, args=(model, x, y))
 
+# Residual sum of squares (RSS), i.e. the SSE of the previous chapter
 def rss_loss(params, model_function, X, y):
-    predictions = model_function(x, params)  # Predicted values
+    predictions = model_function(X, params)  # Predicted values
     residual_sum_squares = np.sum((y - predictions) ** 2)  # RSS
     return residual_sum_squares
 
 # Define ridge loss function
 def ridge_loss(params, model_function, X, y, alpha=0.1):
-    residual_sum_squares =  rss_loss(params, model_function, X, y)  # RSS
+    residual_sum_squares = rss_loss(params, model_function, X, y)  # RSS
     l2_penalty = alpha * np.sum(params**2)
     return residual_sum_squares + l2_penalty
 
-# Optimize the parameters of our model using the ridge loss function
-result_poly_rss = minimize_loss(rss_loss, polynomial_model, x, y_non_linear,8)
-result_poly_ridge = minimize_loss(ridge_loss, polynomial_model, x, y_non_linear,8)
+# Optimize the parameters of our model using the RSS and the ridge loss functions
+result_poly_rss = minimize_loss(rss_loss, polynomial_model, x, y_non_linear, 8)
+result_poly_ridge = minimize_loss(ridge_loss, polynomial_model, x, y_non_linear, 8)
 
 poly_params_rss = result_poly_rss.x
 poly_params_ridge = result_poly_ridge.x
@@ -103,8 +103,8 @@ yfit_poly_rss = polynomial_model(xfit, poly_params_rss)
 yfit_poly_ridge = polynomial_model(xfit, poly_params_ridge)
 
 sns.scatterplot(x=x, y=y_non_linear, label="Data")
-plt.plot(xfit, yfit_poly_rss, color='r',label="RSS")
-plt.plot(xfit, yfit_poly_ridge, color='b',label="Ridge")
+plt.plot(xfit, yfit_poly_rss, color='r', label="RSS")
+plt.plot(xfit, yfit_poly_ridge, color='b', label="Ridge")
 plt.legend()
 plt.show()
 
@@ -112,28 +112,25 @@ print("Polynomial parameters (RSS):", poly_params_rss)
 print("Polynomial parameters (Ridge):", poly_params_ridge)
 ```
 
-In this example, `alpha` corresponds to $\lambda$ and controls the regularization strength. By tuning this parameter, we can adjust the model's complexity.
-
+In the code, `alpha` plays the role of $\lambda$.
 
 ## LASSO Regression (L1 Regularization)
 
-**LASSO regression** (Least Absolute Shrinkage and Selection Operator) is another regularization technique. Instead of penalizing the sum of squared parameters, LASSO penalizes the sum of the absolute values of the parameters. This results in sparse solutions, where some of the parameters may become exactly zero.
+**LASSO regression** (Least Absolute Shrinkage and Selection Operator) is another regularization technique. Instead of penalizing the sum of squared parameters, LASSO penalizes the sum of the absolute values of the parameters.
 
 The objective function for LASSO regression is:
 
 ```{math}
-\mathcal{l}_{lasso} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j |\beta_j|
+\mathcal{L}_{\text{lasso}} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda \sum_j |\beta_j|
 ```
 
 Where:
 - $\lambda$ again controls the regularization strength.
-- The absolute value penalty leads to **sparse models**, meaning that LASSO can perform **feature selection** by setting some parameters to zero.
-
-LASSO is particularly useful when we have many features, as it can identify and retain only the most important ones.
+- The absolute value penalty leads to **sparse models**, meaning that LASSO can perform **feature selection** by setting some parameters exactly to zero.
 
 ### LASSO Regression by Explicit Loss Minimization
 
-Here we implement the LASSO loss explicitly and minimize it numerically. Note that this general-purpose optimizer drives coefficients close to zero without setting them exactly to zero; scikit-learn's `Lasso` class uses a coordinate-descent solver that does produce exact zeros.
+Here we implement the LASSO loss explicitly and minimize it numerically. Note that this general-purpose optimizer drives coefficients close to zero without setting them exactly to zero. Solvers designed for LASSO, such as the coordinate descent used by scikit-learn's `Lasso` class or [least-angle regression](https://en.wikipedia.org/wiki/Least-angle_regression), do produce exact zeros.
 
 ```{code-cell}
 import numpy as np
@@ -143,12 +140,12 @@ from scipy.optimize import minimize
 
 # Define LASSO loss function
 def lasso_loss(params, model_function, X, y, alpha=0.1):
-    residual_sum_squares =  rss_loss(params, model_function, X, y)  # RSS
+    residual_sum_squares = rss_loss(params, model_function, X, y)  # RSS
     l1_penalty = alpha * np.sum(np.abs(params))  # L1 regularization
     return residual_sum_squares + l1_penalty
 
 # Optimize the parameters of our model using the lasso loss function
-result_poly_lasso = minimize_loss(lasso_loss, polynomial_model, x, y_non_linear,8)
+result_poly_lasso = minimize_loss(lasso_loss, polynomial_model, x, y_non_linear, 8)
 
 poly_params_lasso = result_poly_lasso.x
 
@@ -156,8 +153,8 @@ poly_params_lasso = result_poly_lasso.x
 yfit_poly_lasso = polynomial_model(xfit, poly_params_lasso)
 
 sns.scatterplot(x=x, y=y_non_linear, label="Data")
-plt.plot(xfit, yfit_poly_rss, color='r',label="RSS")
-plt.plot(xfit, yfit_poly_lasso, color='b',label="LASSO")
+plt.plot(xfit, yfit_poly_rss, color='r', label="RSS")
+plt.plot(xfit, yfit_poly_lasso, color='b', label="LASSO")
 plt.legend()
 plt.show()
 
@@ -166,79 +163,57 @@ print("Polynomial parameters (RSS):", poly_params_rss)
 print("Polynomial parameters (LASSO):", poly_params_lasso)
 ```
 
-As with ridge regression, `alpha` controls the strength of regularization. When $\alpha$ is large, more parameters will be set to values close to zero, resulting in a simpler model. It is worth noting that there are better optimization schemes available than regular gradient decent optimizers specially [targeting LASSO regression](https://en.wikipedia.org/wiki/Least-angle_regression), which helps keeping parameters at exactly 0 (not just close to 0).
-
 ## Comparing Ridge and LASSO
 
-While both **ridge** and **LASSO** regression aim to reduce overfitting by penalizing large parameters, they behave differently:
-
-- **Ridge regression** tends to shrink parameters but rarely sets them exactly to zero. This means that it keeps all features in the model, but the influence of less important features is reduced.
-- **LASSO regression**, on the other hand, can shrink parameters all the way to zero, effectively performing feature selection.
-
-The choice between ridge and LASSO depends on the problem:
-- If you believe that all features are relevant and you want to shrink their influence, **ridge** might be the better option.
-- If you suspect that only a few features are truly important, **LASSO** can help by selecting those features automatically.
+Ridge regression shrinks all parameters but rarely sets any of them exactly to zero, so every feature stays in the model with a reduced influence. LASSO can shrink parameters all the way to zero and so performs feature selection. Ridge is therefore a natural choice when you believe that most features are relevant, and LASSO when you suspect that only a few of them are.
 
 ## Elastic Net: Combining Ridge and LASSO
 
-In some cases, it can be beneficial to combine the strengths of ridge and LASSO regression. This is achieved with **Elastic Net**, which includes both L1 and L2 penalties.
-
-The objective function for Elastic Net is:
+**Elastic Net** includes both the L1 and the L2 penalty:
 
 ```{math}
-\mathcal{l}_{elasticnet} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda_1 \sum_j |\beta_j| + \lambda_2 \sum_j \beta_j^2
+\mathcal{L}_{\text{elastic net}} = \sum_i \left( f(\mathbf{x}_i) - y_i \right)^2 + \lambda_1 \sum_j |\beta_j| + \lambda_2 \sum_j \beta_j^2
 ```
 
-Here, both $\lambda_1$ and $\lambda_2$ control the balance between L1 and L2 regularization. This method is particularly useful when there are correlations between features, as it can encourage a grouping effect, where correlated features tend to have similar parameters.
+Here, $\lambda_1$ and $\lambda_2$ set the strengths of the L1 and the L2 penalty. Elastic Net is particularly useful when features are correlated, as it encourages a grouping effect, where correlated features tend to get similar parameters.
 
 ### Elastic Net Using Scikit-learn
 
-The **scikit-learn** package also provides an `ElasticNet` class, which combines ridge and LASSO regularization.
+scikit-learn's `ElasticNet` class writes the penalty with an overall strength $\alpha$ (`alpha`) and a mixing parameter $\rho$ (`l1_ratio`), and it divides the squared errors by $2N$. With $N$ data points, this corresponds to $\lambda_1 = 2N\alpha\rho$ and $\lambda_2 = N\alpha(1-\rho)$ in the formula above, so the settings below, with $N = 20$, give $\lambda_1 = 0.1$ and $\lambda_2 = 0.05$. `ElasticNet` fits its own, unpenalized, intercept, so we leave the constant term out of the polynomial features.
 
 ```{code-cell}
 from sklearn.linear_model import ElasticNet
 
-# Fit Elastic Net model
-x_poly = np.vstack([x**i for i in range(8)]).T
+# Fit Elastic Net model on the polynomial features x, x^2, ..., x^7
+x_poly = np.vstack([x**i for i in range(1, 8)]).T
 elastic_net_model = ElasticNet(alpha=0.005, l1_ratio=0.5)  # l1_ratio controls the balance between L1 and L2 regularization
 elastic_net_model.fit(x_poly, y_non_linear)
 
 # Predict and plot
-x_poly_fit = np.vstack([xfit**i for i in range(8)]).T
+x_poly_fit = np.vstack([xfit**i for i in range(1, 8)]).T
 yfit_elastic_net = elastic_net_model.predict(x_poly_fit)
 
-sns.scatterplot(x=x, y=y_non_linear, label="data")
-plt.plot(xfit, yfit_elastic_net, color='m', label="elastic net")
+sns.scatterplot(x=x, y=y_non_linear, label="Data")
+plt.plot(xfit, yfit_elastic_net, color='m', label="Elastic net")
 plt.legend()
 plt.show()
 ```
 
-By tuning both the `alpha` and `l1_ratio` parameters, we can control the balance between ridge and LASSO regularization.
+## Why “L1” and “L2” Regularization?
 
-
-## Why Does This Work?
-
-Regularization works by reducing the likelihood of overfitting through the addition of penalties for large model parameters. In regression models, parameters represent the strength and direction of the relationship between each feature and the target variable. When these parameters grow large, it can indicate that the model is reacting too strongly to specific details or noise in the training data, which may not hold for new data. This is a sign of overfitting: the model has not only learned the true underlying patterns but has also fit itself to random fluctuations or specific data instances in the training set.
-
-By adding penalties (as in L1 and L2 regularization), we shrink the size of the parameters. Smaller parameters prevent the model from placing too much importance on any one feature unless it truly adds significant predictive value. In L2 regularization (Ridge), for example, parameters are constrained by a penalty on their squared magnitudes, which promotes a smoother fit and reduces the model’s flexibility. L1 regularization (Lasso), on the other hand, may drive some parameters all the way to zero, effectively performing feature selection and allowing the model to focus only on the most important predictors.
-
-This constraint on parameter size simplifies the model, reducing its tendency to memorize the training data and helping it generalize better to unseen data. By focusing on essential relationships, regularization leads the model to capture the overall trend or signal in the data, rather than noise, enhancing its robustness and predictive power across different datasets.
-
-### Why “L1” and “L2” Regularization?
-
-The labels **“L1”** and **“L2”** come from the notation of vector norms in mathematics. A [*norm*](https://en.wikipedia.org/wiki/Norm_(mathematics)) on a vector space is a function that assigns a non-negative length or size to each vector and satisfies certain axioms (positivity, homogeneity, triangle inequality). The **L1 norm** (also written $\ell_1$-norm) of a vector $w = (w_1, w_2, \dots, w_p)$ is
+The labels **“L1”** and **“L2”** come from the notation of vector norms in mathematics. A [*norm*](https://en.wikipedia.org/wiki/Norm_(mathematics)) on a vector space is a function that assigns a non-negative length or size to each vector and satisfies certain axioms (positivity, homogeneity, triangle inequality). The **L1 norm** (also written $\ell_1$-norm) of the parameter vector $\boldsymbol{\beta} = (\beta_1, \beta_2, \dots, \beta_p)$ is
 
 ```{math}
-||w||_1 = \sum_{i=1}^p |w_i|.
+\|\boldsymbol{\beta}\|_1 = \sum_{j=1}^p |\beta_j|.
 ```
 
 The **L2 norm** (also written $\ell_2$-norm) is
 
 ```{math}
-||w||_2 = \sqrt{ \sum_{i=1}^p w_i^2 },
+\|\boldsymbol{\beta}\|_2 = \sqrt{ \sum_{j=1}^p \beta_j^2 },
 ```
 
-which corresponds geometrically to the Euclidean length of the vector.
+which corresponds geometrically to the Euclidean length of the vector. The LASSO penalty is thus $\lambda \|\boldsymbol{\beta}\|_1$, and the ridge penalty is $\lambda \|\boldsymbol{\beta}\|_2^2$, the squared L2 norm.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:

@@ -8,11 +8,10 @@ jupytext:
 ---
 
 [![Jupyter Book Badge](https://raw.githubusercontent.com/jupyter-book/jupyter-book/next/docs/media/images/badge.svg)](https://jupyterbook.org)
-[![DOI](https://img.shields.io/badge/DOI-Cite_Jupyter_Book-blue)](https://jupyterbook.org/stable/cite/)
 
 # Data Science for Biotechnology students
 
-This book is written with KTH's course [CB2030, Systemsbiology](https://www.kth.se/student/kurser/kurs/CB2030) in mind.
+This book is written with KTH's course [CB2030, Systems biology](https://www.kth.se/student/kurser/kurs/CB2030) in mind.
 
 ```{tableofcontents}
 ```
@@ -26,7 +25,7 @@ into your own workspace. Following a link again later updates the material
 
 [**Open the whole book in JupyterLab**](https://nbserv.duckdns.org/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook&branch=main)
 
-Each chapter also has its own launch buttons at the top of the page.
+Each chapter with code also has its own launch buttons at the top of the page.
 
 :::{note}
 The first launch takes a few seconds while your workspace is prepared. The

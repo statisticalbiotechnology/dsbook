@@ -18,7 +18,7 @@ downloads:
     title: Run on Binder
 ---
 
-# Unsupervised Machine Learning
+# Clustering
 
 <!-- launch-badges -->
 [![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://nbserv.duckdns.org/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/unsupervised/cluster.ipynb&branch=main)
@@ -27,36 +27,35 @@ downloads:
 
 ## Introduction
 
-Unsupervised machine learning aims to learn patterns from data without predefined labels. Specifically, the goal is to learn a function $f(x)$ from the dataset $D = \{\mathbf{x}_i\}$ by optimizing an objective function $g(D, f)$, or by simply partitioning the dataset $D$. This chapter provides an overview of clustering methods, which are a core part of unsupervised machine learning.
+Unsupervised machine learning learns patterns from data without predefined labels. Formally, the goal is to learn a function $f(\mathbf{x})$ from the dataset $D = \{\mathbf{x}_i\}$ by optimizing an objective function $g(D, f)$, or simply to partition $D$. The [PCA chapter](pca.md) learned such a function, the projection onto the directions of largest variation. This chapter turns to **clustering**, which partitions the data into groups such that the data points within a group are similar to each other.
 
-## Clustering
+Clustering methods can be divided into **hard clustering**, in which each data point is assigned to exactly one cluster, and **soft (fuzzy) clustering**, in which a data point can belong to several clusters with different probabilities.
 
-Clustering is a technique used to partition data into distinct groups, where data points in the same group share similar characteristics. Clustering can be broadly categorized into **hard clustering** and **soft (fuzzy) clustering**.
+## k-means clustering
 
-**Hard Clustering**: In hard clustering, each data point is assigned to a single cluster. This means that each data point belongs exclusively to one group.
+One of the most common clustering algorithms is **k-means**, a hard clustering algorithm. It partitions the data points $\mathbf{x}_p$ into $k$ clusters $S_1, \ldots, S_k$ with centers $\mathbf{m}_1, \ldots, \mathbf{m}_k$, so that the within-cluster sum of squared Euclidean distances, also called the *inertia*,
 
-**Soft (Fuzzy) Clustering**: In soft clustering, a data point can belong to multiple clusters with different probabilities. This allows for a more nuanced assignment, where data points can have partial membership across clusters.
+$$J = \sum_{i=1}^{k} \sum_{\mathbf{x}_p \in S_i} \lVert \mathbf{x}_p - \mathbf{m}_i \rVert^2,$$
 
-## k-Means Clustering
+is as small as possible.
 
-One of the most common clustering algorithms is **k-Means**. It is a hard clustering algorithm that aims to partition the dataset into $k$ clusters by iteratively refining the cluster assignments.
+### Algorithm overview
 
-### Algorithm Overview
-- **Cluster Centers**: The cluster center $\mathbf{m}_i$ is defined as the arithmetic mean of all the data points belonging to the cluster.
-- **Distance Metric**: Typically, the distance metric used is Euclidean distance, defined as $||\mathbf{x}_p - \mathbf{m}_i||$.
-- **Cluster Assignment**: Each data point is assigned to the nearest cluster center:
+Starting from $k$ initial centers, k-means alternates between two steps:
+
+- **Cluster assignment**: Each data point is assigned to the nearest cluster center:
   
-  $$S_i^{(t)} = \{\mathbf{x}_p: ||\mathbf{x}_p - \mathbf{m}_i^{(t)}||^2 \le ||\mathbf{x}_p - \mathbf{m}_j^{(t)}||^2 \; \forall j \}$$
+  $$S_i^{(t)} = \{\mathbf{x}_p: \lVert\mathbf{x}_p - \mathbf{m}_i^{(t)}\rVert^2 \le \lVert\mathbf{x}_p - \mathbf{m}_j^{(t)}\rVert^2 \; \forall j \}$$
   
-- **Recalculation of Cluster Centers**: The cluster centers are recalculated based on the new assignments:
+- **Recalculation of cluster centers**: Each center is recalculated as the arithmetic mean of the data points assigned to it:
   
-  $$\mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_j \in S_i^{(t)}} \mathbf{x}_j$$
+  $$\mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_p \in S_i^{(t)}} \mathbf{x}_p$$
 
-These steps are repeated until the cluster centers converge.
+These steps are repeated until the cluster assignments no longer change. Neither step can increase $J$, so the algorithm always converges, but only to a local minimum of $J$ that depends on the initial centers.
 
-### Illustrations of k-Means
+### Illustrations of k-means
 
-To better understand how the k-Means algorithm works, let's consider the following visualization steps:
+The figure below follows k-means through its first three iterations. The assignment steps are labelled E-steps and the recalculation steps M-steps, names that will make sense when we meet the EM algorithm below.
 
 ```{code-cell}
 import numpy as np
@@ -77,7 +76,7 @@ def plot_kmeans_step(ax, X, centers, labels=None, step_title=""):
     sns.scatterplot(x=centers[:, 0], y=centers[:, 1], color='black', s=200, alpha=0.5, ax=ax, label='Cluster Centers')
     ax.set_title(step_title)
 
-# Initialize the plot with a 4x2 grid (E-steps in the left column, M-steps in the right column)
+# Initialize the plot with a 4x2 grid (from the second row on, E-steps on the left and M-steps on the right)
 fig, axes = plt.subplots(4, 2, figsize=(12, 16))
 fig.tight_layout(pad=5)
 
@@ -120,11 +119,9 @@ plt.show()
 
 The algorithm automatically assigns the points to clusters, and we can see that it closely matches what we would expect by visual inspection.
 
-### Voronoi Cells and k-Means Clustering
+### Voronoi cells and k-means clustering
 
-The k-means clusters form **Voronoi cells**. In the context of k-means, Voronoi cells represent the regions of influence for each cluster center. Each point in a Voronoi cell is closer to its assigned cluster center than to any other cluster center. 
-
-In two dimensions, the Voronoi diagram offers an intuitive way to observe how the space is divided based on the distance to each cluster center. Below, we provide a Python script that visualizes the Voronoi cells generated by 7 randomly positioned cluster centers in a 2-dimensional space.
+The k-means clusters form **Voronoi cells**: each point in the cell of a cluster center is closer to that center than to any other center. The border between two neighbouring cells consists of the points at equal distance from both centers, which is a straight line (in more dimensions, a plane), so k-means always separates its clusters by linear boundaries. The script below draws the Voronoi cells of 7 randomly positioned cluster centers in two dimensions.
 
 ```{code-cell}
 import numpy as np
@@ -156,12 +153,12 @@ plt.grid()
 plt.show()
 ```
 
-### Drawbacks of k-Means
+### Drawbacks of k-means
 
-The k-Means algorithm is simple and effective, but it has some drawbacks:
+The k-means algorithm is simple and effective, but it has some drawbacks:
 
-1. **Initialization Sensitivity**: The algorithm's result can be highly dependent on the initial choice of cluster centers. Poor initialization may lead to suboptimal clustering, as k-Means may converge to a local minimum. For example, using a different random seed can lead to different cluster assignments.
-2. **Predefined Number of Clusters**: k-Means requires specifying the number of clusters beforehand. For example, if we set the number of clusters to three instead of five, the algorithm will still proceed, but the result may not be meaningful.
+1. **Initialization sensitivity**: The algorithm's result can be highly dependent on the initial choice of cluster centers. Poor initialization may lead to suboptimal clustering, as k-means may converge to a local minimum of $J$. For example, using a different random seed can lead to different cluster assignments.
+2. **Predefined number of clusters**: k-means requires specifying the number of clusters beforehand. For example, if we set the number of clusters to three instead of five, the algorithm will still proceed, but the result may not be meaningful.
 
 ```{code-cell}
 from sklearn.cluster import KMeans
@@ -171,7 +168,7 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma');
 plt.show()
 ```
 
-3. **Linear Cluster Boundaries**: The k-Means algorithm assumes that clusters are spherical and separated by linear boundaries. It struggles with complex geometries. Consider the following dataset with two crescent-shaped clusters:
+3. **Linear cluster boundaries**: The k-means algorithm assumes that clusters are spherical and separated by linear boundaries. It struggles with complex geometries. Consider the following dataset with two crescent-shaped clusters:
 
 ```{code-cell}
 from sklearn.datasets import make_moons
@@ -182,10 +179,12 @@ plt.scatter(X[:, 0], X[:, 1], c=labels, s=50, cmap='plasma');
 plt.show()
 ```
 
-4. **Differences in Euclidean size**: K-Means assumes that the cluster sizes, in terms of Euclidean distance to its borders, are fairly similar for all clusters.
-Here is an example of three "Mickey Mouse" shaped clusters, where k-means seems to have a hard time placing the cluster borders correctly.
+4. **Differences in Euclidean size**: k-means assumes that all clusters have fairly similar sizes, in terms of the Euclidean distance from their center to their border.
+Here is an example of three clusters arranged like the head and ears of Mickey Mouse, where k-means has a hard time placing the cluster borders correctly.
 
 ```{code-cell}
+from matplotlib.lines import Line2D
+
 # Parameters for the blobs
 n_samples = [600, 100, 100]  
 centers = [(0, 0), (3, 3), (-3, 3)]  # Center coordinates
@@ -195,33 +194,34 @@ cluster_std = [2., 0.5, 0.5]  # Standard deviations for each blob
 X, y = make_blobs(n_samples=n_samples, centers=centers, cluster_std=cluster_std, random_state=1)
 
 labels = KMeans(3, random_state=0).fit_predict(X)
-# Define markers for the original labels
-markers = ['o', 's', 'D']  # Circle, square, and diamond markers for each blob
+# The marker shape shows the blob a point was generated from (circle, square, diamond),
+# the colour shows the k-means cluster it was assigned to
+markers = ['o', 's', 'D']
 
-# Plot with original labels using different marker types
 plt.figure(figsize=(8, 6))
 for i in range(3):
-    plt.scatter(X[y == i, 0], X[y == i, 1], c=[i]*len(X[y == i]), 
-                label=f"Cluster {i+1} (Original)", marker=markers[i], edgecolor='k', s=50, cmap='plasma')
-
-# Overlay KMeans labels as color-coded dots without specific marker shapes
-plt.scatter(X[:, 0], X[:, 1], c=labels, s=20, cmap='plasma', alpha=0.4)
-plt.title("Generated Blobs with Original Labels and KMeans Clustering")
+    plt.scatter(X[y == i, 0], X[y == i, 1], c=labels[y == i], cmap='plasma', vmin=0, vmax=2,
+                marker=markers[i], edgecolor='k', s=50)
+# The legend explains the marker shapes, so its symbols are drawn in gray
+shape_legend = [Line2D([], [], marker=m, linestyle='', markerfacecolor='lightgray',
+                       markeredgecolor='k', markersize=8, label=f"Blob {i+1}")
+                for i, m in enumerate(markers)]
+plt.legend(handles=shape_legend, title="Generated from", loc='upper right')
+plt.title("Generated blobs (marker shape) and k-means clusters (colour)")
 plt.xlabel("Feature 1")
 plt.ylabel("Feature 2")
-plt.legend(loc='upper right')
 plt.grid(True)
 plt.show()
 ```
 
-## Multivariate Normal Distribution
+## Multivariate normal distribution
 
 A **multivariate normal distribution**, also known as a **multinormal distribution**, is a generalization of the one-dimensional normal distribution to multiple dimensions.
 
 ### Definition
 A multivariate normal distribution is characterized by a vector of mean values ($\boldsymbol{\mu}$) and a covariance matrix ($\boldsymbol{\Sigma}$). It describes the joint distribution of a set of random variables, each of which has a univariate normal distribution, but with the potential for covariance between them, allowing for dependencies. Mathematically, if $\mathbf{X}$ is a random vector $(X_1, X_2, \dots, X_d)$ following a multivariate normal distribution, its probability density function is given by:
 
-$$\mathcal{N}( \mathbf{x}; \boldsymbol{\mu}, \boldsymbol{\Sigma}) = \frac{1}{\sqrt{(2\pi)^d |\boldsymbol{\Sigma}|}} \exp\left(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu})\right)$$
+$$\mathcal{N}(\mathbf{x} | \boldsymbol{\mu}, \boldsymbol{\Sigma}) = \frac{1}{\sqrt{(2\pi)^d |\boldsymbol{\Sigma}|}} \exp\left(-\frac{1}{2}(\mathbf{x} - \boldsymbol{\mu})^{\textsf{T}} \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu})\right)$$
 
 where:
 - $\mathbf{x}$ is a real $d$-dimensional vector,
@@ -230,7 +230,7 @@ where:
 - $d$ is the number of dimensions (variables),
 - $|\boldsymbol{\Sigma}|$ is the determinant of the covariance matrix.
 
-The multivariate normal distribution is fundamental to Gaussian Mixture Models and provides a natural way to model the clusters in high-dimensional data.
+The multivariate normal distribution is the building block of the Gaussian mixture models below.
 
 ```{code-cell}
 :tags: [hide-input]
@@ -276,75 +276,50 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Gaussian Mixture Models (GMM)
+## Gaussian mixture models (GMM)
 
-Gaussian Mixture Models (GMMs) provide a probabilistic approach to clustering and are an example of soft clustering. GMMs assume that the data is generated from a mixture of several Gaussian distributions, each representing a cluster. 
-This makes GMMs extremely flexible in modeling complex, multi-modal data distributions that a single Gaussian distribution cannot capture adequately.
+Gaussian mixture models (GMMs) are a probabilistic, soft clustering method. They assume that the data were generated from a mixture of several multivariate normal distributions, one for each cluster, which makes them flexible enough to model clusters of different sizes, shapes and orientations.
 
-### Mathematical Formulation
+### Mathematical formulation
 
-We model our full data set as being generated from a mixture of $K$ Gaussian components. Each of the components being a MultiNormal distribution, $\mathcal{N}(\mathbf{x}|\mu_k, \Sigma_k)$, with its own mean, $\mu_k$, and covariance matrix, $\Sigma_k$ and each component having a mixing coefficient, $P_k$ that represents the proportion of data points that belong to that component.
-The probability density function of a GMM with $K$ components is given by:
+We model the data as generated from a mixture of $K$ components. Component $k$ is a multivariate normal distribution $\mathcal{N}(\mathbf{x}|\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$ with its own mean $\boldsymbol{\mu}_k$ and covariance matrix $\boldsymbol{\Sigma}_k$, and it has a mixing coefficient $P_k$, the proportion of data points that belong to it. The probability density function of a GMM with $K$ components is
 
-$$p(\mathbf{x}) = \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}|\mu_k, \Sigma_k)$$
+$$p(\mathbf{x}) = \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}|\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$$
 
-### EM Algorithm for GMM
+### The EM algorithm
 
-Unlike k-Means, GMM provides a soft clustering where each point is assigned a probability of belonging to each cluster.
+The parameters of a GMM are fitted with the **expectation-maximization (EM) algorithm**, a general method for fitting models in which some information is hidden. Such unobserved quantities are called **latent variables**. In a GMM, the latent variable is the cluster membership of each data point: we never observe which component generated a point. The means, covariance matrices and mixing coefficients, in contrast, are model parameters. EM alternates between estimating the memberships from the current parameters (E-step) and re-estimating the parameters from the memberships (M-step):
 
-The parameters of a GMM are fitted with the Expectation-Maximization (EM) algorithm, in the following steps:
+1. **Initialization**: Choose the number of components $K$ and initial values for the means $\boldsymbol{\mu}_k$, the covariance matrices $\boldsymbol{\Sigma}_k$ and the mixing coefficients $P_k$, with $\sum_{k=1}^K P_k = 1$.
 
-1. **Initialization**:
-   - Define the number of clusters, $ K $.
-   - Initialize the parameters:
-     - Means $ \mu_k $ for each component.
-     - Covariance matrices $ \Sigma_k $ for each component.
-     - Mixing coefficients $ P_k $, such that $ \sum_{k=1}^K P_k = 1 $.
-
-2. **Expectation Step (E-Step)**:
-   - Compute the probability that a data point $ \mathbf{x}_n $ belongs to cluster $ k $, called the responsibility $ \gamma_{nk} $:
+2. **Expectation step (E-step)**: Compute the probability that data point $\mathbf{x}_n$ was generated by component $k$, called the responsibility $\gamma_{nk}$:
    ```{math}
-   \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \mu_j, \Sigma_j)} 
+   \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_j, \boldsymbol{\Sigma}_j)}
    ```
-   where:
-   - $ \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) $ is the Gaussian probability density function:
+   where $\mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$ is the multivariate normal density defined above.
+
+3. **Maximization step (M-step)**: Re-estimate the parameters from the responsibilities, choosing the values that maximize the likelihood of the data given these soft assignments. With $N_k = \sum_{n=1}^N \gamma_{nk}$, the effective number of points in component $k$, the updates are
    ```{math}
-   \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) = \frac{1}{\sqrt{(2\pi)^d |\Sigma_k|}} \exp\left( -\frac{1}{2} (\mathbf{x}_n - \mu_k)^T \Sigma_k^{-1} (\mathbf{x}_n - \mu_k) \right)
+   \boldsymbol{\mu}_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n
+   ```
+   ```{math}
+   \boldsymbol{\Sigma}_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \boldsymbol{\mu}_k^{\text{new}})(\mathbf{x}_n - \boldsymbol{\mu}_k^{\text{new}})^{\textsf{T}}
+   ```
+   ```{math}
+   P_k^{\text{new}} = \frac{N_k}{N}
    ```
 
-3. **Maximization Step (M-Step)**:
-   - Recalculate the parameters based on the responsibilities $ \gamma_{nk} $:
-     - Effective number of points in cluster $ k $:
-     ```{math}
-     N_k = \sum_{n=1}^N \gamma_{nk}
-     ```
-     - Updated cluster means:
-     ```{math}
-     \mu_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n
-     ```
-     - Updated covariance matrices:
-     ```{math}
-     \Sigma_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \mu_k^{\text{new}})(\mathbf{x}_n - \mu_k^{\text{new}})^T
-     ```
-     - Updated mixing coefficients:
-     ```{math}
-     P_k^{\text{new}} = \frac{N_k}{N}
-     ```
-
-4. **Log-Likelihood Calculation**:
-   - Evaluate the log-likelihood of the data given the current model parameters:
+4. **Convergence check**: Evaluate the log-likelihood of the data given the current parameters,
    ```{math}
-   \ln \Pr(\mathbf{X} | \boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k) \right)
+   \ln \Pr(\mathbf{X} | \boldsymbol{\mu}, \boldsymbol{\Sigma}, \mathbf{P}) = \sum_{n=1}^N \ln \left( \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k) \right)
    ```
+   and repeat steps 2 and 3 until it no longer increases.
 
-5. **Convergence Check**:
-   - Repeat the E and M steps until convergence, which occurs when the log-likelihood no longer increases or the parameter updates become negligible.
+k-means can be seen as a special case of EM in which cluster membership is a hard 0 or 1 assignment instead of a probability. Its assignment step is an E-step that gives each point responsibility 1 for its nearest center and 0 for all others, and its update step is an M-step that only re-estimates the centers, so as to minimize $J$. A GMM instead keeps soft memberships, so that points near a boundary can belong partly to several clusters, and it also estimates a covariance matrix for each component, so that clusters can be elliptical and oriented in any direction. EM is used well beyond clustering, for instance to fit hidden Markov models, whose latent variables are the hidden states behind an observed sequence, as well as factor analysis and topic models.
 
 ### Illustrations of GMM
 
-To understand GMM better, let's consider the following visualizations.
-
-1. Here is a set of random datapoints generated from distributions where we introduced co-variation between the features.
+1. **Correlated features**: Here is a set of random data points generated from four normal distributions with correlated features, which gives tilted elliptical clusters.
 
 ```{code-cell}
 import numpy as np
@@ -352,8 +327,8 @@ import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 from matplotlib.patches import Ellipse
 
-# Function to generate diagonal blobs with custom shapes
-def generate_diagonal_blobs(means, covariances, n_samples):
+# Function to generate tilted elliptical blobs with custom shapes
+def generate_tilted_blobs(means, covariances, n_samples):
     X = []
     y = []
     for i, (mean, cov) in enumerate(zip(means, covariances)):
@@ -365,7 +340,7 @@ def generate_diagonal_blobs(means, covariances, n_samples):
     y = np.array(y)
     return X, y
 
-# Define means and covariances for diagonal elliptical clusters
+# Define means and covariances for tilted elliptical clusters
 means = [[0, 0], [-3, 3], [0, 5], [2, 2]]
 covariances = [
     [[1, 0.5], [0.5, 1]],  # Slightly rotated ellipse
@@ -374,11 +349,11 @@ covariances = [
     [[0.5, -0.3], [-0.3, 0.5]],  # Smaller ellipse
 ]
 
-# Generate custom diagonal blobs
+# Generate the tilted blobs
 np.random.seed(0)  # For reproducibility
-X, y_true = generate_diagonal_blobs(means, covariances, 100)
+X, y_true = generate_tilted_blobs(means, covariances, 100)
 plt.scatter(X[:, 0], X[:, 1], s=40)
-plt.title("Generated Data with Diagonal Elliptical Clusters")
+plt.title("Generated data with tilted elliptical clusters")
 plt.show()
 
 # Function to draw ellipses based on covariance matrices
@@ -410,18 +385,18 @@ def plot_gmm(gmm, X, label=True, ax=None):
 # Apply Gaussian Mixture Model to generated data
 gmm = GaussianMixture(n_components=4, covariance_type='full', random_state=42)
 plot_gmm(gmm, X)
-plt.title("GMM with Diagonal Elliptical Cluster Boundaries")
+plt.title("GMM fitted to tilted elliptical clusters")
 plt.show()
 ```
 
-Points near the cluster boundaries are assigned with lower certainty, although all points are drawn at the same marker size here; it is the ellipses that show the extent of each component.
+Each fitted component is drawn as ellipses at one, two and three standard deviations, with an opacity proportional to its mixing coefficient, and each point is coloured by the component with the largest responsibility. The fitted components recover the four generated clusters, including their tilts.
 
-2. **Flexible Cluster Shapes**: GMM can model elliptical clusters, with different standard deviations, unlike k-Means, which assumes spherical clusters with uniform cluster sizes.
+2. **Clusters of different sizes**: Here is a GMM fitted to the same three blobs that k-means split incorrectly above.
 
 ```{code-cell}
-# Parameters for the blobs
-n_samples = [400, 100, 100]  
-centers = [(0, 0), (4, 4), (-4, 4)]  # Center coordinates
+# The same blobs as in the k-means example above
+n_samples = [600, 100, 100]
+centers = [(0, 0), (3, 3), (-3, 3)]  # Center coordinates
 cluster_std = [2., 0.5, 0.5]  # Standard deviations for each blob
 
 # Generate blobs
@@ -433,91 +408,43 @@ plot_gmm(gmm, X)
 plt.show()
 ```
 
-GMM is able to model more complex, elliptical cluster boundaries, addressing one of the main limitations of k-Means.
+Unlike k-means, the GMM recovers the large, wide blob and the two small ones. It still describes each cluster as a single elliptical blob, however, so it would not cleanly separate the two moons above either.
 
-## Expectation-Maximization (EM) Algorithm and Latent Variables
+## Comparison between k-means and GMM
 
-The **Expectation-Maximization (EM) algorithm** is a widely-used technique in probabilistic models to estimate parameters in cases where some information is missing or hidden. These missing values are known as **latent variables**, unobserved factors that influence the data but are not directly visible. EM is powerful because it allows us to infer both the cluster membership of data points and, in more complex models, the internal structure of each cluster, such as its shape and spread.
-
-For clustering tasks, EM has to estimate two main types of unknowns:
-1. **Cluster Membership**: This latent variable indicates which cluster each data point belongs to. In simpler models like k-means, cluster membership is treated as a discrete, "hard" assignment, meaning each data point is assigned entirely to one cluster. In more flexible models like Gaussian Mixture Models (GMMs), cluster membership is a "soft" assignment, where each data point has a probability of belonging to each cluster.
-   
-2. **Cluster Structure**: In GMMs and other probabilistic models, each cluster is also described by parameters, its mean and its covariance matrix. These are not latent variables but model parameters, which EM estimates from the data. The covariance matrices allow each cluster to have its own unique shape and orientation, enabling the model to represent elliptical clusters or clusters with different spreads and dependencies between variables.
-
-### EM Algorithm and Cluster Membership
-
-In models like **k-means**, cluster membership is binary: each data point is assigned fully to one cluster. This approach can be understood within the EM framework by treating cluster membership as a discrete probability distribution with values of 0 or 1, indicating hard assignments. 
-
-For example:
-- **k-Means** can be considered a special case of the EM algorithm, where each point is assigned entirely to the nearest cluster (E-Step), and then the cluster centroids are updated (M-Step) to minimize the total within-cluster variance.
-
-In more sophisticated models like GMMs, cluster membership is "soft," with each data point partially assigned to each cluster based on probability. This approach gives greater flexibility in representing clusters with overlapping regions and assigning partial membership to data points near cluster boundaries.
-
-### How the EM Algorithm Works
-
-The EM algorithm iteratively performs two key steps to refine both the cluster membership and the internal structure of each cluster:
-
-1. **Expectation (E) Step**: In this step, based on the current estimates of the model parameters, we calculate the probability that each data point belongs to each cluster. This probability can be binary in k-means, where each point is assigned exclusively to one cluster, or continuous in GMMs, where each point is assigned a probability for each cluster. This step provides an estimate of the latent variables related to cluster membership.
-
-2. **Maximization (M) Step**: Given the updated cluster memberships, we then re-estimate the model parameters to maximize the likelihood of observing the data. In k-means, this involves updating the cluster centroids. In GMMs, we not only update the mean of each cluster but also its **covariance matrix**, which captures the spread and orientation of each Gaussian component. This covariance matrix is essential in GMMs because it enables clusters to be elliptical and oriented in any direction, capturing richer relationships in the data.
-
-### Example: Gaussian Mixture Models with Cluster-Specific Covariances
-
-Consider data that you suspect comes from a mixture of several Gaussian distributions, each with its own unique shape and spread. In this case, EM has to estimate both:
-   - **Cluster Membership** (the latent variable): The probability that each data point was generated by each Gaussian component, providing a "soft" assignment of data points to clusters.
-   - **Cluster Covariance** (a model parameter, estimated together with the mean): The covariance matrix of each Gaussian component, which describes the shape, size, and orientation of each cluster, allowing the model to capture dependencies and correlations among variables.
-
-Using the EM algorithm in this setting, you would:
-   - Start with initial guesses for the parameters of each Gaussian component, including its mean and covariance matrix.
-   - **E-Step**: Compute the probability of each data point belonging to each Gaussian based on the current parameters. These probabilities act as "soft" assignments for cluster membership.
-   - **M-Step**: Update the parameters for each Gaussian component, including the mean and covariance matrix, by maximizing the likelihood of observing the data with these updated assignments. The covariance matrix captures the internal structure, making it possible to model elliptical clusters and handle varying cluster sizes and orientations.
-
-Through this iterative process, the EM algorithm provides estimates for both the cluster memberships and the structural parameters (mean and covariance), refining our understanding of the hidden cluster structure.
-
-### EM Algorithm’s Flexibility Beyond Clustering
-
-The EM algorithm’s iterative process of refining latent variables and model parameters is useful in many contexts beyond clustering:
-- In **Hidden Markov Models (HMMs)**, the latent variables represent the hidden states that underlie observed sequences.
-- In **factor analysis**, latent variables might represent hidden factors that explain correlations among observed variables.
-- In **topic modeling**, latent variables capture hidden themes within documents, providing probabilistic assignments of words to topics.
-
-Overall, the EM algorithm is a versatile approach that adapts to models of various complexities. By estimating latent variables together with the model parameters, EM enables us to model both simple cluster assignments, as in k-means, and richer structural relationships, such as the cluster covariances of GMMs. This ability to estimate hidden structures and dependencies makes EM a foundational tool in probabilistic modeling and unsupervised learning.
-
-## Comparison between k-Means and GMM
-
-The following table highlights the similarities and differences between the k-Means and GMM algorithms in terms of their iteration steps:
+The following table highlights the similarities and differences between the k-means and GMM algorithms in terms of their iteration steps:
 `````{div}
 :class: col-page-right
 ````{list-table}
 :header-rows: 1
 
 * - Step
-  - $k$-Means
+  - $k$-means
   - GMM
 * - **Init**
-  - Select $K$ cluster centers $(\mathbf{m}_1^{(1)}, \ldots, \mathbf{m}_K^{(1)})$
-  - $K$ components with means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$
+  - Select $k$ cluster centers $(\mathbf{m}_1^{(1)}, \ldots, \mathbf{m}_k^{(1)})$
+  - $K$ components with means $\boldsymbol{\mu}_k$, covariance $\boldsymbol{\Sigma}_k$, and mixing coefficients $P_k$
 * - **E:**
   - Allocate data points to clusters: 
   -  Update the probability that component $k$ generated data point $\mathbf{x}_n$:
 * -
   - ```{math}
-    S_i^{(t)} = \{\mathbf{x}_p: ||\mathbf{x}_p - \mathbf{m}_i^{(t)}||^2 \le ||\mathbf{x}_p - \mathbf{m}_j^{(t)}||^2 \; \forall j \}
+    S_i^{(t)} = \{\mathbf{x}_p: \lVert\mathbf{x}_p - \mathbf{m}_i^{(t)}\rVert^2 \le \lVert\mathbf{x}_p - \mathbf{m}_j^{(t)}\rVert^2 \; \forall j \}
     ```
   - ```{math}
-    \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \mu_k, \Sigma_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \mu_j, \Sigma_j)} 
+    \gamma_{nk} = \frac{P_k \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)}{\sum_{j=1}^K P_j \mathcal{N}(\mathbf{x}_n | \boldsymbol{\mu}_j, \boldsymbol{\Sigma}_j)}
     ```
 * - **M:**
   - Re-estimate cluster centers: 
-  - Calculate estimated number of cluster members $N_k$, means $\mu_k$, covariance $\Sigma_k$, and mixing coefficients $P_k$:
+  - Calculate estimated number of cluster members $N_k$, means $\boldsymbol{\mu}_k$, covariance $\boldsymbol{\Sigma}_k$, and mixing coefficients $P_k$:
 * - 
   - ```{math}
-    \mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_j \in S_i^{(t)}} \mathbf{x}_j 
+    \mathbf{m}_i^{(t+1)} = \frac{1}{|S_i^{(t)}|} \sum_{\mathbf{x}_p \in S_i^{(t)}} \mathbf{x}_p
     ```
   - ```{math}
     N_k = \sum_{n=1}^N \gamma_{nk}, \\
-    \mu_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n, \\
-    \Sigma_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \mu_k^{\text{new}})(\mathbf{x}_n - \mu_k^{\text{new}})^T, \\
+    \boldsymbol{\mu}_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} \mathbf{x}_n, \\
+    \boldsymbol{\Sigma}_k^{\text{new}} = \frac{1}{N_k} \sum_{n=1}^N \gamma_{nk} (\mathbf{x}_n - \boldsymbol{\mu}_k^{\text{new}})(\mathbf{x}_n - \boldsymbol{\mu}_k^{\text{new}})^{\textsf{T}}, \\
     P_k^{\text{new}} = \frac{N_k}{N}
     ```
 * - **Stop:**
@@ -536,7 +463,7 @@ You should be able to:
 1. Define hard and soft (fuzzy) clustering, and identify k-means as a hard and Gaussian mixture models as a soft clustering method.
 2. Describe the two alternating steps of k-means: assigning each point to its nearest cluster center, and recalculating each center $\mathbf{m}_i$ as the mean of its assigned points. Calculate one such iteration by hand for a few points in two dimensions.
 3. Explain why k-means clusters form Voronoi cells with linear boundaries. Describe the drawbacks of k-means: sensitivity to the initial centers, a number of clusters $k$ that must be fixed in advance, and poor results for clusters that are not spherical or that differ in size.
-4. Write down the density of a Gaussian mixture model, $p(\mathbf{x}) = \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}|\mu_k, \Sigma_k)$, and explain how the mixing coefficients $P_k$, the means $\mu_k$ and the covariance matrices $\Sigma_k$ set the weight, position and shape of each component.
+4. Write down the density of a Gaussian mixture model, $p(\mathbf{x}) = \sum_{k=1}^K P_k \mathcal{N}(\mathbf{x}|\boldsymbol{\mu}_k, \boldsymbol{\Sigma}_k)$, and explain how the mixing coefficients $P_k$, the means $\boldsymbol{\mu}_k$ and the covariance matrices $\boldsymbol{\Sigma}_k$ set the weight, position and shape of each component.
 5. Describe the E-step and the M-step of the EM algorithm for a Gaussian mixture model, and when the iteration stops. Calculate the responsibilities $\gamma_{nk}$ for a data point, given the mixing coefficients and the component densities at that point.
 6. Define a latent variable, and explain k-means as a special case of the EM algorithm in which cluster membership is a hard 0 or 1 assignment instead of a probability.
 7. Contrast k-means and Gaussian mixture models, and argue which of them suits data with elliptical clusters of different sizes and orientations.

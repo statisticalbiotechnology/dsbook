@@ -33,7 +33,7 @@ The classical route is **bottom-up reconstruction**. A draft network is assemble
 
 For the many thousands of bacteria that are sequenced but barely studied, one needs an automatic route. [CarveMe](https://github.com/cdanielmachado/carveme) ([Machado et al. 2018](https://doi.org/10.1093/nar/gky537)) takes a **top-down** approach. It starts from a manually curated **universal model**, a single bacterial GEM containing essentially every reaction known from the BiGG database, already mass- and charge-balanced and with a generic biomass reaction. Given the annotated protein sequences of a new genome, CarveMe aligns them against the genes of the universal model and scores each reaction by how well it is supported by the genome. It then "carves" an organism-specific model out of the universal one by solving a mixed-integer linear program. The program keeps reactions with strong genomic evidence, removes reactions without it, and requires that the result is still a connected network able to produce biomass. Making a new model this way takes minutes rather than years. The authors used the tool to build a [collection of 5,587 models](https://github.com/cdanielmachado/embl_gems), one for every reference bacterial genome in RefSeq.
 
-When the previous chapter said that predicted essentiality agrees with experimental knockout screens for roughly 90% of the genes in *E. coli*, it was referring to the curated models. In this chapter we take the same organism, *E. coli* K-12 MG1655, and compare its curated model with the one CarveMe built automatically from its genome. Because *E. coli* is so well studied, we can test both models against experimental data. This tells us something about how much to trust the automatic models of organisms where no such test is possible.
+In this chapter we take *E. coli* K-12 MG1655 and compare its curated model with the one CarveMe built automatically from its genome. Because *E. coli* is so well studied, we can test both models against experimental data. This tells us something about how much to trust the automatic models of organisms where no such test is possible.
 
 ## Loading the models
 
@@ -102,7 +102,7 @@ pgi = curated.reactions.get_by_id("PGI")
 print(pgi.name, ":", pgi.reaction, "| GPR:", pgi.gene_reaction_rule)
 ```
 
-As expected, the matrix is extremely sparse. Each reaction carries a GPR rule over gene identifiers. *i*ML1515 uses the classical *E. coli* locus tags (b-numbers, e.g. `b4025` for phosphoglucose isomerase). CarveMe models, built from the RefSeq proteome, use protein accessions such as `NP_418449_1` instead. We translate them using NCBI's feature table for the genome:
+Each reaction carries a GPR rule over gene identifiers. *i*ML1515 uses the classical *E. coli* locus tags (b-numbers, e.g. `b4025` for phosphoglucose isomerase). CarveMe models, built from the RefSeq proteome, use protein accessions such as `NP_418449_1` instead. We translate them using NCBI's feature table for the genome:
 
 ```{code-cell}
 features = pd.read_csv(fetch("Ecoli_MG1655_feature_table.txt.gz"), sep="\t")
@@ -110,8 +110,9 @@ cds = features[features["# feature"] == "CDS"]
 protein_to_locus = dict(zip(cds["product_accession"].str.replace(".", "_"), cds["locus_tag"]))
 
 carved_genes = {protein_to_locus.get(g.id) for g in carved.genes}
+carved_genes.discard(None)  # genes without a locus tag
 curated_genes = {g.id for g in curated.genes}
-print(f"{len(carved.genes)} CarveMe genes, {len(carved_genes - {None})} mapped to locus tags")
+print(f"{len(carved.genes)} CarveMe genes, {len(carved_genes)} mapped to locus tags")
 print(f"genes in both models: {len(curated_genes & carved_genes)}, "
       f"only curated: {len(curated_genes - carved_genes)}, "
       f"only CarveMe: {len(carved_genes - curated_genes)}")
@@ -127,11 +128,11 @@ print(f"reactions in both models: {len(curated_rxns & carved_rxns)}, "
       f"only CarveMe: {len(carved_rxns - curated_rxns)}")
 ```
 
-Roughly four out of five reactions are shared. Each model also has several hundred reactions the other lacks, and those differences can matter for predictions.
+Roughly four out of five reactions are shared, but each model has several hundred that the other lacks.
 
 ## Growth on glucose, with and without oxygen
 
-Before we can simulate anything, we need to specify the environment. In COBRApy the **medium** is a dictionary that maps each exchange reaction to its maximal uptake rate. *i*ML1515 ships with M9 minimal medium with glucose as the only carbon source. The CarveMe models in the collection come with all exchange reactions open, so we give the carved model the same medium (omitting a few trace elements that it has no exchange reactions for).
+Before we can simulate anything, we need to specify the environment. In COBRApy the **medium** is a dictionary that maps each exchange reaction to its maximal uptake rate. *i*ML1515 ships with M9 minimal medium with glucose as the only carbon source. The CarveMe models in the collection come with all exchange reactions open, so we give the carved model the same medium (omitting nickel, sodium, selenate, selenite and tungstate, for which it has no exchange reactions). Note that COBRApy writes exchange reactions in the export direction (e.g. `glc__D_e <=>`), so an uptake is a *negative* flux: the medium lists positive maximal uptake rates, but when we set the bounds directly further down, an uptake of at most 10 becomes a lower bound of $-10$, the opposite of the toy model's convention.
 
 ```{code-cell}
 m9_glucose = dict(curated.medium)
@@ -152,7 +153,7 @@ pd.DataFrame({
 }).round(3)
 ```
 
-The objective value is a growth rate in h⁻¹. Aerobically, the curated model predicts a growth rate within the roughly 0.7–0.9 h⁻¹ measured for *E. coli* in glucose minimal medium, while the CarveMe model predicts a somewhat faster growth of about 1 h⁻¹. Without oxygen, the curated model grows more slowly, as real *E. coli* does by fermentation. The CarveMe model does not grow at all, even though *E. coli* is a facultative anaerobe.
+The objective value is a growth rate in h⁻¹. Aerobically, and given the glucose uptake rate of 10 mmol gDW⁻¹ h⁻¹ that the medium allows, the curated model predicts a growth rate within the roughly 0.7–0.9 h⁻¹ measured for *E. coli* in glucose minimal medium, while the CarveMe model predicts a somewhat faster growth of about 1 h⁻¹. Without oxygen, the curated model grows more slowly, as real *E. coli* does by fermentation. The CarveMe model does not grow at all, even though *E. coli* is a facultative anaerobe.
 
 To find out why, we can test the biomass components one at a time. For each metabolite consumed by the biomass reaction, we add a temporary *demand* reaction that drains it, make that the objective, and check whether the network can produce it without oxygen:
 
@@ -186,7 +187,7 @@ for name, model in [("curated", curated), ("CarveMe", carved)]:
 
 In both models the last step of the canonical pathway, `PDX5POi`, is catalyzed by an oxidase that uses molecular oxygen. *i*ML1515 also contains `PDX5PO2`, an NAD⁺-dependent version of the same step that has **no gene associated with it**. The curators added it because *E. coli* is known to grow anaerobically, so the cell must have some way to make vitamin B6 without oxygen, even though the responsible enzyme has not been identified. CarveMe works only from genomic evidence, so a reaction without a gene cannot get into the carved model.
 
-This is the main tradeoff between the two approaches. A curated model contains experimental knowledge that is not in the genome sequence. An automatic model contains only what the genome supports. CarveMe can partly close such gaps if the user specifies the media the organism is known to grow on: it then *gap-fills* the model by adding the fewest universal-model reactions needed to grow on those media. The models in the collection were built without such information.
+This is the main tradeoff between the two approaches: a curated model contains experimental knowledge that is not in the genome sequence. CarveMe can partly close such gaps if the user specifies the media the organism is known to grow on: it then *gap-fills* the model by adding the fewest universal-model reactions needed to grow on those media. The models in the collection were built without such information.
 
 ## Testing essentiality predictions against knockout data
 
@@ -227,7 +228,7 @@ predicted = {
 }
 ```
 
-Now we compare the predictions with the experiment. This is a binary classification problem like the ones in the [classification chapter](../supervised/classify), so we report the confusion matrix and the usual performance measures:
+Now we compare the predictions with the experiment. This is a binary classification problem, so we report the confusion matrix, as in the [supervised machine learning example](../supervised/supervisedML.ipynb), together with the usual performance measures:
 
 ```{code-cell}
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, \
@@ -248,7 +249,7 @@ performance = pd.DataFrame.from_dict(rows, orient="index")
 performance.round(2)
 ```
 
-Both models have an accuracy above 90%, and judged by accuracy alone they look almost equally good. That number is misleading. Fewer than 10% of the evaluated genes are essential, so a "model" that called every gene non-essential would also get an accuracy above 90%. The other measures show the real difference. The curated model finds about two-thirds of the essential genes (recall), and nearly 90% of the genes it calls essential really are (precision). The CarveMe model finds only about a quarter of the essential genes. The Matthews correlation coefficient, which accounts for the class imbalance, is 0.74 for the curated model and 0.42 for the CarveMe model.
+Both models have an accuracy above 90%, and judged by accuracy alone they look almost equally good. That number is misleading. Fewer than 10% of the evaluated genes are essential, so a "model" that called every gene non-essential would also get an accuracy above 90%. The other measures show the real difference. The curated model finds about two-thirds of the essential genes (recall), and nearly 90% of the genes it calls essential really are (precision). The CarveMe model finds just over a quarter of the essential genes. The Matthews correlation coefficient, which accounts for the class imbalance, is 0.74 for the curated model and 0.42 for the CarveMe model.
 
 ```{code-cell}
 ax = performance[["precision", "recall", "MCC"]].T.plot.bar(rot=0, figsize=(6, 3.5))
@@ -280,7 +281,7 @@ only_curated = biomass_components(curated.reactions.BIOMASS_Ec_iML1515_core_75p3
 sorted(only_curated)
 ```
 
-The biomass reaction of *i*ML1515 was compiled from measurements of *E. coli*'s cell composition, and it requires heme, lipid A (as part of `kdo2lipid4_e`), phospholipids (`pe160_p`, `pe161_p`) and peptidoglycan (`murein5px4p_p`). CarveMe uses a generic bacterial biomass reaction without these components. If the model does not need to make a compound, then a gene needed only to make that compound cannot be essential in the model. This is an example of a general point: the objective function is part of the model, and getting it right takes organism-specific knowledge.
+The biomass reaction of *i*ML1515 was compiled from measurements of *E. coli*'s cell composition, and it requires heme, the lipid A precursor KDO₂-lipid IV{sub}`A` (`kdo2lipid4_e`), phospholipids (`pe160_p`, `pe161_p`) and peptidoglycan (`murein5px4p_p`). CarveMe uses a generic bacterial biomass reaction without these components; of the cell wall it contains only the precursor lipid II (`uaagmda_c`), not the cross-linked murein made by the transpeptidases encoded by *ftsI* and *mrdA*. If the model does not need to make a compound, then a gene needed only to make that compound cannot be essential in the model. This is an example of a general point: the objective function is part of the model, and getting it right takes organism-specific knowledge.
 
 ## A look at less studied organisms
 
@@ -319,9 +320,9 @@ pd.set_option("display.max_colwidth", None)
 pd.DataFrame(rows).T
 ```
 
-The results match what is known about these organisms' lifestyles. *E. coli* makes all twenty amino acids itself. *Mycoplasma genitalium* has one of the smallest genomes of any organism that can be grown in pure culture, and as a parasite it takes nearly everything from its host, so its model needs most of the amino acids supplied. *Buchnera* is a more interesting case. Its genome shows that the endosymbiont has kept the pathways for the amino acids that are *essential* to its aphid host, which feeds on phloem sap that is poor in them, while it imports several non-essential ones from the host ([Shigenobu et al. 2000](https://doi.org/10.1038/35024074)). Four of the five auxotrophies the model predicts are for amino acids that animals can make themselves (asparagine, aspartate, glutamine and tyrosine), so the model largely reproduces this pattern. The exception is valine. Each prediction is also a hypothesis that could be tested experimentally, or checked against more careful curation of these pathways.
+The results broadly match what is known about these organisms' lifestyles. *E. coli* makes all twenty amino acids itself. *Mycoplasma genitalium* has one of the smallest genomes of any organism that can be grown in pure culture, and as a parasite it takes nearly everything from its host, so its model needs most of the amino acids supplied. Even that underestimates its dependence. The test removes one amino acid at a time from an otherwise rich medium, so it only asks whether that amino acid can be made from the remaining compounds. *M. genitalium* has essentially no genes for amino-acid biosynthesis, and its model makes the other eight mainly from compounds that are still in the medium, for example tyrosine from phenylalanine, serine from glycine and cysteine from the dipeptide Cys-Gly. *Buchnera* is a more interesting case. Its genome shows that the endosymbiont has kept the pathways for the amino acids that are *essential* to its aphid host, which feeds on phloem sap that is poor in them, while it imports several non-essential ones from the host ([Shigenobu et al. 2000](https://doi.org/10.1038/35024074)). Four of the five auxotrophies the model predicts are for amino acids that animals can make themselves (asparagine, aspartate, glutamine and tyrosine), so the model largely reproduces this pattern. The exception is valine.
 
-This kind of model is also the starting point for the omics integration we discussed in the previous chapter. If a model of an organism exists, even an automatically built one, then transcriptomics, proteomics or metagenomics data for that organism can be mapped onto its reactions through the GPR rules. CarveMe models are used this way in community modeling of the gut microbiome, where most species have no curated model.
+Automatically built models also serve as the scaffold for omics integration where no curated model exists, for example in community models of the gut microbiome, onto which metagenomics or transcriptomics data are mapped through the GPR rules.
 
 ## Discussion Questions
 

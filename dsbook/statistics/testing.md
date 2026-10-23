@@ -67,7 +67,7 @@ The rows of `mouse` are the genes, named by their [Ensembl](https://www.ensembl.
 
 Before any further analysis we clean our data. Most of the 36,536 genes in the table are not expressed in the striatum, or only at a level where a handful of reads decide the outcome. We keep the genes with at least 10 reads in every sample.
 
-Sequencing libraries differ in depth, so a raw count is not comparable between samples. We divide each sample by a *size factor*, the median ratio of that sample's counts to the average sample, and then log transform. It is generally assumed that expression values follow a log-normal distribution, and hence the log transformation implies that the new values follow a normal distribution.
+Sequencing libraries differ in depth, so a raw count is not comparable between samples. We divide each sample by a *size factor*, the median over all genes of the ratio between the sample's count and the gene's geometric mean count across all samples, and then log transform. It is generally assumed that expression values follow a log-normal distribution, and hence the log transformation implies that the new values follow a normal distribution.
 
 ```{code-cell} ipython3
 ---
@@ -113,7 +113,7 @@ sample_info
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-### Differential expression analysis
+## Differential expression analysis
 
 The goal of the exercise is to determine which genes are differentially expressed in the striatum of D2 mice as compared to B6 mice.
 
@@ -132,9 +132,9 @@ d2_bool
 
 Next, for each gene that has been measured, we calculate (1) the log fold change between the two strains, i.e. the difference between the mean log$_2$ expression values of the two strains, and (2) the significance of the difference between the strains.
 
-An easy way to do so is by defining a separate function, `get_significance_two_groups(row)`, that can do such calculations for any row of the `expr` DataFrame, and subsequently we use the function `apply` for the function to execute on each row of the DataFrame. For the significance test we use a $t$ test, which is provided by the function [`ttest_ind`.](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html)
+An easy way to do so is by defining a separate function, `get_significance_two_groups(row)`, that can do such calculations for any row of the `expr` DataFrame, and subsequently we use the function `apply` for the function to execute on each row of the DataFrame. For the significance test we use a $t$ test, which is provided by the function [`ttest_ind`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_ind.html). With `equal_var=False` it performs *Welch's* $t$ test, which, unlike the pooled $t$ test of the previous chapter, does not assume that the expression of a gene varies equally much in the two strains.
 
-This results in a new table with gene names and their $p$ values of differential expression, and their fold changes.
+This results in a new table with gene names, their $p$ values of differential expression, and their log fold changes.
 
 ```{code-cell} ipython3
 ---
@@ -152,8 +152,6 @@ pvalues.rename(columns = {list(pvalues)[0]: 'p', list(pvalues)[1]: '-log_p', lis
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-The resulting list can be further investigated.
-
 ```{code-cell} ipython3
 ---
 slideshow:
@@ -164,7 +162,7 @@ pvalues
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-A common way to illustrate the differential expression values are by plotting the negative log of the $p$ values, as a function of the mean [fold change](https://en.wikipedia.org/wiki/Fold_change) of each transcript. This is known as a [Volcano plot](https://en.wikipedia.org/wiki/Volcano_plot_(statistics)).
+A common way to illustrate the differential expression values is to plot the negative log of the $p$ values as a function of the $\log_2$ [fold change](https://en.wikipedia.org/wiki/Fold_change) of each gene. This is known as a [Volcano plot](https://en.wikipedia.org/wiki/Volcano_plot_(statistics)).
 
 ```{code-cell} ipython3
 ---
@@ -177,12 +175,12 @@ import seaborn as sns
 sns.set_style("white")
 sns.set_context("talk")
 ax = sns.relplot(data=pvalues,x="log_FC",y="-log_p",aspect=1.5,height=6)
-ax.set(xlabel="$log_2(D2/B6)$", ylabel="$-log_{10}(p)$");
+ax.set(xlabel=r"$\log_2(D2/B6)$", ylabel=r"$-\log_{10}(p)$");
 ```
 
 +++ {"slideshow": {"slide_type": "fragment"}}
 
-The regular interpretation of a Volcano plot is that the genes in the top left and the top right corner are the most interesting ones, as they have a large fold change between the conditions as well as being very significant.
+The genes in the top left and top right corners are the most interesting ones, as they combine a large fold change with a small $p$ value.
 
 We can count how many genes we would call significant at the conventional threshold $p<0.05$, and compare that to the number we would expect to see by pure chance if no gene at all were differentially expressed.
 
@@ -199,7 +197,7 @@ print("Expected by chance if all genes null:", int(round(0.05 * m)))
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-### How much does the number of replicates matter?
+## How much does the number of replicates matter?
 
 The analysis above used all 21 samples, which is more than most experiments can afford. With this data set we can *pretend* to have run a smaller experiment, simply by drawing a subset of the replicates, and see what we would have concluded.
 
@@ -219,18 +217,20 @@ d2_samples = list(expr.columns[d2_bool])
 
 rng = np.random.default_rng(42)
 replicate_numbers = [3, 5, 10]
-example_p = {}
+typical_p = {}
 summary = []
 
 for n in replicate_numbers:
-    counts = []
+    draws, counts = [], []
     for repeat in range(20):
         subset_b6 = list(rng.choice(b6_samples, n, replace=False))
         subset_d2 = list(rng.choice(d2_samples, n, replace=False))
         p = two_group_p_values(expr, subset_d2, subset_b6)
+        draws.append(p)
         counts.append(int((p < 0.05).sum()))
-        if repeat == 0:
-            example_p[n] = p
+    # keep the draw whose number of findings is closest to the median, for the histograms below
+    typical = np.argmin(np.abs(np.array(counts) - np.median(counts)))
+    typical_p[n] = draws[typical]
     summary.append({"replicates per group": n,
                     "median genes with p<0.05": int(np.median(counts)),
                     "lowest": min(counts), "highest": max(counts)})
@@ -240,7 +240,7 @@ pd.DataFrame(summary).set_index("replicates per group")
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
-The $p$ value histograms tell the same story in a more informative way. A histogram of $p$ values is a mixture of a flat, uniform part, stemming from the genes that follow the null hypothesis $H_0$, and a spike close to zero, stemming from the genes that are truly differentially expressed. The dashed line marks the height the histogram would have if *every* gene followed $H_0$.
+The $p$ value histograms tell the same story in a more informative way. For each $n$ we show the draw whose number of genes below $p<0.05$ is closest to the median of the 20 draws. A histogram of $p$ values is a mixture of a flat, uniform part, stemming from the genes that follow the null hypothesis $H_0$, and a spike close to zero, stemming from the genes that are truly differentially expressed. The dashed line marks the height the histogram would have if *every* gene followed $H_0$.
 
 ```{code-cell} ipython3
 ---
@@ -251,7 +251,7 @@ sns.set_context("notebook")
 fig, axes = plt.subplots(1, len(replicate_numbers), figsize=(15, 4), sharey=True)
 bins = 20
 for ax, n in zip(axes, replicate_numbers):
-    ax.hist(example_p[n], bins=bins, range=(0, 1), color="steelblue")
+    ax.hist(typical_p[n], bins=bins, range=(0, 1), color="steelblue")
     ax.axhline(m / bins, color="k", ls="--", lw=1)
     ax.set_title(f"n = {n} vs {n}")
     ax.set_xlabel("$p$")
@@ -261,13 +261,13 @@ plt.tight_layout();
 
 +++ {"slideshow": {"slide_type": "fragment"}}
 
-Two things are worth noticing. First, the spike at low $p$ grows steadily with the number of replicates: the genes are just as differentially expressed in the small experiment as in the large one, we are simply unable to demonstrate it. Statistical *power* is bought with replicates, not with sequencing depth. Second, the result of a three-versus-three experiment is unstable — the `lowest` and `highest` columns of the table above show how much the number of findings varies between two equally valid draws of three replicates per strain.
+Two things are worth noticing. First, the spike at low $p$ grows steadily with the number of replicates, and at three versus three it is barely visible. The genes are just as differentially expressed in the small experiment as in the large one; we are simply unable to demonstrate it. Here, statistical [power](#sec:statistics:power) is bought with replicates. Sequencing the same mice more deeply would reduce the counting noise, which mainly matters for lowly expressed genes, but not the variation between animals. Second, the result of a three-versus-three experiment is unstable — the `lowest` and `highest` columns of the table above show how much the number of findings varies between two equally valid draws of three replicates per strain.
 
 This is also a warning about how to read the literature. A gene that appears in a three-versus-three study and not in another is not necessarily a contradiction; it may simply be two draws from the same lottery.
 
 +++ {"slideshow": {"slide_type": "fragment"}}
 
-Finally, note that even the flat part of the histograms contains a substantial number of genes below $p<0.05$ that are not differentially expressed. If all $m$ tested genes were null, we would expect $0.05m$ false positives at that threshold, regardless of the number of replicates. As some of the genes are truly differentially expressed, $0.05m$ is an upper bound on the expected number of false positives. How to deal with that problem is the topic of the [next chapter](./multiple.md).
+Finally, note that the flat part of the histograms, from the genes that follow $H_0$, extends all the way down to $p=0$, so some of the genes below $p<0.05$ are not differentially expressed. If all $m$ tested genes were null, we would expect $0.05m$ false positives at that threshold, regardless of the number of replicates. As some of the genes are truly differentially expressed, $0.05m$ is an upper bound on the expected number of false positives. How to deal with that problem is the topic of the [next chapter](./multiple.md).
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:

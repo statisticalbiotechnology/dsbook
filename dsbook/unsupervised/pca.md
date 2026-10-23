@@ -25,7 +25,7 @@ downloads:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/unsupervised/pca.ipynb)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/unsupervised/pca.ipynb)
 
-Principal Component Analysis (PCA) is a powerful unsupervised learning method used for finding the axes of maximum variation in your data and projecting the data into new coordinate systems. 
+Principal Component Analysis (PCA) is an unsupervised learning method that finds the axes of maximum variation in your data and projects the data onto them. In biotechnology it is used to find the major sources of variation in gene expression data, to visualize how samples relate to each other, to detect batch effects and outliers, and as a preprocessing step before clustering.
 
 ````{margin}
 ```{note}
@@ -52,38 +52,14 @@ In PCA, we often deal with a matrix that encapsulates multiple sources of variat
   
 2. **Sample-Specific Effects**: These capture the influence of each sample (environmental condition, patient, disease state) on gene expression. For instance, one condition might increase expression levels across many genes, while another has a weaker or even suppressive effect.
 
-By setting up the gene expression matrix $X$ as a product of two vectors:
-```{math}
-X = u \cdot v^T
-```
+If the expression matrix is the outer product of these two effects, $\mathbf{X} = \mathbf{u}\mathbf{v}^{\textsf{T}}$, then $\mathbf{u}$ holds the gene-specific effects and $\mathbf{v}$ the sample-specific effects.
 
-we express the matrix as an outer product of these two effects:
-- $u$ represents the gene-specific effects.
-- $v$ represents the sample-specific effects.
+### A toy example
 
-When we perform PCA on $ X $, the primary principal component should capture the main pattern driven by these combined effects, showing a dominant structure that reflects how genes and samples contribute to variation together. Secondary components may capture additional variations or deviations, if any, from this main trend.
-
-### Fictive Example
-
-Now, let’s apply this theory in a concrete, 4x4 example with 4 samples and 4 genes. Here, we will see how gene-specific and sample-specific effects can combine to form the observed matrix.
-
-#### Setup
-
-Let:
-- $u$ be a vector representing the gene-specific effects: $ u = [2, 1, 0.5, 3] $.
-- $v$ be a vector representing the sample-specific effects: $ v = [1, 0.8, 1.2, 0.5] $.
-
-To build our matrix $ X $, we calculate the outer product $ X = u \cdot v^T $, where each entry $ X_{ij} = u_i \cdot v_j $.
-
-#### Calculations
-
-1. **Gene-Specific Effects** $ u = [2, 1, 0.5, 3] $
-2. **Sample-Specific Effects** $ v = [1, 0.8, 1.2, 0.5] $
-
-Using the outer product:
+Let us make this concrete with 4 genes and 4 samples. Let the gene-specific effects be $\mathbf{u} = [2, 1, 0.5, 3]^{\textsf{T}}$ and the sample-specific effects $\mathbf{v} = [1, 0.8, 1.2, 0.5]^{\textsf{T}}$. Each entry of the outer product is $X_{ij} = u_i v_j$:
 
 $$
-X = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \cdot \begin{bmatrix} 1 & 0.8 & 1.2 & 0.5 \end{bmatrix} =
+\mathbf{X} = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \begin{bmatrix} 1 & 0.8 & 1.2 & 0.5 \end{bmatrix} =
 \begin{bmatrix}
 2 & 1.6 & 2.4 & 1 \\
 1 & 0.8 & 1.2 & 0.5 \\
@@ -92,40 +68,29 @@ X = \begin{bmatrix} 2 \\ 1 \\ 0.5 \\ 3 \end{bmatrix} \cdot \begin{bmatrix} 1 & 0
 \end{bmatrix}
 $$
 
-#### Interpretation
-
-In practice, we usually start with the observed matrix $ X $—for example, the gene expression levels across samples. The goal of PCA is to approximate this observed matrix by finding underlying factors (similar to $u$ and $v$ in this example) that explain the main sources of variation. In this fictive example, the matrix $ X $ is constructed directly from $u$ and $v$, representing gene-specific and sample-specific effects.
-
-If we only had access to $ X $, PCA would allow us to decompose it into components that reflect these underlying patterns of variation. The first principal component would likely capture the dominant trend influenced by both gene-specific and sample-specific effects, while subsequent components might explain additional variability not captured by the primary trend.
-
-This example helps to understand that, through PCA, we are essentially trying to express the observed data as a combination of simpler underlying factors, much like how $ X $ here is represented as an outer product of $u$ and $v$.
-
+In practice we only observe $\mathbf{X}$, and PCA has to find the underlying factors. This toy matrix was built from a single pair of vectors, so it has rank 1: the first principal component reproduces $\mathbf{X}$ exactly, and all further components are zero. Real data are never exactly of rank 1, and the later components then describe the variation that the first one leaves unexplained.
 
 ### Scaling the components
 
-When decomposing a matrix with PCA, we aim to find directions that capture the main sources of variation. For a matrix $ X $, where we assume a factorization as an outer product of two vectors $ u $ and $ v $, the decomposition can be represented as:
+The magnitude of a component can be moved freely between $\mathbf{u}$ and $\mathbf{v}$: if we scale $\mathbf{u}$ by a factor $\alpha$ and $\mathbf{v}$ by $1/\alpha$, the product $\mathbf{u}\mathbf{v}^{\textsf{T}}$ stays the same. To make the decomposition unique, we scale both vectors to unit length,
 
 $$
-X \approx S \cdot u \cdot v^T
+\| \mathbf{u} \| = 1, \quad \| \mathbf{v} \| = 1,
 $$
 
-where $ S $ is a scalar that captures the magnitude, while $ u $ and $ v $ provide the directions.
-
-In PCA, the directions $ u $ and $ v $ indicate the axes along which most of the data's variance lies. However, the magnitude of the variation (how much variance is explained) can technically be distributed between $ u $ and $ v $. This is because if we scale $ u $ by a factor $ \alpha $ and scale $ v $ by $ 1 / \alpha $, the product $ u \cdot v^T $ remains the same, allowing flexibility in how we allocate the magnitude.
-
-To standardize this decomposition, it is common to select $ u $ and $ v $ to have a norm of 1. This normalization ensures that $ u $ and $ v $ only represent directions, while the entire magnitude of the variation is captured by the scalar $ S $. Thus, $ S $ becomes a single value that encapsulates the strength of the variation along the principal component, while $ u $ and $ v $ are pure directional vectors, each constrained to unit length:
+and collect the whole magnitude in a scalar $S$:
 
 $$
-\| u \| = 1, \quad \| v \| = 1
+\mathbf{X} \approx S\,\mathbf{u}\mathbf{v}^{\textsf{T}}.
 $$
 
-This approach makes the interpretation of the PCA decomposition more consistent, as $ S $ captures the magnitude of the variation along this component, the variance explained being proportional to $ S^2 $, and $ u $ and $ v $ describe the specific directions of variation in row and column space, respectively.
+$\mathbf{u}$ (one entry per gene) and $\mathbf{v}$ (one entry per sample) then only give directions, while $S$ measures the strength of the component. The variance that the component explains is proportional to $S^2$.
 
-## More principal components to your PCA
+## More than one principal component
 
-- Once you remove the principal components from a matrix $\mathbf{X}$, the remaining residues, i.e., $\mathbf{X} - S_1\mathbf{u}^{(1)} \mathbf{v}^{(1)\textsf{T}}$, might in turn be decomposed into vectors. We can calculate the vectors $\mathbf{u}^{(2)}$ and $\mathbf{v}^{(2)}$ that best describe the matrix $\mathbf{X} - S_1\mathbf{u}^{(1)} \mathbf{v}^{(1)\textsf{T}}$. These are called the second principal components, while the original ones are called the first principal components.
+- Once the first component is removed from $\mathbf{X}$, the residuals $\mathbf{X} - S_1\mathbf{u}^{(1)} \mathbf{v}^{(1)\textsf{T}}$ can in turn be decomposed. The vectors $\mathbf{u}^{(2)}$ and $\mathbf{v}^{(2)}$ that best describe this residual matrix form the second principal component, while the original pair forms the first.
 
-- In this manner, we can derive as many principal components as there are rows or columns (whichever is smaller) in $\mathbf{X}$. In most applications, we settle for two such components.
+- In this manner, we can derive as many principal components as there are rows or columns (whichever is smaller) in $\mathbf{X}$. For plotting, we usually look at the first two or three components; for further analysis, such as the clustering of single cells later in this part of the book, we often keep more.
 
 ## An illustration of PCA
 
@@ -137,62 +102,42 @@ This approach makes the interpretation of the PCA decomposition more consistent,
 | $\vdots$ | $\vdots$ | $\vdots$  | $\vdots$ | $\ddots$ | $\vdots$ |       | $\vdots$  | $\vdots$  |
 | Gene $N$  | $X_{N1}$ | $X_{N2}$   | $X_{N3}$  | $\ldots$ | $X_{NM}$ |       | $u^{(1)}_N$ | $u^{(2)}_N$ |
 |           |          |            |           |          |          |       |             |         |
-| Sample specific $\mathbf{v}^{T(1)}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |  |
-| Sample specific $\mathbf{v}^{T(2)}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |        | $S_2$ |
+| Sample specific $\mathbf{v}^{(1)\textsf{T}}$ | $v^{(1)}_1$ | $v^{(1)}_2$ | $v^{(1)}_3$ | $\ldots$ | $v^{(1)}_M$ |  | $S_1$ |  |
+| Sample specific $\mathbf{v}^{(2)\textsf{T}}$ | $v^{(2)}_1$ | $v^{(2)}_2$ | $v^{(2)}_3$ | $\ldots$ | $v^{(2)}_M$ |  |        | $S_2$ |
 
 
 ## Principal Components
 
 PCA aims to identify the directions, or **principal components**, in the data that describe the most variance. These directions are essentially the new axes into which the original data is [projected](https://en.wikipedia.org/wiki/Projection_(linear_algebra)), and they help us gain insight into the underlying structure and patterns. The principal components are ordered such that the first principal component describes the largest possible variance, while each subsequent component describes as much of the remaining variance as possible, subject to being orthogonal to the preceding components.
 
-An interesting property of PCA is that the principal components derived from a data matrix $ X $ are equivalent to the projections of the principal components derived from the transposed matrix $ X^T $. In our example, the gene-specific effects ($u$) and the sample-specific effects ($v$) can be thought of as such **principal component pairs**. Each pair of principal components, derived from both rows and columns of the matrix, helps to minimize the squared sum of residuals, providing an optimal lower-dimensional representation of the data. This means that the decomposition we see with $u$ and $v$ is similar to what PCA aims to achieve: capturing the most significant variation in the data through paired components.
+The gene-specific vector $\mathbf{u}^{(i)}$ and the sample-specific vector $\mathbf{v}^{(i)}$ come in pairs. Together, the first few pairs give the best low-dimensional description of $\mathbf{X}$, in the sense that they minimize the sum of squared residuals. The two members of a pair are linked by projection:
 
-Suppose we have a data matrix $X$, and we are focusing on just the first pair of principal components. If you project $X$ onto $v^{(1)}$, you are essentially collapsing the information in each row of $X$ along the direction of the first principal component represented by $v^{(1)}$. This gives you a score for each row of $X$, which can be seen as the **projection of $X$ on $v^{(1)}$**. Similarly, if you project $X^T$ onto $u^{(1)}$, you are collapsing the information in each column of $X$ along the direction of the first principal component represented by $u^{(1)}$. This gives you a score for each column of $X$, $v^{(1)}$, also scaled by the singular value $S_1$.
+- Projecting $\mathbf{X}$ on $\mathbf{v}^{(1)}$ collapses each row (gene) of $\mathbf{X}$ onto a single number, and gives $\mathbf{X}\mathbf{v}^{(1)} = S_1\mathbf{u}^{(1)}$.
+- Projecting $\mathbf{X}^{\textsf{T}}$ on $\mathbf{u}^{(1)}$ collapses each column (sample) of $\mathbf{X}$ onto a single number, and gives $\mathbf{X}^{\textsf{T}}\mathbf{u}^{(1)} = S_1\mathbf{v}^{(1)}$.
 
-Thus, we can say:
-
-- $u^{(1)}$ is what you get (up to a scaling factor) when you **project $X$ on $v^{(1)}$**.
-- $v^{(1)}$ is what you get (up to a scaling factor) when you **project $X^T$ on $u^{(1)}$**.
-
-The entries of $v$ are often used as sample-specific scores (to illustrate how each sample projects onto a component), while the entries of $u$ act as gene-specific contributions (to show which genes contribute to that component). Plotting $v$ across samples and $u$ across genes are common ways to interpret principal components.
+So $\mathbf{u}^{(1)}$ is, up to the scaling factor $S_1$, the projection of $\mathbf{X}$ on $\mathbf{v}^{(1)}$, and vice versa. The entries of $\mathbf{v}$ are used as sample-specific **scores**, which show where each sample lies along a component, and the entries of $\mathbf{u}$ as gene-specific **loadings**, which show which genes drive the component.
 
 ## Dimensionality Reduction and Explained Variance
 
-One of the key advantages of PCA is **dimensionality reduction**. By focusing only on the principal components that describe most of the variance in the data, PCA allows us to reduce the number of random variables under consideration. This is particularly useful when dealing with high-dimensional datasets, such as those encountered in genomics and transcriptomics, where the number of features (e.g., genes) can be overwhelming.
+Keeping only the first few components is a form of **dimensionality reduction**: each sample is described by its scores on a handful of components instead of by thousands of gene expression values. The share of the total variance that a component describes is called its **explained variance**. It decreases from the first component onwards, and a plot of the explained variance per component, a *scree plot*, shows how many components are needed to capture most of the variation.
 
-The contribution of each principal component to the overall variance is called the **explained variance**. The first principal component typically explains the most variance, followed by the second, and so on. By examining the explained variance, we can determine how many principal components are needed to capture most of the important variation in the data. For instance, if the first few principal components explain a large proportion of the total variance, then the dimensionality of the dataset can be substantially reduced without significant loss of information.
+Geometrically, PCA is an affine transformation: it subtracts the mean (a translation) and rotates the data onto new axes. Keeping only the first few axes then projects the data onto a lower-dimensional subspace. Because this projection is linear, it can flatten the data but cannot unfold a curved structure.
 
 ## Singular Value Decomposition (SVD)
 
-The calculation of principal components can be efficiently performed using **singular value decomposition (SVD)**, a fundamental linear algebra technique. Given a data matrix $X$, SVD decomposes it as follows:
+Principal components are calculated with the **singular value decomposition (SVD)**. Before the decomposition, the data are *centered*: the mean of each variable (for example, each gene's mean expression across the samples) is subtracted, so that the components describe the variation around the mean rather than the mean itself. The SVD then decomposes the centered data matrix $\mathbf{X}$ as
 
 ```{math}
-X = USV^T
+\mathbf{X} = \mathbf{U}\mathbf{S}\mathbf{V}^{\textsf{T}}
 ```
 
-Here:
+where
 
-- $U$ is a matrix formed from the **Gene-Specific Effects**.
-- $V^T$ is a matrix formed from the **Sample-Specific Effects**.
-- $S$ is a diagonal matrix that carries the magnitude (singular values) of each principal component pair.
+- the columns of $\mathbf{U}$ are the gene-specific vectors $\mathbf{u}^{(i)}$,
+- the columns of $\mathbf{V}$ are the sample-specific vectors $\mathbf{v}^{(i)}$,
+- $\mathbf{S}$ is a diagonal matrix that holds the singular values $S_i$, the magnitude of each principal component pair.
 
-SVD provides a robust way to perform PCA, efficiently capturing the major patterns in the data. Since $S$ contains the singular values, it directly relates to the explained variance of the principal components, with larger singular values corresponding to more significant components.
-
-A practical use of the singular values is that they give the amount of variance explained by each principal component. Typically we are interested in computing the fraction of variance explained by component $i$ as $R^2_i=\frac{S^2_i}{\sum_j S^2_j}$.
-
-## Affine Transformation and Interpretation
-
-PCA is an **affine transformation**, meaning that it can involve translation and rotation of the original data. Importantly, PCA maintains the relationships between points, straight lines, and planes, which allows for a meaningful geometric interpretation of the results. By transforming the data into a new set of axes aligned with the directions of maximum variance, PCA enables us to discover the key structural relationships while preserving important properties.
-
-## Applications of PCA
-
-In data science, PCA is widely applied for visualization, clustering, and feature extraction. In biotechnology, PCA is often used to:
-
-- Identify major sources of variation in gene expression data.
-- Visualize sample relationships in a reduced-dimensional space.
-- Detect batch effects and outliers in high-throughput experiments.
-
-By applying PCA, researchers can distill complex, high-dimensional data into a manageable form, making it easier to interpret and analyze the underlying biological phenomena.
+Since the variance described by a component is proportional to $S_i^2$, the fraction of the variance explained by component $i$ is $R^2_i=\frac{S^2_i}{\sum_j S^2_j}$. Without centering, the first component would mostly describe the mean, and this ratio would be a fraction of the sum of squares rather than of the variance.
 
 ## An example of reconstruction with PCA, Eigenfaces
 
@@ -250,7 +195,7 @@ def plot_gallery(title, images, n_col=n_col, n_row=n_row, cmap=plt.cm.gray):
 
 # Create a PCA model and fit it to the centered faces
 print("Fitting PCA model to faces dataset...")
-pca = PCA(n_components=n_components, whiten=True, random_state=rng)
+pca = PCA(n_components=n_components, random_state=rng)
 pca.fit(faces_centered)
 
 # Extract the eigenfaces (principal components)
@@ -271,7 +216,7 @@ plot_gallery("Reconstructed Faces", faces_reconstructed[:4*5],5,4)
 
 print("Explained variance ratio of components: ", pca.explained_variance_ratio_)
 
-# Optional: Show how much variance is explained by the components
+# Plot how much variance is explained by each component
 plt.figure(figsize=(8, 5))
 plt.plot(range(1, n_components + 1), pca.explained_variance_ratio_, marker='o', linestyle='--')
 plt.xlabel('Principal Component Index')
@@ -280,21 +225,11 @@ plt.title('Explained Variance by Each Principal Component')
 plt.show()
 ```
 
-In this example, we demonstrate the power of PCA by reconstructing facial images from a low-dimensional representation. The dataset we use is the Olivetti Faces Dataset, which contains images of different individuals' faces. We start by centering the data both globally (centering each feature, i.e., pixel, across all samples) and locally (centering each sample, i.e., face, across all features). This centering is important for PCA as it ensures that the data has a mean of zero, which simplifies the calculation of principal components.
+In this example, we reconstruct facial images from a low-dimensional representation. The Olivetti faces dataset contains 400 photos of 40 people, each of 64 × 64 = 4,096 pixels. Each photo is a sample and each pixel a variable. PCA needs every pixel to have mean zero across the photos. scikit-learn's `PCA` subtracts these means itself, so the explicit global centering in the code is not needed for the PCA, but it makes the plotted faces show deviations from the average face. The local centering subtracts each photo's own mean, which removes differences in overall brightness between the photos.
 
-We fit a PCA model to this dataset to extract the eigenfaces, which are the principal components of the dataset. These eigenfaces represent the directions of maximum variance in the face dataset. Each eigenface can be thought of as a building block that captures a certain pattern or feature common across the set of faces (e.g., eyes, nose, or general facial structure).
+The principal components of this dataset are called eigenfaces. Each eigenface is a pattern over all 4,096 pixels that captures a direction of large variation between the faces (e.g., eyes, nose, or general facial structure). An eigenface plays the role of the gene-specific vector $\mathbf{u}$: it holds one value per pixel. The matching photo-specific scores play the role of the sample-specific vector $\mathbf{v}$: they say how much of each eigenface is present in each photo.
 
-Interestingly, each of these principal components (eigenfaces) can be interpreted much like the gene-specific effects mentioned previously. In this analogy, the pixel values across all images act as the pixel-specific effects, describing how much each pixel contributes to the overall variation seen across all faces. These effects are then paired with the photo-specific (or sample-specific) coefficients that indicate how much each individual's face is influenced by these pixel-specific patterns. This combination allows for both general facial patterns and individual differences to be represented efficiently.
-
-Next, we project the original face images onto the lower-dimensional space defined by these eigenfaces. This projection reduces the dimensionality of each face, essentially transforming each high-resolution face image into a vector of only 20 numbers (as we used 20 components in the example). This significant reduction highlights how much the essential features of the faces can be compactly represented.
-
-After projecting the faces into the lower-dimensional space, we reconstruct the faces by reversing the process (using the inverse transform). The reconstructed faces are approximate versions of the original ones, created by the linear combination of the eigenfaces weighted by the projection coefficients.
-
-Although the reconstructed faces might not be perfect replicas of the originals, it is important to note that they are generated from only 20 floating-point values, rather than the full set of 4,096 pixel values. This shows the power of PCA in compressing information while retaining the essential features. The reconstructed faces still maintain recognizable traits, despite the massive reduction in data.
-
-We also plotted the explained variance ratio for each of the principal components. This plot helps us understand how much of the total variance in the data is captured by each component. The first few components capture the most significant variation, while the remaining components capture progressively less. Seeing how quickly the explained variance drops off helps in deciding how many components are necessary for a reasonable reconstruction.
-
-Overall, this example of eigenfaces shows how PCA can reduce the dimensionality of complex data like facial images while retaining meaningful patterns. It highlights PCA's utility in tasks like compression, noise reduction, and feature extraction, which are common in various machine learning and other data science applications.
+Projecting a face onto the 20 eigenfaces turns its 4,096 pixel values into 20 scores. The reconstruction (`inverse_transform`) reverses the process by adding up the eigenfaces, weighted by the face's scores. The reconstructed faces are blurred but still recognizable, although each of them is described by 20 numbers instead of 4,096. The last plot shows why they are not perfect: the first eigenface explains 18% of the variance and the 20 eigenfaces together about 70%, so the remaining 30% of the variation, the finer detail, is lost.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:
@@ -302,7 +237,7 @@ You should be able to:
 2. Interpret $\mathbf{u}$ as gene-specific effects and $\mathbf{v}$ as sample-specific effects of a genes $\times$ samples matrix. Explain that $\mathbf{u}^{(1)}$ is, up to a scaling factor, the projection of $\mathbf{X}$ on $\mathbf{v}^{(1)}$, and vice versa.
 3. Explain why the magnitude of a component can be moved freely between $\mathbf{u}$ and $\mathbf{v}$, and how scaling both to unit length, $\|\mathbf{u}\| = \|\mathbf{v}\| = 1$, puts the whole magnitude in the singular value $S$.
 4. Describe how the second and later principal components are found by decomposing the residual $\mathbf{X} - S_1\mathbf{u}^{(1)}\mathbf{v}^{(1)\textsf{T}}$, and state how many components a matrix can have at most.
-5. Write down the singular value decomposition $X = USV^T$, and identify which matrix holds the gene-specific effects, the sample-specific effects and the singular values. Calculate the fraction of variance explained by component $i$, $R^2_i = S^2_i / \sum_j S^2_j$, from a set of singular values.
-6. Explain how PCA reduces the dimensionality of data, and interpret a plot of the explained variance per component to judge how many components to keep.
+5. Explain why the data are centered before PCA. Write down the singular value decomposition $\mathbf{X} = \mathbf{U}\mathbf{S}\mathbf{V}^{\textsf{T}}$, and identify which matrix holds the gene-specific effects, the sample-specific effects and the singular values. Calculate the fraction of variance explained by component $i$, $R^2_i = S^2_i / \sum_j S^2_j$, from a set of singular values.
+6. Explain how PCA reduces the dimensionality of data, and interpret a scree plot of the explained variance per component to judge how many components to keep.
 7. Explain how a sample is reconstructed approximately as a weighted sum of a few principal components, as when the eigenfaces example represents each 4,096-pixel face by only 20 numbers.
 :::

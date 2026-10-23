@@ -27,7 +27,7 @@ downloads:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/supervised/supervisedML.ipynb)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/supervised/supervisedML.ipynb)
 
-We begin by reading in the TCGA Breast Cancer dataset, and calculate significance of the measured genes as differentially expressed when comparing Progesterone Positive with Progesterone Negative cancers.
+We begin by reading in the TCGA breast cancer dataset, in which we will compare progesterone receptor positive (PR+) with progesterone receptor negative (PR-) cancers.
 
 ```{code-cell} ipython3
 import pandas as pd
@@ -47,18 +47,22 @@ import qvalue
 brca = tcga.get_expression_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_mrna_seq_v2_rsem.txt")
 ```
 
-Then we read the clinical information of the samples and extract the PR status of our samples.
+Then we read the clinical information of the samples and extract their PR status. We keep only the samples whose PR status was determined as positive or negative, and drop the few gene symbols that occur more than once in the expression table. As we will log-transform the expression values, we also discard every gene with a zero in any sample. Note that this removes many genes, among them *PGR*, the gene encoding the progesterone receptor itself.
 
 ```{code-cell} ipython3
 brca_clin = tcga.get_clinical_data(my_path + "../data/brca_tcga_pub2015.tar.gz", 'https://datahub.assets.cbioportal.org/brca_tcga_pub2015.tar.gz',"data_clinical_sample.txt")
+pr_status = brca_clin.loc["PR_STATUS_BY_IHC"]
+pr_known = pr_status.isin(["Positive", "Negative"])   # Drop samples with unknown or indeterminate PR status
+brca = brca.loc[:, pr_known.index[pr_known]]
+pr_bool = (pr_status[pr_known] == "Positive")
+brca = brca.loc[~brca.index.duplicated(keep=False)]   # Drop gene symbols that occur more than once
 brca.dropna(axis=0, how='any', inplace=True)
 brca = brca.loc[~(brca<=0.0).any(axis=1)]
-brca = pd.DataFrame(data=np.log2(brca),index=brca.index,columns=brca.columns)
-brca_clin.loc["PR"]= (brca_clin.loc["PR_STATUS_BY_IHC"]!="Negative") 
-pr_bool = (brca_clin.loc["PR"] == True)
+brca = np.log2(brca)
+print(f"{brca.shape[1]} samples ({pr_bool.sum()} PR+ and {(~pr_bool).sum()} PR-), {brca.shape[0]} genes")
 ```
 
-We then select the most differential genes. The procedure selecting such genes will hopefully be more clear after the statistics part of this course.
+We then calculate how significantly each gene is differentially expressed between PR+ and PR- cancers, and sort the genes accordingly. The procedure will be explained in the statistics part of this book.
 
 ```{code-cell} ipython3
 def get_significance_two_groups(row):
@@ -99,12 +103,12 @@ from sklearn import svm
 from sklearn.metrics import confusion_matrix
 clf = svm.LinearSVC(C=1,max_iter=5000).fit(X, y)  # Train a SVM
 y_pred = clf.predict(X)                        # Predict labels for the given features
-pd.DataFrame(data = confusion_matrix(y, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
+pd.DataFrame(data = confusion_matrix(y, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actual_PR+"])
 ```
 
 Fantastic! The classifier manages to use junk data to perfectly separate our PR+ from PR- cancers. 
 
-However, before we call NEJM, let's try to see if we can separate an *independent* test set in the same manner. We use the function train_test_split to divide the data into 60% training data and 40% test data.
+However, before we call NEJM, let's try to see if we can separate an *independent* test set in the same manner. We use the function `train_test_split` to divide the data into 60% training data and 40% test data.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import train_test_split
@@ -112,10 +116,10 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.4, random_state=0)
 clf = svm.LinearSVC(C=1,max_iter=5000).fit(X_train, y_train) # Train an SVM
 y_pred = clf.predict(X_test)                              # Predict labels for the given features
-pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
+pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actual_PR+"])
 ```
 
-In this setting, the classifier seems to have very little predictive power.  
+In this setting, the classifier has no predictive power: it classifies 44% of the test samples correctly, fewer than the 67% we would get by always predicting PR+.
 
 The reason for the discrepancy between the two predictors is that in both cases the large number of variables makes the predictor overfit to the data. In the first instance, we could not detect the problem as we were testing on the overfitted data. However, when holding out a separate test set, the predictor's weak performance was blatantly visible.
 
@@ -123,13 +127,9 @@ The reason for the discrepancy between the two predictors is that in both cases 
 
 ## A low dimensional classifier
 
-Let's now focus on an alternative setting, where we instead select five separate genes which are among the most differentially expressed transcripts when comparing PR+ and PR-.
+Let's now focus on an alternative setting, where we instead select five genes which are among the most differentially expressed transcripts when comparing PR+ and PR-. How would we combine their expression values optimally? Again we begin by standardizing our features.
 
-How would we combine their expression values optimally? 
-
-Again we begin by standardizing our features.
-
-Note that we select these genes using the labels of *all* samples, including the ones that will end up in the test set, and that the scaler below is likewise fitted on all samples. This is a mild form of data leakage, and it makes the performance we report below somewhat optimistic. A fully honest evaluation would repeat both the gene selection and the scaling inside every training fold.
+Note that we select these genes using the labels of *all* samples, including the ones that will end up in the test set, and that the scaler below is likewise fitted on all samples. Further, the penalty $C$ that we choose below on one training set is then reused in a cross validation over all samples, including that training set. These are mild forms of data leakage, and they make the performance we report below somewhat optimistic. A fully honest evaluation would repeat the gene selection, the scaling and the choice of $C$ inside every training fold, as in the nested cross validation of the [validation chapter](./xval.md).
 
 ```{code-cell} ipython3
 top5=brca.loc[qvalues.iloc[[1,2,5,6,9],:].index]
@@ -138,21 +138,22 @@ X = scaler.fit_transform(top5.values.T) # Scale all gene expression values to st
 y = 2*pr_bool.values.astype(int) - 1           # transform from bool to -1 and 1
 ```
 
-We then separate 30% of our cancers into a separate test set. The function `GridSearchCV` uses cross validation (k=5) to select an optimal slack penalty $C$ out from a vector of different choices.
+We then separate 30% of our cancers into a separate test set. The function `GridSearchCV` uses cross validation (k=5) to select the penalty parameter $C$ from a list of candidate values.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import GridSearchCV
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, random_state=0)
-param_grid = [{'C': [0.0001, 0.001, 0.1, 1, 10, 100, 1000]}]
+param_grid = [{'C': [0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000]}]
 clf = GridSearchCV(svm.LinearSVC(max_iter=10000000,class_weight="balanced"), param_grid, cv=5, scoring='accuracy')
 clf.fit(X_train, y_train)
+best_C = clf.best_params_['C']
 print("Best parameters for the model: " + str(clf.best_params_))
 y_pred = clf.predict(X_test)
-pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
+pd.DataFrame(data = confusion_matrix(y_test, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actual_PR+"])
 ```
 
-Given the choice of penalty $C=0.1$, we can now perform a cross validation (k=5) on the full data set. Here we will train five separate classifiers on each cross validation training set, and subsequently merge each such predictor's prediction into one combined result.
+With the selected penalty $C=0.1$, we now perform a cross validation (k=5) on the full data set: we train one classifier on each of the five training sets, and merge their predictions on the corresponding validation folds into one combined result.
 
 ```{code-cell} ipython3
 from sklearn.model_selection import StratifiedKFold
@@ -161,28 +162,28 @@ y_pred, y_real = np.array([]), np.array([])
 skf = StratifiedKFold(n_splits=5)
 for train_id, test_id in skf.split(X, y):
     X_train, X_test, y_train, y_test = X[train_id,:], X[test_id,:], y[train_id],y[test_id]
-    clf = svm.LinearSVC(C=0.1,max_iter=100000,class_weight="balanced").fit(X_train, y_train) # Train an SVM
+    clf = svm.LinearSVC(C=best_C,max_iter=100000,class_weight="balanced").fit(X_train, y_train) # Train an SVM
     y_pred_fold = clf.predict(X_test)                                # Predict labels for the given features
     y_pred = np.concatenate([y_pred,y_pred_fold])
     y_real = np.concatenate([y_real,y_test])
-pd.DataFrame(data = confusion_matrix(y_real, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actualPR+"])
+pd.DataFrame(data = confusion_matrix(y_real, y_pred),columns = ["predicted_PR-","predicted_PR+"],index=["actual_PR-","actual_PR+"])
 ```
 
-### Some study questions for the notebook
+## Study questions
 
 1. **Data Preprocessing Effects**:
    - Modify the data preprocessing steps (such as normalization or feature scaling) and observe how these changes affect the outcomes of the models. Which preprocessing step had the most significant impact?
 
 2. **Feature Weights**:
-    - For the overoptimistic predictor, investigate which features that are given the highest weight, by studying the `clf.coef_` vector. Do these genes have any particular relevance for the disease?
+    - For the overoptimistic predictor, investigate which features are given the highest weight, by studying the `clf.coef_` vector. Do these genes have any particular relevance for the disease?
 
 3. **Cross-validation**:
    - Vary the number of folds in the cross validation of the low dimensional classifier. Does this affect the outcome?
 
 4. **Type of classifier**
-    - Replace the LinearSVC classifier by any non-linear classifier from the sk-learn library, e.g. [HistGradientBoostingClassifier](https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting). How does this affect the behaviour of the classifier?
-  
-5.  **Model Robustness**:
+    - Replace the LinearSVC classifier by any non-linear classifier from the scikit-learn library, e.g. [HistGradientBoostingClassifier](https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting). How does this affect the behaviour of the classifier?
+
+5. **Model Robustness**:
     - Introduce noise to the data (e.g., randomly flip labels or add outliers) and re-evaluate the model's performance. Which model handles noise better, and why do you think that is?
 
 :::{dropdown} What you should know after reading this chapter

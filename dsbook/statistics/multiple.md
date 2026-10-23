@@ -27,126 +27,113 @@ downloads:
 
 ## Introduction
 
-In high-throughput biology, analysis often involves testing a large number of hypotheses simultaneously. This is common in fields like genomics, transcriptomics, and proteomics, where experiments might involve thousands of genes or proteins being tested for associations with a condition or trait. A key challenge here is multiple hypothesis testing: when many tests are conducted, the probability of obtaining false positives increases because even a small chance of error for each test can accumulate across thousands of tests, resulting in a substantial number of false discoveries. Crucially, a single $p$ value can no longer be interpreted in isolation—its meaning depends on the size of the full hypothesis set and on how many results are declared significant.
+In high-throughput biology, analysis often involves testing a large number of hypotheses simultaneously. This is common in fields like genomics, transcriptomics, and proteomics, where experiments might involve thousands of genes or proteins being tested for associations with a condition or trait. When many tests are conducted, even a small chance of error for each test accumulates into a substantial number of false discoveries. Crucially, a single $p$ value can no longer be interpreted in isolation—its meaning depends on the size of the full hypothesis set and on how many results are declared significant.
 
-To understand this, imagine testing 1,000 hypotheses with a significance threshold ($\alpha$) of 0.05. If the null hypothesis is true for all these tests, we would still expect about 5% of them, or 50 tests, to be significant simply by chance. Without any correction for multiple comparisons, the results are prone to contain many false positives, reducing the reliability of the conclusions drawn from the data. A realistic report therefore needs to communicate both numbers: how many hypotheses were tested and how many were called significant. Only then can we judge whether the significant subset looks plausible or if it is essentially the handful of false positives that we inevitably expect among thousands of null tests.
+To understand this, imagine testing 1,000 hypotheses with a significance threshold ($\alpha$) of 0.05. If the null hypothesis is true for all these tests, we would still expect about 5% of them, or 50 tests, to be significant simply by chance. A realistic report therefore needs to communicate both numbers: how many hypotheses were tested and how many were called significant. Only then can we judge whether the significant subset looks plausible or if it is essentially the handful of false positives that we inevitably expect among thousands of null tests.
 
-Multiple hypothesis correction methods are crucial for controlling error rates and ensuring that the reported results are genuinely significant and not just due to random variation. Different correction techniques control different types of error rates, such as the Family-Wise Error Rate (FWER) or the False Discovery Rate (FDR), which help us balance the trade-off between sensitivity (finding true effects) and specificity (avoiding false positives).
+Multiple hypothesis corrections control an error rate defined over the whole list of significant findings. The two most common ones are the Family-Wise Error Rate (FWER), the probability that the list contains at least one false positive, and the False Discovery Rate (FDR), the expected proportion of false positives in the list.
 
-Both FWER and FDR are statements about the significant findings—the hypotheses that we conclude as positive results. The main objective is to ensure that the reported set of **significant findings** is as reliable as possible. In other words, these error rates help us control the proportion of false positives within our results, thus increasing our confidence in the findings that fall below the chosen significance threshold.
+## Bonferroni Correction
 
-### Bonferroni Correction
-
-The Bonferroni correction is one of the simplest and most conservative methods for controlling the Family-Wise Error Rate (FWER). The FWER is the probability of making at least one false positive among all the hypotheses tested. The Bonferroni correction aims to reduce the chance of any false positives by adjusting the significance threshold for each individual test.
-
-**Summary**: The Bonferroni correction is simple and effective for controlling false positives but can be overly conservative, especially when the number of tests is large, leading to a loss of statistical power.
-
-The Bonferroni method works as follows:
+The Bonferroni correction is one of the simplest and most conservative methods for controlling the FWER. It works as follows:
 
 1. Given a significance level $\alpha$, divide it by the number of hypotheses $m$ being tested to obtain the adjusted significance level:
 
-```{math}
-\alpha_{\text{adjusted}} = \frac{\alpha}{m}
-```
+   ```{math}
+   \alpha_{\text{adjusted}} = \frac{\alpha}{m}
+   ```
 
-2. Conduct each individual hypothesis test using this adjusted significance level $\alpha_{\text{adjusted}}$. If a $p$ value is less than $\alpha_{\text{adjusted}}$, the corresponding hypothesis is considered significant.
+2. Call a hypothesis significant if its $p$ value is less than $\alpha_{\text{adjusted}}$.
 
-By using the Bonferroni correction, we control the probability of making at least one false positive across all the tests, thus providing stringent control of the error rate. However, this method can be overly conservative, especially with a large number of hypotheses, leading to a higher chance of missing true effects (i.e., a loss of statistical power).
+This keeps the probability of making at least one false positive across all the tests below $\alpha$. The price is that with a large number of hypotheses the adjusted threshold becomes so small that many true effects are missed, i.e. the procedure loses statistical power.
 
-### Calculating the Upper Bound of the False Discovery Rate with the Benjamini-Hochberg Procedure
+## Calculating the Upper Bound of the False Discovery Rate with the Benjamini-Hochberg Procedure
 
-The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of nulls among the $p$ values below threshold, i.e. the fraction of false positives among the $p$ values we call significant. Unlike more conservative approaches like the Bonferroni correction, which aims to eliminate all false positives at the cost of potentially missing true effects, the BH method balances sensitivity and specificity by controlling the rate of false discoveries.
+The Benjamini-Hochberg (BH) procedure is a popular method for controlling the False Discovery Rate (FDR), which is the expected proportion of nulls among the $p$ values below threshold, i.e. the fraction of false positives among the $p$ values we call significant. Unlike the Bonferroni correction, which limits the probability of making even a single false positive, the BH procedure accepts a controlled fraction of false positives in exchange for detecting more of the true effects.
 
-The BH procedure involves ranking the $p$ values from all the tests in ascending order. Let’s denote these ordered $p$ values as $p_{(1)}, p_{(2)}, \dots, p_{(m)}$, where $m$ is the total number of hypotheses. The method works as follows:
+The procedure works as follows:
 
-1. Rank all the $p$ values such that $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$.
-2. Choose a desired FDR level, denoted as $q$.
-3. For each $p$ value $p_{(i)}$, calculate the threshold value:
+1. Rank all the $p$ values such that $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$, where $m$ is the total number of hypotheses.
+2. Choose a desired FDR level, denoted as $q^*$.
+3. For each $p$ value $p_{(i)}$, calculate the threshold value
 
-```{math}
-\text{Threshold } = \frac{i}{m} \times q
-```
+   ```{math}
+   \text{Threshold} = \frac{i}{m} \times q^*
+   ```
 
-where $i$ is the rank of the $p$ value and $m$ is the total number of hypotheses.
-4. Find the largest $i$ for which $p_{(i)} \le \frac{i}{m} \times q$. Reject the null hypotheses of all tests with $p$ values less than or equal to $p_{(i)}$, i.e. declare those features significant. (If no such $i$ exists, nothing is declared significant.)
+   where $i$ is the rank of the $p$ value.
 
-**Summary**: The Benjamini-Hochberg procedure is less conservative than Bonferroni, providing a balance between controlling false positives and finding true effects, making it more suitable when a moderate number of false positives is acceptable.
+4. Find the largest $i$ for which $p_{(i)} \le \frac{i}{m} \times q^*$. Reject the null hypotheses of all tests with $p$ values less than or equal to $p_{(i)}$, i.e. declare those features significant. (If no such $i$ exists, nothing is declared significant.)
 
-By using this approach, the BH procedure ensures that the expected proportion of false discoveries is controlled at the desired level $q$, allowing us to draw more reliable conclusions while still maintaining a reasonable sensitivity to detect true effects. This guarantee holds when the tests are independent, and more generally under positive regression dependence; under arbitrary dependence the threshold has to be divided by $\sum_{k=1}^{m} 1/k \approx \ln m + 0.577$. Note also that BH controls the FDR at $\pi_0 q$ rather than at $q$, where $\pi_0$ is the unknown proportion of true null hypotheses, so it is conservative when many of the hypotheses are truly alternative. That is exactly the slack the procedure described next recovers.
+The BH procedure guarantees an FDR of at most $q^*$ when the tests are independent, and more generally under positive regression dependence; under arbitrary dependence the threshold has to be divided by $\sum_{k=1}^{m} 1/k \approx \ln m + 0.577$. More precisely, BH controls the FDR at $\pi_0 q^*$ rather than at $q^*$, where $\pi_0$ is the unknown proportion of true null hypotheses, so it is conservative when many of the hypotheses are truly alternative. That is exactly the slack the procedure described next recovers.
 
-### Calculating q-values with Storey's Method
+## Calculating $q$ values with Storey's Method
 
-Storey introduced an alternative to the Benjamini-Hochberg procedure for controlling the False Discovery Rate (FDR), known as the q-value approach. The q-value is the FDR analogue of the $p$ value: just as the $p$ value of a feature is the smallest significance level at which that feature would be called significant, its q-value is the smallest false discovery rate at which it would be called significant, $\hat{q}(p_i) = \min_{t \ge p_i} \hat{\rm FDR}(t)$. Note that this is a minimum over all thresholds at least as large as $p_i$, and not simply the estimated FDR evaluated at $p_i$; since $\hat{\rm FDR}(t)$ is not monotone in $t$, the two can differ. 
+Storey introduced an alternative to the Benjamini-Hochberg procedure for controlling the FDR, known as the $q$ value approach. The $q$ value is the FDR analogue of the $p$ value: just as the $p$ value of a feature is the smallest significance level at which that feature would be called significant, its $q$ value is the smallest false discovery rate at which it would be called significant, $\hat{q}(p_i) = \min_{t \ge p_i} \hat{\rm FDR}(t)$. Note that this is a minimum over all thresholds at least as large as $p_i$, and not simply the estimated FDR evaluated at $p_i$; since $\hat{\rm FDR}(t)$ is not monotone in $t$, the two can differ.
 
-Storey's method (as well as the Benjamini-Hochberg  procedure) is founded on the understanding that $p$ values arise from one of two possible realities: they are generated either under the **null hypothesis ($H_0$)** or under the **alternative hypothesis ($H_1$)**.  Under $H_0$, $p$ values are uniformly distributed, indicating no real effect, and their values reflect random variation. In contrast, under $H_1$, $p$ values tend to be smaller, indicating evidence against the null and suggesting a true effect. These methods work by distinguishing between these two underlying distributions of $p$ values to control the error rate (such as FDR) while balancing the discovery of true positives. The fundamental assumption is that the observed set of $p$ values is a mixture of those generated by true null hypotheses and those generated by true alternatives, and effective control of FDR hinges on accurately estimating the proportions of each. Unlike for the Benjamini-Hochberg procedure, we here estimate a fraction, $\pi_0$, of all the evaluated $p$ values that are null statistics.
+Both Storey's method and the Benjamini-Hochberg procedure view the observed $p$ values as a mixture of two groups: $p$ values from true null hypotheses ($H_0$), which are uniformly distributed between 0 and 1, and $p$ values from true alternative hypotheses ($H_1$), which tend to be small. The Benjamini-Hochberg procedure in effect assumes that all hypotheses are null when it counts the expected false positives, while Storey's method estimates the fraction $\pi_0$ of the $p$ values that stem from true null hypotheses.
 
-Storey's procedure calculates  the total number of features considered significant by counting all $p$ values below a threshold $t$. The number of **nulls** below this threshold, is estimated as $\pi_0 m t$, where $\pi_0$ is the estimated fraction of null hypotheses, $m$ is the total number of hypotheses, and $t$ is the chosen threshold. This could be done as there is expected to be $\pi_0 m$ nulls, uniformly distributed between 0 and 1, and a fraction $t$ of them is expected to be under threshold.
+Storey's procedure counts the features considered significant as the $p$ values below a threshold $t$. The number of **nulls** below this threshold is estimated as $\pi_0 m t$, where $\pi_0$ is the estimated fraction of null hypotheses, $m$ is the total number of hypotheses, and $t$ is the chosen threshold. This is possible because we expect $\pi_0 m$ nulls, uniformly distributed between 0 and 1, and a fraction $t$ of them to fall below the threshold.
 
-The proportion of null statistics $\pi_0$ is estimated by a procedure of its own. If all hypotheses were null, we would expect approximately $m(1 - \lambda)$ $p$-values above a threshold $\lambda$. However, the presence of true alternative hypotheses results in fewer $p$-values above $\lambda$, so the proportion of values above the threshold provides an estimate of $\pi_0$, the proportion of true null hypotheses. As $\lambda$ approaches 1, this estimate contains fewer alternative $p$-values but the estimate also becomes more variable, so a smoothing function (spline) is applied to stabilize the estimate by evaluating it at $\lambda = 1$.
+The proportion of null statistics $\pi_0$ is estimated by a procedure of its own. If all hypotheses were null, we would expect approximately $m(1 - \lambda)$ $p$ values above a threshold $\lambda$. Alternative $p$ values rarely end up above $\lambda$, so the number of $p$ values above $\lambda$, divided by $m(1 - \lambda)$, estimates $\pi_0$. As $\lambda$ approaches 1, this estimate contains fewer alternative $p$ values but the estimate also becomes more variable, so a smoothing function (spline) is applied to stabilize the estimate by evaluating it at $\lambda = 1$.
 
-Here is how Storey's q-value procedure works, as described by Storey & Tibshirani:
+Here is how Storey's $q$ value procedure works, as described by Storey & Tibshirani:
 
-1. **Order the $p$ values**: Let $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$ be the ordered $p$ values. This ordering of $p$ values ranks the features in terms of their evidence against the null hypothesis, with lower $p$ values suggesting stronger evidence.
+1. **Order the $p$ values**: Let $p_{(1)} \le p_{(2)} \le \dots \le p_{(m)}$ be the ordered $p$ values. Lower $p$ values indicate stronger evidence against the null hypothesis.
 
-2. **Estimate $ \pi_0 $ for a range of $ \lambda $ values**:
-   - For a range of $ \lambda $ values, such as $ \lambda = 0, 0.05, 0.10, \dots, 0.95 $, calculate the proportion of $p$ values greater than $\lambda$:
+2. **Estimate $\pi_0$ for a range of $\lambda$ values**:
+   - For a range of $\lambda$ values, such as $\lambda = 0, 0.05, 0.10, \dots, 0.95$, calculate the proportion of $p$ values greater than $\lambda$:
    ```{math}
    \hat{\pi}_0(\lambda) = \frac{|\{ p_i > \lambda \}|}{m (1 - \lambda)}
    ```
    where $|\{ p_i > \lambda \}|$ represents the count of $p$ values greater than $\lambda$, and $m$ is the total number of hypotheses.
 
-3. **Fit a natural cubic spline to estimate $ \pi_0 $**:
-   - Let $ \hat{f} $ be the natural cubic spline fitted to $\hat{\pi}_0(\lambda)$ as a function of $\lambda$. The final estimate of $ \pi_0 $ is given by evaluating the spline at $ \lambda = 1 $:
+3. **Fit a natural cubic spline to estimate $\pi_0$**:
+   - Let $\hat{f}$ be a natural cubic spline with three degrees of freedom, fitted to $\hat{\pi}_0(\lambda)$ as a function of $\lambda$. The final estimate of $\pi_0$ is given by evaluating the spline at $\lambda = 1$:
    ```{math}
    \hat{\pi}_0 = \hat{f}(1)
    ```
-   A **spline** is a piecewise polynomial function that is used to create smooth curves through a set of data points. Essentially, it fits multiple polynomial functions between segments of the data to form a single, continuous curve that is both flexible and smooth. The advantage of using splines is that they help create a smooth approximation without oscillations, especially when dealing with complex or unevenly spaced data. For more details, you can check out the [Wikipedia page on splines](https://en.wikipedia.org/wiki/Spline_(mathematics)).
+   A [spline](https://en.wikipedia.org/wiki/Spline_(mathematics)) is a smooth curve made of polynomial pieces. With only three degrees of freedom the spline does not pass through every $\hat{\pi}_0(\lambda)$; it smooths out their random fluctuations, which are largest for $\lambda$ close to 1.
 
 4. **Estimate the FDR for each $p$ value**:
    - Estimate the FDR for a threshold $t=p_{(i)}$ at each ordered $p$ value, as the estimated number of significant null statistics, $\hat{\pi}_0 m p_{(i)}$, divided by the number of $p$ values below or at the threshold, $i$.
    ```{math}
-   \hat{\rm FDR}(t=p_{(i)}) = \left( \frac{\hat{\pi}_0 m p_{(i)}}{i} \right)
+   \hat{\rm FDR}(t=p_{(i)}) = \frac{\hat{\pi}_0 m p_{(i)}}{i}
    ```
- 
+
 5. **Ensure monotonicity**:
    - Assign $\hat{q}_{(m)} = \hat{\rm FDR}(t=p_{(m)}) = \hat{\pi}_0 p_{(m)}$
-   - For $ i = m - 1, m - 2, \dots, 1 $, update the q-values to ensure they are [monotonically increasing](https://en.wikipedia.org/wiki/Monotonic_function):
+   - For $i = m - 1, m - 2, \dots, 1$, update the $q$ values to ensure they are [monotonically increasing](https://en.wikipedia.org/wiki/Monotonic_function):
    ```{math}
    \hat{q}_{(i)} = \min(\hat{\rm FDR}(t=p_{(i)}), \hat{q}_{(i+1)})
    ```
-   This ensures that higher $p$ values do not end up with lower q-values, maintaining logical consistency in the significance estimates. 
+   This way a larger $p$ value never receives a smaller $q$ value.
 
-**Summary**: Storey's method provides a more flexible and often less conservative approach to controlling the FDR compared to traditional methods. By adapting the estimate of $\pi_0$, Storey's method can achieve more powerful statistical inference, particularly when many of the hypotheses are truly alternative, i.e. when $\pi_0$ is well below one. It should be noted that Storey's procedure gives similar estimates as Benjamini-Hochberg if we set $\pi_0=1$, i.e. the Storey procedure is less conservative than Benjamini-Hochberg for most situations.
+If we set $\hat{\pi}_0=1$, Storey's procedure calls exactly the same features significant at an FDR level $q^*$ as the Benjamini-Hochberg procedure. As long as $\hat{\pi}_0 \le 1$, Storey's method is therefore never more conservative than Benjamini-Hochberg, and it gains the most power when many hypotheses are truly alternative, i.e. when $\pi_0$ is well below one.
 
 ````{note}
 ### Alternative Procedure for $\pi_0$ Estimation
 
-In steps 2 and 3 of Storey's method for estimating $\pi_0$, an alternative approach involves the use of bootstrapping to refine the estimate. The goal of estimating $\pi_0$ is to determine the proportion of true null hypotheses, which is crucial for accurately controlling the False Discovery Rate (FDR). The procedure described below leverages bootstrapping to obtain a more robust and potentially less biased estimate of $\pi_0$.
+Instead of smoothing the estimates $\hat{\pi}_0(\lambda)$ with a spline (steps 2 and 3 above), [Storey (2002)](https://doi.org/10.1111/1467-9868.00346) proposed to select a single $\lambda$ by bootstrapping. This is the method we use in the next chapter:
 
-The alternative procedure for estimating $\pi_0$ can be broken down as follows:
+1. **Initial estimates**: For a set of $\lambda$ values, evenly spaced between a small value and a maximum value, typically $\lambda = 0.95$, calculate
 
-1. **Lambda Selection**: Instead of fitting a natural cubic spline to the estimates of $\pi_0$ for different values of $ \lambda $, this approach first selects a range of $ \lambda $ values, evenly spaced between a small value and a maximum value, typically $ \lambda = 0.95 $. These $ \lambda $ values help determine how many of the $p$ values exceed the threshold, giving an initial estimate of $\pi_0$.
+   ```{math}
+   \hat{\pi}_0(\lambda) = \frac{W(\lambda)}{m (1 - \lambda)}
+   ```
 
-2. **Initial Estimation**: For each value of $ \lambda $, the number of $p$ values greater than $ \lambda $ is counted. The initial estimate of $\pi_0$ is calculated using:
+   where $W(\lambda)$ is the count of $p$ values greater than $\lambda$, and $m$ is the total number of $p$ values. The smallest of these estimates is retained as a reference value.
 
-```{math}
-\hat{\pi}_0(\lambda) = \frac{W(\lambda)}{m (1 - \lambda)}
-```
+2. **Bootstrapping**: Resample the $p$ values with replacement many times (e.g., 100 times), and re-estimate $\hat{\pi}_0(\lambda)$ for all $\lambda$ values in each bootstrap sample. For each $\lambda$, calculate the mean squared error (MSE) of the bootstrap estimates around the reference value.
 
-   where $ W(\lambda) $ is the count of $p$ values greater than $ \lambda $, and $ m $ is the total number of $p$ values. The smallest of these estimates is retained as an initial $\pi_0$ estimate.
+3. **Final estimate**: Select the $\lambda$ with the smallest MSE, and use the estimate $\hat{\pi}_0(\lambda)$ of the original $p$ values at that $\lambda$.
 
-3. **Bootstrapping for Stability**: To obtain a more stable and reliable estimate, the procedure employs **bootstrapping**. Bootstrapping involves resampling the $p$ values with replacement multiple times (e.g., 100 times) to generate different bootstrap samples. For each bootstrap sample, $\pi_0$ is re-estimated for all $ \lambda $ values. The mean squared error (MSE) is then calculated for each $ \lambda $, comparing the bootstrap estimates with the initial minimum estimate.
-
-4. **Final $\pi_0$ Estimate**: The final $\pi_0$ estimate is selected as the value that minimizes the MSE across the bootstrap iterations, resulting in an estimate that is less sensitive to fluctuations in the data and less prone to bias.
-
-This bootstrapping-based approach helps improve the accuracy of the $\pi_0$ estimate, particularly when the proportion of true null hypotheses is not easily identifiable. By using multiple resamples, the estimate becomes more robust against random variations, leading to more reliable control of the FDR.
-
-This approach provides a more adaptive and refined way to estimate $\pi_0$, enhancing the reliability of downstream FDR calculations and hypothesis testing results.
+The MSE weighs the two problems in the choice of $\lambda$ against each other: a small $\lambda$ gives a stable estimate that is biased upwards by alternative $p$ values, while a large $\lambda$ gives a less biased but more variable estimate.
 ````
 
-### Illustration of q-value calculations
+## Illustration: true and false positives in a $p$ value histogram
 
-Below is a simulation of $p$ value distributions for multiple hypotheses, showcasing the challenge of distinguishing true effects from random variation:
+Below we simulate $p$ values for 1,000 hypotheses, half of which are **nulls** (no effect) and half **alternative hypotheses** (a true effect).
 
 ```{code-cell}
 :tags: [hide-input]
@@ -156,27 +143,26 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Parameters
-np.random.seed(42)
+rng = np.random.default_rng(42)
 m = 1000  # Number of hypotheses
 true_null_proportion = 0.5  # Proportion of null hypotheses
 
-# Simulate p-values
 true_nulls = int(m * true_null_proportion)
 alternative = m - true_nulls
 
 # Generate p-values from uniform distribution for nulls
-p_values_null = np.random.uniform(0, 1, true_nulls)
+p_values_null = rng.uniform(0, 1, true_nulls)
 
 # Generate p-values from a Beta distribution for false nulls (to represent true effects)
-p_values_effect = np.random.beta(1.0, 5.0, alternative)  # Just for illustration
+p_values_effect = rng.beta(1.0, 5.0, alternative)  # Just for illustration
 
 # Combine p-values
 p_values = np.concatenate([p_values_null, p_values_effect])
 
-# Plot p-value distribution and corrections using seaborn
+# Plot the p value distribution
 sns.set(style="whitegrid", context="talk")
 plt.figure(figsize=(14, 6))
-sns.histplot(p_values, bins=50, kde=False, color='gray', alpha=0.5, label='Original $p$ values')
+sns.histplot(p_values, bins=50, kde=False, color='gray', alpha=0.5, label='$p$ values')
 plt.axvline(x=0.1, color='r', linestyle='--', label='Significance Threshold')
 plt.axhline(y=true_nulls / 50, color='b', linestyle='--', label='Expected Level of Nulls')
 
@@ -193,47 +179,31 @@ plt.legend()
 plt.show()
 ```
 
-In the plot above, we simulate $p$ values for a large number of hypotheses (1,000 in this case). Half of these hypotheses represent **nulls** (meaning there is no effect), while the other half represent **alternative hypotheses** (meaning there is a true effect).
+The $p$ values of the nulls are uniformly distributed between 0 and 1, which gives the flat part of the histogram. This follows from the way a $p$ value is constructed: if the test statistic $T$ has a continuous cumulative distribution $F$ under the null, then $p = 1 - F(T)$, and applying a distribution function to its own random variable always yields a uniform variable, so $\Pr(p \le u) = u$ for every $u$ in $[0,1]$ whatever the shape of $F$. The $p$ values of the alternative hypotheses are concentrated near zero, as data generated with a true effect are unlikely under the null hypothesis.
 
-- **True Null Hypotheses**: The $p$ values for the nulls are generated from a uniform distribution between 0 and 1. This means that $p$ values are evenly spread across this range, representing the random chance of seeing a particular $p$ value when there is actually no effect. The $p$ values under the null hypothesis are uniformly distributed because they represent the probability of observing data as extreme as the actual result, assuming the null hypothesis is true. This follows from the way a $p$ value is constructed: if the test statistic has a continuous cumulative distribution $F$ under the null, then $p = 1 - F(T)$, and applying a distribution function to its own random variable always yields a uniform variable, so $P(p \le u) = u$ for every $u$ in $[0,1]$ whatever the shape of $F$. This uniform distribution reflects the lack of any real effect, where the observed data could be due to random chance alone.
-  
-- **Alternative Hypotheses**: The $p$ values for the alternative hypotheses are concentrated towards smaller values, particularly near zero. This is because, when there is a true effect, the data is less likely to be generated under the null hypothesis, making the resulting $p$ values low. In other words, small $p$ values provide stronger evidence against the null hypothesis, indicating that the observed effect is unlikely to be due to random chance alone.
+### True and false positives
 
-The **accumulation of $p$ values towards 0** for the alternative hypotheses is an indication of true effects being detected in the data. When a true effect exists, we should be able to reject the null hypothesis confidently, resulting in smaller $p$ values.
+The vertical red line marks a significance threshold: hypotheses with $p$ values at or below it are called **significant**, those above it **not significant**. The dashed blue line marks the expected height of the histogram for the null $p$ values alone. Together, the two lines divide the hypotheses into four groups:
 
-#### Finding a Threshold for Statistical Significance
+- **TP (True Positives)**: alternative hypotheses below the threshold, i.e. real effects that we correctly identify.
+- **FP (False Positives)**: null hypotheses that end up below the threshold due to random variation.
+- **FN (False Negatives)**: alternative hypotheses above the threshold, i.e. true effects that we fail to detect. A high number of FNs means that our test lacks sensitivity.
+- **TN (True Negatives)**: null hypotheses above the threshold.
 
-In hypothesis testing, we want to determine a **threshold** that can help us identify true positives (TP) while minimizing false positives (FP). In the plot, we draw a vertical red line representing a threshold above which we do not consider the hypothesis significant.
-
-- **Left of the threshold**: The hypotheses with $p$ values below (or at) threshold are called **significant**. We want to find true positives (TP), which are genuine effects that we correctly identify. However, we may also mistakenly identify false positives (FP), which are hypotheses that are actually null but end up below the threshold due to random variation.
-  
-  - **TP (True Positives)**: These are significant findings that correspond to real effects, i.e. alternative hypotheses below threshold. We hope to see as many of these as possible.
-  - **FP (False Positives)**: These are findings found significant, even though they are null, i.e. null hypotheses below threshold.
-
-- **Right of the threshold**: The hypotheses with $p$ values above threshold are called **not significant**. Here we have true negatives (TN) and false negatives (FN).
-  - **FN (False Negatives)**: These are true effects (alternative hypotheses) that we fail to detect because their $p$ values are above our significance threshold. A high number of FNs means that our test lacks sensitivity.
-  - **TN (True Negatives)**: These are null hypotheses found not significant.
-
-#### False Discovery Rate (FDR)
-
-When applying a significance threshold, we aim to find a balance between detecting true effects and minimizing errors. Specifically, we want to find a threshold that provides a good proportion of true findings while controlling the **False Discovery Rate (FDR)**.
-
-The **FDR** is defined as the expected proportion of false positives among all rejected null hypotheses. This is approximately:
+The FDR, the expected proportion of false positives among all hypotheses called significant, is then approximately
 
 ```{math}
 \text{FDR} \approx \frac{\text{FP}}{\text{TP + FP}}
 ```
 
-In other words, we want to keep the number of false positives relative to the total number of findings low, while still identifying as many true effects as possible. Setting the right significance threshold helps to control the FDR, allowing us to make reliable discoveries without overstating our results.
-
-The annotations in the plot—**TP**, **FP**, **FN**, and **TN**—highlight the different outcomes relative to the threshold. This visualization helps us understand the impact of different choices of significance level on our findings and the trade-offs between **sensitivity** (detecting true positives) and **specificity** (avoiding false positives).
+Moving the threshold trades sensitivity, the fraction of the true effects that we detect, against precision, $1-\text{FDR}$, the fraction of our findings that are real.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:
 1. Explain why testing thousands of hypotheses at a fixed $\alpha$ produces many false positives, and calculate how many to expect when all $m$ hypotheses are null.
 2. Define the family-wise error rate (FWER) and the false discovery rate (FDR), $\text{FDR} \approx \text{FP}/(\text{TP}+\text{FP})$, and contrast what controlling each of them promises about a list of significant findings.
 3. Calculate the Bonferroni threshold $\alpha_{\text{adjusted}} = \alpha/m$, and explain why it loses statistical power when $m$ is large.
-4. Calculate which hypotheses the Benjamini-Hochberg procedure declares significant for a short list of $p$ values and an FDR level $q$, and explain why it is conservative when $\pi_0$ is well below one.
+4. Calculate which hypotheses the Benjamini-Hochberg procedure declares significant for a short list of $p$ values and an FDR level $q^*$, and explain why it is conservative when $\pi_0$ is well below one.
 5. Explain why $p$ values are uniformly distributed under $H_0$ and concentrated near zero under $H_1$, and identify the true positives, false positives, true negatives and false negatives in a $p$ value histogram with a threshold.
 6. Calculate $\hat{\pi}_0(\lambda) = \frac{|\{ p_i > \lambda \}|}{m (1 - \lambda)}$ for a given $\lambda$, and explain the trade-off in choosing $\lambda$: a large $\lambda$ leaves fewer alternative $p$ values above it, but gives a more variable estimate.
 7. Define the $q$ value as the smallest FDR at which a feature is called significant, and calculate $q$ values for a short sorted list of $p$ values from $\hat{\rm FDR}(t) = \frac{\hat{\pi}_0 m t}{|\{p_i \le t\}|}$, including the step that makes them monotone.

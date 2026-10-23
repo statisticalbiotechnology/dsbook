@@ -28,13 +28,13 @@ downloads:
 
 ## Linear SVMs
 
-Support Vector Machines (SVMs) are powerful tools for classification tasks, and one of the simplest versions is the **Linear SVM**. A Linear SVM aims to find the optimal line (or hyperplane in higher dimensions) that separates data points into different classes while maximizing the distance between the classes. This distance is called the **margin**. In this chapter, we'll explore how Linear SVMs achieve this, using a few examples to help you visualize the concepts.
+Support Vector Machines (SVMs) are powerful tools for classification tasks, and one of the simplest versions is the **Linear SVM**. A Linear SVM aims to find the optimal line (or hyperplane in higher dimensions) that separates data points into different classes while maximizing the distance between the classes. This distance is called the **margin**. In this chapter, we'll explore how Linear SVMs achieve this.
 
 ### The Goal of an SVM: Maximum Margin Hyperplane
 
 Imagine we have a set of points that belong to two different classes, represented by the labels +1 and −1. These points, denoted as $(\mathbf{x}_i, y_i)$, where $y_i$ is either +1 or −1, form our training data. Each $\mathbf{x}_i$ is a **p-dimensional real vector** that represents the features of a data point.
 
-The primary goal of an SVM is to find a **maximum-margin hyperplane** that best divides the data into two classes. The hyperplane should maximize the distance between itself and the **nearest points** from both classes, which are called **support vectors**. These support vectors are critical to defining the optimal separating boundary.
+The SVM looks for the **maximum-margin hyperplane**, the hyperplane that divides the data into the two classes while lying as far as possible from the **nearest points** of both classes. These nearest points are called **support vectors**.
 
 ### Defining a Hyperplane
 
@@ -89,17 +89,17 @@ The optimization problem for a hard-margin SVM can be formulated as:
 \min_{\mathbf{w}, b} \frac{1}{2} \| \mathbf{w} \|^2 \quad \text{subject to:} \quad y_i (\mathbf{w}^T \mathbf{x}_i - b) \geq 1 \; \forall i
 ```
 
-This formulation ensures that we are maximizing the margin while keeping all data points on the correct side of the boundary.
+Minimizing $\frac{1}{2} \| \mathbf{w} \|^2$ gives the same solution as minimizing $\| \mathbf{w} \|$, but is mathematically more convenient.
 
 ### Soft-Margin SVM
 
-In real-world scenarios, data is often not perfectly linearly separable. To handle this, we introduce the concept of a **soft margin**. Instead of forcing every data point to be on the correct side of the hyperplane, we allow some points to fall inside the margin or even be misclassified. To measure this, we use the **hinge loss function**:
+In real-world scenarios, data is often not perfectly linearly separable. To handle this, we introduce the concept of a **soft margin**. Instead of forcing every data point to lie outside the margin on its correct side, we allow some points to fall inside the margin or even be misclassified. To measure how much a point violates the margin, we use the **hinge loss**, which we met in the [chapter on classification](./classify.md):
 
 ```{math}
 \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b))
 ```
 
-This loss function is zero if the point is correctly classified with enough margin, and increases as the point falls closer to or on the wrong side of the margin.
+The hinge loss is zero for every point that lies on the correct side of its margin hyperplane, however close to it. It becomes positive once a point enters the margin, and grows linearly the further the point lies on the wrong side; it exceeds 1 for points on the wrong side of the separating hyperplane, i.e. for misclassified points.
 
 The goal for a soft-margin SVM is to minimize the following expression:
 
@@ -107,11 +107,11 @@ The goal for a soft-margin SVM is to minimize the following expression:
 \lambda \| \mathbf{w} \|^2 + \left[ \frac{1}{n} \sum_{i=1}^n \max(0, 1 - y_i (\mathbf{w}^T \mathbf{x}_i - b)) \right]
 ```
 
-Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A smaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications. Note that in the example in the next chapter, we will use a slightly different formulation, in terms of a parameter $C$ that plays the inverse role of $\lambda$. Rescaling the objective above by $1/(2\lambda)$ turns it into $\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n \max(0, 1 - y_i(\mathbf{w}^T\mathbf{x}_i - b))$, the form used by scikit-learn, with $C = \frac{1}{2n\lambda}$. A large $C$ therefore corresponds to a small $\lambda$, i.e. a strong emphasis on classifying every training point correctly.
+Here, $\lambda > 0$ is a parameter that controls the trade-off between maximizing the margin and minimizing the classification errors. A smaller value of $\lambda$ puts more emphasis on correctly classifying every point, while a larger value allows for a wider margin with some misclassifications. Note that in the example in the next chapter, we will use a slightly different formulation, in terms of a parameter $C$ that plays the inverse role of $\lambda$. Rescaling the objective above by $1/(2\lambda)$ turns it into $\frac{1}{2}\|\mathbf{w}\|^2 + C\sum_{i=1}^n \max(0, 1 - y_i(\mathbf{w}^T\mathbf{x}_i - b))$, the form used by scikit-learn's `SVC` class, with $C = \frac{1}{2n\lambda}$. A large $C$ therefore corresponds to a small $\lambda$, i.e. a strong emphasis on classifying every training point correctly. The `LinearSVC` class that we use in the next chapter differs slightly: by default it squares the hinge loss of each point, and it also penalizes the offset $b$, but $C$ plays the same role.
 
 ### Support Vectors
 
-An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it, the **support vectors**. For a soft-margin SVM, the support vectors also include the points that fall inside the margin or on the wrong side of it. These points are crucial, as they define the boundary of the margin and determine the final classifier. All other points do not directly affect the hyperplane.
+An important feature of SVMs is that the **maximum-margin hyperplane** is determined only by the points that lie closest to it, the **support vectors**. For a soft-margin SVM, the support vectors also include the points that fall inside the margin or on the wrong side of it. All other points do not affect the hyperplane: removing them, or moving them without entering the margin, leaves the classifier unchanged.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:

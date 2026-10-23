@@ -92,7 +92,7 @@ $$
 
 ### Matrix Multiplication
 
-The product of two matrices $\mathbf{A}$ and $\mathbf{B}$ is a third matrix $\mathbf{C}$. Each element $c_{ij}$ of $\mathbf{C}$ is computed as the dot product of the $i$-th row of $\mathbf{A}$ and the $j$-th column of $\mathbf{B}$:
+The product of an $n \times k$ matrix $\mathbf{A}$ and a $k \times p$ matrix $\mathbf{B}$ is an $n \times p$ matrix $\mathbf{C}$; the number of columns of $\mathbf{A}$ has to equal the number of rows of $\mathbf{B}$. Each element $c_{ij}$ of $\mathbf{C}$ is computed as the dot product of the $i$-th row of $\mathbf{A}$ and the $j$-th column of $\mathbf{B}$:
 
 $$
 c_{ij} = \sum_{k} a_{ik} b_{kj}
@@ -156,7 +156,7 @@ plt.show()
 
 ### Eigenvalue and Eigenvector
 
-An **eigenvalue** $\lambda$ and its corresponding **eigenvector** $\mathbf{v}$ of a matrix $\mathbf{A}$ satisfy the equation:
+An **eigenvalue** $\lambda$ and its corresponding **eigenvector** $\mathbf{v} \neq \mathbf{0}$ of a square matrix $\mathbf{A}$ satisfy the equation:
 
 $$
 \mathbf{A} \mathbf{v} = \lambda \mathbf{v}
@@ -181,121 +181,80 @@ $$
 
 #### Mean
 
-The **mean** of a set of numbers is the average of all the values. For a set $ X = \{x_1, x_2, \dots, x_n\} $, the mean $ \mu $ is calculated as:
+The **mean** of a set of numbers is the average of all the values. For a set $X = \{x_1, x_2, \dots, x_n\}$, the sample mean $\bar{x}$ is calculated as:
 
 $$
-\mu = \frac{1}{n} \sum_{i=1}^n x_i
+\bar{x} = \frac{1}{n} \sum_{i=1}^n x_i
 $$
 
 #### Variance
 
-The **variance** measures the spread of a set of numbers from their mean. For a sample set $ X $ with sample mean $ \mu $, the **maximum likelihood estimate** of the variance $ \sigma^2 $ is
+The **variance** measures the spread of a set of numbers around their mean. For a sample $X$ with sample mean $\bar{x}$, the **maximum likelihood estimate** of the variance $\sigma^2$ (assuming normally distributed data) is
 
 $$
-\hat{\sigma}^2_{\text{MLE}} = \frac{1}{n} \sum_{i=1}^n (x_i - \mu)^2 .
+\hat{\sigma}^2_{\text{MLE}} = \frac{1}{n} \sum_{i=1}^n (x_i - \bar{x})^2 .
 $$
 
-Because the same data are used to estimate the mean $ \mu $, this estimate is biased (it tends to underestimate the variance). Dividing by $ n-1 $ instead (Bessel's correction) gives the **unbiased estimate**
+Because the same data are used to estimate the mean, this estimate is biased (it tends to underestimate the variance). Dividing by $n-1$ instead (Bessel's correction) gives the **unbiased estimate**
 
 $$
-s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu)^2 .
+s^2 = \frac{1}{n-1} \sum_{i=1}^n (x_i - \bar{x})^2 .
 $$
 
 #### Covariance
 
-**Covariance** is a measure of how much two random variables change together. For variables $ X $ and $ Y $, the **maximum likelihood estimate** of the covariance is
+**Covariance** is a measure of how much two random variables change together. For paired samples $x_1, \dots, x_n$ and $y_1, \dots, y_n$ of the variables $X$ and $Y$, with sample means $\bar{x}$ and $\bar{y}$, the **maximum likelihood estimate** of the covariance is
 
 $$
-\widehat{\text{cov}}(X, Y) = \frac{1}{n} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y) ,
+\widehat{\text{cov}}(X, Y) = \frac{1}{n} \sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y}) ,
 $$
 
-while the **unbiased estimate** uses $ n-1 $:
+while the **unbiased estimate** uses $n-1$:
 
 $$
-\text{cov}(X, Y) = \frac{1}{n-1} \sum_{i=1}^n (x_i - \mu_X)(y_i - \mu_Y) .
+s_{XY} = \frac{1}{n-1} \sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y}) .
 $$
 
-#### Probability Distributions
-
-##### Uniform Distribution
-
-The **uniform distribution** is a probability distribution where every outcome is equally likely over a given interval $[a, b]$. Its probability density function (pdf) is:
-
-$$
-f(x) = \frac{1}{b-a} \quad \text{for } x \in [a, b]
-$$
-
-##### Normal Distribution
-
-The **normal distribution** is a probability distribution that is symmetric about the mean, showing that data near the mean are more frequent in occurrence than data far from the mean. Its pdf is given by:
-
-$$
-f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x - \mu)^2}{2\sigma^2}}
-$$
+### Probability Distributions
 
 #### Probability Density Function (PDF)
 
-The **probability density function** (pdf) of a continuous random variable is a function that describes how densely the probability is concentrated around each value of the random variable; the probability of any single exact value is zero. The area under the pdf curve between two values represents the probability of the variable falling within that range.
+The **probability density function** (pdf) $p(x)$ of a continuous random variable is a function that describes how densely the probability is concentrated around each value of the random variable; the probability of any single exact value is zero. The area under the pdf curve between two values represents the probability of the variable falling within that range. A discrete random variable is instead described by its probabilities $\Pr(X = x)$ of taking each value $x$.
 
 #### Cumulative Distribution Function (CDF)
 
-The **cumulative distribution function** (cdf) of a random variable $ X $ gives the probability that $ X $ will take a value less than or equal to $ x $. It is defined as:
+The **cumulative distribution function** (cdf) of a random variable $X$ gives the probability that $X$ will take a value less than or equal to $x$. It is defined as:
 
 $$
-F(x) = P(X \leq x)
+F(x) = \Pr(X \leq x)
+$$
+
+#### Uniform Distribution
+
+The **uniform distribution** is a probability distribution where every outcome is equally likely over a given interval $[a, b]$. Its pdf is:
+
+$$
+p(x) = \frac{1}{b-a} \quad \text{for } x \in [a, b], \quad \text{and } p(x) = 0 \text{ otherwise}
+$$
+
+#### Normal Distribution
+
+The **normal distribution** is a probability distribution that is symmetric about its mean $\mu$, with values near the mean being more frequent than values far from it. With standard deviation $\sigma$, its pdf is given by:
+
+$$
+p(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x - \mu)^2}{2\sigma^2}}
 $$
 
 #### Expectation Value
 
-The **expectation value** of a random variable is the long-run average value of repetitions of the experiment it represents. For a random variable $ X $ with a probability function $ p(x) $, the expectation is given by:
+The **expectation value** of a random variable is the long-run average value of repetitions of the experiment it represents. For a discrete random variable $X$ it is given by the sum over its possible values, and for a continuous random variable with pdf $p(x)$ by the corresponding integral:
 
 $$
-E[X] = \sum_{x} x \cdot p(x) \quad \text{(discrete)} \quad \text{or} \quad E[X] = \int_{-\infty}^{\infty} x \cdot f(x) dx \quad \text{(continuous)}
+E[X] = \sum_{x} x \cdot \Pr(X = x) \quad \text{(discrete)} \quad \text{or} \quad E[X] = \int_{-\infty}^{\infty} x \cdot p(x)\, dx \quad \text{(continuous)}
 $$
-
-### Probabilistic Inference
-#### Likelihood
-
-The *likelihood function* expresses how well different parameter values explain the observed data. For continuous data, it is written as $L(\theta \mid x) = p(x \mid \theta),$ and for discrete data as $L(\theta \mid x) = \Pr(x \mid \theta).$
-
-Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data $x$ are fixed and $\theta$ varies. The likelihood is not a probability distribution over $\theta$; its role is to compare parameter values in light of the data.
-
-
-#### Maximum Likelihood
-
-The *maximum likelihood estimate (MLE)* is the parameter value that maximizes the likelihood function:
-
-$$
-\hat{\theta}_{\text{MLE}} = \arg\max_{\theta} L(\theta \mid x).
-$$
-
-It identifies the parameter that makes the observed data most probable (or most dense) under the model. MLEs are widely used because, under general conditions, they are consistent, efficient, and asymptotically normal. In practice, the likelihood is often maximized numerically using gradient-based or expectation–maximization algorithms.
-
-
-#### Prior Probability
-
-The *prior probability* $\Pr(\theta)$ (or density $p(\theta)$) represents our beliefs about parameter values before any data are observed. Priors can encode earlier experimental knowledge, theoretical limits, or subjective expectations.
-When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density $p(\theta)$ satisfying $\int p(\theta)\,d\theta = 1$; in discrete models, it is a probability mass function $\Pr(\theta)$ summing to one.
-
-#### Posterior Probability
-
-After observing data $x$, the prior is updated using Bayes’ theorem:
-
-$$
-p(\theta \mid x) = \frac{p(x \mid \theta)\,p(\theta)}{p(x)} \quad \text{or} \quad
-\Pr(\theta \mid x) = \frac{\Pr(x \mid \theta)\,\Pr(\theta)}{\Pr(x)}.
-$$
-
-The resulting *posterior distribution* combines prior information with the information from the data through the likelihood.
-The denominator,
-
-$$
-p(x) = \int p(x \mid \theta)\,p(\theta)\,d\theta,
-$$
-
-(or the corresponding sum for discrete variables) is the *marginal likelihood* or *evidence*, ensuring that the posterior integrates or sums to one. The posterior forms the basis for Bayesian inference, from which we can compute summaries such as the posterior mean, variance, or mode.
 
 ### Relationships Between Random Variables
+
 #### Joint Probability Distributions
 
 A *joint probability distribution* describes the probability (or density) of two or more random variables taking specific values together. For two variables $X$ and $Y$,
@@ -321,8 +280,48 @@ $$
 p(x) = \int p(x, y)\,dy.
 $$
 
-This process is called *marginalization*. The resulting marginal describes the distribution of $X$ alone, regardless of $Y$.
-Marginals are useful for computing expected values, normalizing posteriors, and analyzing subsystems within larger probabilistic models. In Bayesian inference, the marginal distribution of the data, $p(x)$, plays a key role as the normalizing constant in Bayes’ theorem (see above) and is sometimes referred to as the *evidence*.
+This process is called *marginalization*. The resulting marginal describes the distribution of $X$ alone, regardless of $Y$. The marginal distribution of the data reappears below, as the denominator of Bayes' theorem.
+
+### Probabilistic Inference
+
+#### Likelihood
+
+The *likelihood function* expresses how well different parameter values explain the observed data. For continuous data, it is written as $L(\theta \mid x) = p(x \mid \theta),$ and for discrete data as $L(\theta \mid x) = \Pr(x \mid \theta).$
+
+Although the likelihood has the same mathematical form as a probability or density function, its interpretation differs: in the likelihood, the data $x$ are fixed and $\theta$ varies. The likelihood is not a probability distribution over $\theta$; its role is to compare parameter values in light of the data.
+
+#### Maximum Likelihood
+
+The *maximum likelihood estimate (MLE)* is the parameter value that maximizes the likelihood function:
+
+$$
+\hat{\theta}_{\text{MLE}} = \arg\max_{\theta} L(\theta \mid x).
+$$
+
+It identifies the parameter that makes the observed data most probable (or most dense) under the model. MLEs are widely used because, under general conditions, they are consistent, asymptotically efficient, and asymptotically normal. In practice, the likelihood is often maximized numerically using gradient-based or expectation–maximization algorithms.
+
+#### Prior Probability
+
+The *prior probability* $\Pr(\theta)$ (or density $p(\theta)$) represents our beliefs about parameter values before any data are observed. Priors can encode earlier experimental knowledge, theoretical limits, or subjective expectations.
+When little information is available, weakly informative or noninformative priors are used to prevent the prior from dominating the inference. In continuous models, the prior is a density $p(\theta)$ satisfying $\int p(\theta)\,d\theta = 1$; in discrete models, it is a probability mass function $\Pr(\theta)$ summing to one.
+
+#### Posterior Probability
+
+After observing data $x$, the prior is updated using Bayes’ theorem:
+
+$$
+p(\theta \mid x) = \frac{p(x \mid \theta)\,p(\theta)}{p(x)} \quad \text{or} \quad
+\Pr(\theta \mid x) = \frac{\Pr(x \mid \theta)\,\Pr(\theta)}{\Pr(x)}.
+$$
+
+The resulting *posterior distribution* combines prior information with the information from the data through the likelihood.
+The denominator,
+
+$$
+p(x) = \int p(x \mid \theta)\,p(\theta)\,d\theta,
+$$
+
+(or the corresponding sum for discrete variables) is the marginal distribution of the data, also called the *marginal likelihood* or *evidence*, and ensures that the posterior integrates or sums to one. The posterior forms the basis for Bayesian inference, from which we can compute summaries such as the posterior mean, variance, or mode.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:
@@ -330,7 +329,7 @@ You should be able to:
 2. Calculate the L2-norm $\|\mathbf{x}\|_2$ of a vector and the projection $\text{proj}_{\mathbf{v}} \mathbf{u}$ of one vector onto another.
 3. Define an eigenvalue $\lambda$ and eigenvector $\mathbf{v}$ of a matrix through $\mathbf{A} \mathbf{v} = \lambda \mathbf{v}$, and the gradient $\nabla f(\mathbf{x})$ as the vector of partial derivatives that points in the direction of steepest ascent.
 4. Calculate the mean, variance and covariance of a small dataset, and explain the difference between the maximum likelihood estimates (dividing by $n$) and the unbiased estimates (dividing by $n-1$).
-5. Write down the pdfs of the uniform and normal distributions, explain how a pdf and a cdf $F(x) = P(X \leq x)$ give probabilities, and calculate the expectation value $E[X]$ of a discrete random variable.
+5. Write down the pdfs of the uniform and normal distributions, explain how a pdf and a cdf $F(x) = \Pr(X \leq x)$ give probabilities, and calculate the expectation value $E[X]$ of a discrete random variable.
 6. Calculate marginal and conditional probabilities from a joint distribution, by summing or integrating out the other variable.
 7. Contrast a likelihood $L(\theta \mid x)$, where the data are fixed and $\theta$ varies, with a probability distribution over $\theta$. Define the maximum likelihood estimate, and identify the prior, likelihood, posterior and evidence in Bayes' theorem.
 :::

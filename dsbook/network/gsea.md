@@ -33,7 +33,7 @@ The methods of the previous chapter are easiest to appreciate on data where we a
 
 Himes and co-workers cultured primary human airway smooth muscle (ASM) cells from four donors and treated them with dexamethasone, a synthetic glucocorticoid used to control asthma, or left them untreated. Each of the four cell lines contributes one treated and one untreated sample, so the experiment is a *paired* two-condition design with $4+4=8$ RNA-seq libraries. This is about as controlled as a human transcriptomics experiment gets: the only thing that differs within a pair is the drug.
 
-It is also an experiment with a built-in positive control. Dexamethasone acts through the glucocorticoid receptor (*NR3C1*), a transcription factor with a well characterised set of direct target genes -- *FKBP5*, *PER1*, *TSC22D3* and *DUSP1* among them. If our pathway analysis is working, that signal should be impossible to miss.
+It is also an experiment with a built-in positive control. Dexamethasone acts through the glucocorticoid receptor (*NR3C1*), a transcription factor with a well characterized set of direct target genes – *FKBP5*, *PER1*, *TSC22D3* and *DUSP1* among them. If our pathway analysis is working, that signal should be impossible to miss.
 
 ```{code-cell}
 :tags: [hide-cell]
@@ -44,7 +44,7 @@ if not _has("gseapy"):
     %pip install -q "gseapy"
 ```
 
-GEO distributes the study as a gene-level FPKM matrix with one column per library. We download it once and cache it under `dsbook/data/`.
+GEO distributes the study as a gene-level FPKM matrix with one column per library, next to annotation and per-condition summary columns. We download it once and cache it under `dsbook/data/`.
 
 ```{code-cell} ipython3
 ---
@@ -80,12 +80,11 @@ fpkm = pd.read_csv(fpkm_path, sep=r"\s+")
 fpkm.iloc[:5, :6]
 ```
 
-The full series also contains cells treated with the $\beta_2$-agonist albuterol, alone and in combination with dexamethasone. We ignore those and keep the eight libraries of the untreated/dexamethasone comparison. The library names carry the treatment, and the cell lines were sequenced in blocks of four, so `LL01`--`LL04` come from donor N61311, `LL05`--`LL08` from N052611, and so on. That lets us line up the samples pairwise.
+The full series also contains cells treated with the $\beta_2$-agonist albuterol, alone and in combination with dexamethasone. We ignore those and keep the eight libraries of the untreated/dexamethasone comparison. The library names carry the treatment, and the cell lines were sequenced in blocks of four, so `LL01`–`LL04` come from donor N61311, `LL05`–`LL08` from N052611, and so on. That lets us line up the samples pairwise.
 
 ```{code-cell} ipython3
 untreated = ["Untreated_LL01", "Untreated_LL05", "Untreated_LL09", "Untreated_LL13"]
 dex       = ["Dex_LL02",       "Dex_LL06",       "Dex_LL10",       "Dex_LL14"]
-cell_line = ["N61311",         "N052611",        "N080611",        "N061011"]
 
 airway = fpkm.set_index("gene_id")[dex + untreated]
 airway = airway[(airway >= 1.0).all(axis=1)]   # keep genes expressed in every sample
@@ -110,6 +109,7 @@ def get_significance_paired(row):
 
 pvalues = airway.apply(get_significance_paired, axis=1, result_type="expand")
 pvalues.rename(columns = {list(pvalues)[0]: 'p', list(pvalues)[1]: '-log_p', list(pvalues)[2]: 'log_FC'}, inplace = True)
+np.random.seed(0)  # the pi0 bootstrap in qvalue.py draws random numbers
 qvalues = qvalue.qvalues(pvalues)
 ```
 
@@ -124,28 +124,28 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 sns.relplot(data=qvalues,x="log_FC",y="-log_p")
-plt.xlabel("$log_2(FC)$")
-plt.ylabel("$-log_{10}(p)$")
+plt.xlabel(r"$\log_2(FC)$")
+plt.ylabel(r"$-\log_{10}(p)$")
 plt.show()
 ```
 
-Before going further, it is worth checking the positive controls. The four textbook glucocorticoid-receptor target genes should be up-regulated by dexamethasone.
+Before going further, we check that the four glucocorticoid-receptor target genes are up-regulated by dexamethasone.
 
 ```{code-cell} ipython3
 qvalues.loc[["FKBP5", "PER1", "TSC22D3", "DUSP1"]]
 ```
 
-All four are up by roughly a factor of 8--16 with $q$ values around 1%. The experiment worked, and any pathway method we apply should recover this.
+All four are up by roughly a factor of 8–16 with $q$ values around 1%. The experiment worked.
 
-Note also how modest the $q$ values are. With four pairs the $t$ statistic rests on three degrees of freedom, so even a perfectly consistent eight-fold change cannot be declared significant with much confidence: the smallest $q$ value in this experiment is about $2 \cdot 10^{-3}$, and only some two hundred genes reach a $q$ value below $10^{-2}$. That is a property of the sample size rather than of the effect sizes, and it is why the thresholds we use below are far less stringent than they would be for a cohort of hundreds of patients.
+Note also how modest the $q$ values are. With four pairs the $t$ statistic rests on three degrees of freedom, so even a large change that is fairly consistent across the donors cannot be declared significant with much confidence: the smallest $q$ value in this experiment is about $2 \cdot 10^{-3}$, and only some two hundred genes reach a $q$ value below $10^{-2}$. That is a property of the sample size rather than of the effect sizes, and it is why the thresholds we use below are far less stringent than they would be for a cohort of hundreds of patients.
 
 ## Over-representation analysis
 
-We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overrepresentation analysis. The module unfortunately does not implement the pathway analysis itself. It instead calls a remote webserver, [Enrichr](https://maayanlab.cloud/Enrichr/).
+We use the [gseapy](https://gseapy.readthedocs.io/) module to run an overrepresentation analysis. gseapy can run the test locally if we give it the gene sets themselves, but when we name one of the gene-set libraries of the [Enrichr](https://maayanlab.cloud/Enrichr/) web server, as we do here, it sends our gene list and background to Enrichr, which performs the test.
 
 In the analysis here we use the [KEGG](https://www.genome.jp/kegg/) database's definition of biological pathways. This choice can easily be changed to other databases such as GO.
 
-Here we select the genes with $q$ values below $0.01$ as an input for the analysis. First we select this as our gene_list, and then we calculate the overlap of the gene list to all the pathways in KEGG. Note that the background is the set of genes we actually measured, not all human genes -- a pathway can only be over-represented relative to what could have been detected.
+As input we use the genes with $q$ values below $0.01$. The background is the set of genes we actually measured, not all human genes – a pathway can only be over-represented relative to what could have been detected.
 
 ```{code-cell} ipython3
 import gseapy as gp
@@ -166,15 +166,16 @@ enr=gp.enrichr(
 len(gene_list)
 ```
 
-We clean up the results a bit by only keeping some of the resulting metrics. We also correct the results for multiple hypothesis testing, and list the terms with an FDR less than 20%.
+We keep only the $p$ values and term names, correct for multiple hypothesis testing, and list the terms with an FDR less than 20%. Enrichr only reports pathways that share at least one gene with our list, so the pathways with $p = 1$ are missing from the input to the correction; this biases the estimate of $\pi_0$ downwards and makes the $q$ values somewhat optimistic.
 
 ```{code-cell} ipython3
 kegg_enr = enr.results[["P-value","Term"]].rename(columns={"P-value": "p"})
+np.random.seed(0)
 kegg_enr = qvalue.qvalues(kegg_enr)
 kegg_enr.loc[kegg_enr["q"]<0.20]
 ```
 
-The analysis seems to find overrepresentation of relatively few pathways, given how convincing the differential expression was. The strongest term, *Mineral absorption*, is driven by the metallothioneins *MT2A*, *MT1X* and *MT1E*, which are indeed classically induced by glucocorticoids -- but it is a somewhat oblique way of describing a drug response, and nothing that we would call a glucocorticoid pathway comes out at all.
+The analysis seems to find overrepresentation of relatively few pathways, given how convincing the differential expression was. The strongest term, *Mineral absorption*, is driven by the metallothioneins *MT2A*, *MT1X* and *MT1E*, which are indeed classically induced by glucocorticoids, together with the metalloreductases *STEAP1* and *STEAP2* – but it is a somewhat oblique way of describing a drug response, and nothing that we would call a glucocorticoid pathway comes out at all.
 
 ```{code-cell} ipython3
 enr.results.sort_values("P-value").head(5)[["Term", "P-value", "Genes"]]
@@ -184,7 +185,7 @@ This is the characteristic failure mode of ORA. The 200-odd genes that pass the 
 
 ## Gene set enrichment analysis
 
-Subsequently we use gseapy to perform a gene set enrichment analysis (GSEA), which uses the whole ranked list instead of a thresholded one. This time we compare to the *hallmark* collection of [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp), fifty carefully curated sets that each summarise a coherent biological state.
+We now use gseapy to run a gene set enrichment analysis (GSEA) on the whole ranked list instead of a thresholded one. This time we compare to the *hallmark* collection of [MSigDB](https://www.gsea-msigdb.org/gsea/msigdb/index.jsp), fifty carefully curated sets that each summarize a coherent biological state.
 
 We put the dexamethasone samples first so that a *positive* enrichment score means "up in dexamethasone".
 
@@ -192,16 +193,15 @@ We put the dexamethasone samples first so that a *positive* enrichment score mea
 classes = ["Dex" if sample_name.startswith("Dex") else "Untreated" for sample_name in airway.columns]
 gs = gp.GSEA(data=airway,
                  gene_sets='MSigDB_Hallmark_2020',
-                 classes=classes, # cls=class_vector
+                 classes=classes,
                  permutation_type='phenotype', # null from permutations of class labels
-                 permutation_num=1000, # reduce number to speed up test
+                 permutation_num=1000, # number of permutations in the null distribution
                  min_size=15, # minimal size of pathway
                  outdir=None,  # do not write output to disk
                  no_plot=True, # Skip plotting
                  method='signal_to_noise',
                  threads=4, # Number of allowed parallel processes
-                 seed=42,
-                 format='png',)
+                 seed=42)
 gs.run()
 gs.res2d[["Term","ES","NES","NOM p-val","FDR q-val"]].head(8)
 ```
@@ -210,7 +210,7 @@ gs.res2d[["Term","ES","NES","NOM p-val","FDR q-val"]].head(8)
 
 Look closely at the nominal $p$ values: several of them cluster tightly just above $0.016$, and none falls below it. That is not a coincidence. Permuting the phenotype labels of eight samples into two groups of four can produce at most $\binom{8}{4}=70$ distinct assignments, of which only 35 are distinct up to swapping the group names. The permutation $p$ value can therefore not be resolved beyond roughly $1/70$, no matter how many permutations we ask for, and the FDR estimates inherit that coarseness. Strictly, our design is paired, and permutations that respect the pairing can only swap the labels within each donor, which gives just $2^4 = 16$ assignments and an even coarser resolution.
 
-Phenotype permutation is the right null whenever it is affordable, because it preserves the correlation between genes. With very few samples per group -- the usual rule of thumb is fewer than seven -- it simply runs out of resolution, and the recommended fallback is to permute the *gene sets* instead: the ranked list is kept fixed and random gene sets of the same size are drawn to build the null. This is a weaker null, as it treats genes as independent and so tends to be anti-conservative for sets of co-regulated genes, but it is the only one with enough resolution here.
+With very few samples per group (the usual rule of thumb is fewer than seven), phenotype permutation runs out of resolution, and the recommended fallback is to permute the *gene sets* instead: the ranked list is kept fixed and random gene sets of the same size are drawn to build the null. This is a weaker null: unlike phenotype permutation, it treats genes as independent and so tends to be anti-conservative for sets of co-regulated genes, but it is the only one with enough resolution here.
 
 ```{code-cell} ipython3
 gs = gp.GSEA(data=airway,
@@ -223,20 +223,19 @@ gs = gp.GSEA(data=airway,
                  no_plot=True,
                  method='signal_to_noise',
                  threads=4,
-                 seed=42,
-                 format='png',)
+                 seed=42)
 gs.run()
 gs_res = gs.res2d
 ```
 
-We list the pathways with a FDR below 0.25, the threshold conventionally used for GSEA.
+We list the pathways with an FDR below 0.25, the threshold conventionally used for GSEA.
 
 ```{code-cell} ipython3
 significant = gs_res[gs_res["FDR q-val"].astype(float)<0.25]
 significant[["Term","ES","NES","NOM p-val","FDR q-val"]]
 ```
 
-Where ORA found almost nothing, GSEA reports about twenty hallmark sets, all of them up in dexamethasone. Two of the strongest are exactly the positive controls we hoped for, although they are not labelled the way a pharmacologist would label them:
+Where ORA found almost nothing, GSEA reports about twenty hallmark sets, all of them up in dexamethasone. Two of the strongest are exactly the positive controls we hoped for, although they are not labeled the way a pharmacologist would label them:
 
 * **Adipogenesis** is a glucocorticoid signature in disguise. Dexamethasone is a standard ingredient of the cocktail used to drive adipocyte differentiation in culture, so the hallmark set is populated with genes that the glucocorticoid receptor induces directly.
 * **Androgen Response** is a steroid-receptor set, and the nuclear receptors share a large part of their target repertoire; *FKBP5* sits in its leading edge.
@@ -251,7 +250,7 @@ lead = gs_res.loc[gs_res.Term == term, "Lead_genes"].iloc[0].split(";")
 lead
 ```
 
-These are not markers of an activated inflammatory programme. *PER1*, *DUSP1*, *KLF9*, *ATF3* and *NR4A1* are immediate-early genes that the glucocorticoid receptor induces directly, and further down the list *TNFAIP3* (A20) and *NFKBIA* ($I\kappa B\alpha$) are *inhibitors* of NF-$\kappa$B whose induction is one of the mechanisms by which glucocorticoids shut the pathway down. The gene set is named after the stimulus used to define it, not after the direction of regulation, and a set can be enriched because its brake was applied just as easily as because its accelerator was.
+These are not markers of an activated inflammatory program. *PER1*, *DUSP1* and *KLF9* are well-known direct targets of the glucocorticoid receptor, *ATF3* and *NR4A1* are immediate-early genes that respond rapidly to many stimuli, and further down the list *TNFAIP3* (A20) and *NFKBIA* ($I\kappa B\alpha$) are *inhibitors* of NF-$\kappa$B whose induction is one of the mechanisms by which glucocorticoids shut the pathway down. The gene set is named after the stimulus used to define it, not after the direction of regulation, and a set can be enriched because its brake was applied just as easily as because its accelerator was.
 
 The cells here were never challenged with a cytokine, so there was no inflammatory tone to suppress; consistently, the *Inflammatory Response* hallmark itself is flat.
 
@@ -261,30 +260,29 @@ gs_res.loc[gs_res.Term.isin(["Inflammatory Response",
            ["Term","NES","NOM p-val","FDR q-val"]]
 ```
 
-The lesson is the one that makes GSEA worth the extra machinery over ORA: the enrichment score tells you *that* a coherent group of genes moved together, and the leading edge tells you *which* genes did it. Only the second of those can be interpreted biologically.
+The enrichment score tells you *that* a coherent group of genes moved together; it takes the leading edge to tell you *which* genes did it, and hence what the hit means biologically.
 
-### Visualising the enrichment
+### Visualizing the enrichment
 
-The package we are using for accessing GSEA, gseapy, has some built-in plotting routines for illustrating the enrichment for any given pathway.
+gseapy has built-in routines for plotting the enrichment of a pathway.
 
 ```{code-cell} ipython3
 axs = gs.plot(terms=gs_res.Term[0])
 ```
 
-We can also compare the enrichment between multiple pathways
+We can also compare the enrichment of several pathways in one plot.
 
 ```{code-cell} ipython3
 axs = gs.plot(list(significant.Term[:5]), show_ranking=False, legend_kws={'loc': (1.05, 0)}, )
 ```
 
-as well as the heatmap (Normalized gene expression as a function of gene and sample) for the genes in a given pathway. The four columns on the left are the dexamethasone-treated cultures and the four on the right the untreated ones; the clean split of the leading-edge genes into two blocks is what the enrichment score is measuring.
+A heatmap shows the normalized expression of the genes in a pathway, here the first 25 leading-edge genes of *Adipogenesis*, in each sample. The four columns on the left are the dexamethasone-treated cultures and the four on the right the untreated ones; the clean split of the leading-edge genes into two blocks is what the enrichment score is measuring.
 
 ```{code-cell} ipython3
 from gseapy import heatmap
 # plotting heatmap
 i = 0
 genes = gs_res.Lead_genes[i].split(";")[:25]
-# Make sure that ``ofname`` is not None, if you want to save your figure to disk
 ax = heatmap(df = gs.heatmat.loc[genes], z_score=0, title=gs_res.Term[i], figsize=(14,4))
 ```
 

@@ -55,14 +55,14 @@ This expression can be broken down into these two steps:
 
    - **Tanh**: Maps the input to a value between -1 and 1.
 
-## Components of an MLP
-
 The output of the activation function becomes the output of the neuron, which can then be used as input to other neurons.
+
+## Components of an MLP
 
 ```{figure} ./img/mlp.svg
 :name: fig_mlp
 
-An example MLP. Each layer of the MLP consists of a set of artificial neurons, that receive input from the previous layer, process it, and pass the output to the next layer.  
+An example MLP with an input layer, two hidden layers and an output layer.
 ```
 
 1. **Input Layer**: The input layer consists of neurons that receive the raw data. Each neuron in the input layer represents a feature of the input data.
@@ -79,11 +79,11 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 
 1. **Forward Pass**: Input data passes through the network, and predictions are generated.
 2. **Loss Calculation**: A loss function (e.g., mean squared error for regression or cross-entropy for classification) is used to measure the error between the predictions and true labels.
-3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are then updated using optimization techniques, often gradient descent-based techniques. A more detailed description can be found in the [wikipedia entry](https://en.wikipedia.org/wiki/Backpropagation).
+3. **Backward Pass**: Gradients of the loss with respect to the weights are computed, using the [chain rule](https://en.wikipedia.org/wiki/Chain_rule). Weights are then updated using optimization techniques, often gradient descent-based techniques. A more detailed description can be found in the [Wikipedia entry](https://en.wikipedia.org/wiki/Backpropagation).
 
 ## Example: Training an MLP on Artificial Data
 
-In this example, we'll generate artificial data from two non-linearly separable distributions and train an MLP to classify them into two classes.
+In this example, we'll use scikit-learn's `make_moons` to generate artificial data from two classes, shaped as two interleaving half-moons that are not linearly separable, and train an MLP to classify them.
 
 ```{code-cell}
 # Import necessary libraries
@@ -218,6 +218,15 @@ plt.ylabel("Feature 2")
 plt.show()
 ```
 
+The code builds an MLP with two inputs, two hidden layers of 10 and 5 sigmoid neurons, and a single sigmoid output neuron that gives the probability that a point belongs to class 1. In each of the 1,000 epochs, it carries out the four training steps on all 700 training points:
+
+1. **Forward pass**: `z1`, `z2` and `z_out` are the linear combinations computed by each layer, and `a1`, `a2` and `y_pred` the corresponding sigmoid activations.
+2. **Loss**: the binary cross-entropy between the predictions `y_pred` and the true labels `y_train`, averaged over the training points.
+3. **Backward pass**: starting from the derivative of the loss with respect to `y_pred`, the chain rule is applied layer by layer, by multiplying with the derivative of the sigmoid (`sigmoid_derivative`) and with the transposed weight matrix of the layer above, which gives the gradients of the loss with respect to all weights (`d_loss_weights_*`) and biases (`d_loss_bias_*`).
+4. **Update**: each weight and bias takes a gradient descent step, the gradient multiplied by the learning rate, here 1.0. A learning rate that is too high makes the updates overshoot and the loss oscillate or diverge, while one that is too low makes training slow.
+
+The loss falls from 0.74 to 0.09, and the trained network classifies 97% of the test points correctly, with a curved decision boundary that follows the gap between the two half-moons. The number and size of the hidden layers set the capacity of the network: more neurons allow more complex decision boundaries, but also make it easier to overfit the training data.
+
 We could have simplified the task by using the **`MLPClassifier`** from `sklearn` (but then without seeing the inner workings of the classifier). For those of you interested, see below.
 
 ```{code-cell}
@@ -267,21 +276,9 @@ plt.ylabel("Feature 2")
 plt.show()
 ```
 
-## Explanation
-
-1. **Artificial Data Generation**: We generate data from two non-linearly separable distributions using the `make_moons` function, which creates two interleaving half-moon shapes representing the two classes.
-2. **Training the MLP**: We split the data into training and test sets and train an MLP with two hidden layers (one with 10 neurons and one with 5 neurons).
-3. **Evaluation**: After training, we evaluate the accuracy of the model on the test data and visualize the decision boundary of the MLP using a contour plot.
-
-## Tuning the MLP
-
-- **Hidden Layers**: The number and size of hidden layers affect the capacity of the MLP. More layers and neurons allow the model to capture more complex relationships but may lead to overfitting if not properly regularized.
-- **Activation Function**: Common activation functions include ReLU, sigmoid, and tanh. The choice of activation function affects how the model learns non-linear patterns.
-- **Learning Rate**: Adjusting the learning rate controls how quickly the model updates weights during training. A learning rate that's too high can lead to instability, while one that's too low can result in slow convergence.
-
 ## A workbench for MLPs
 
-TensorFlow provides a nice workbench for MLPs, where you can investigate the influence of different selections of input features, architectures, and regularization on performance on different datatypes. [Try it out!](https://playground.tensorflow.org/)
+The [TensorFlow Playground](https://playground.tensorflow.org/) is a nice workbench for MLPs, where you can investigate interactively how the choice of input features, architecture, and regularization affects the performance on different datasets.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:

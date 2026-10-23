@@ -27,11 +27,11 @@ downloads:
 
 ## Introduction
 
-Clustering single cells is the application that made unsupervised learning a routine tool in molecular biology. A single-cell experiment delivers a matrix of a few thousand cells that were deliberately *not* labelled — the whole point of the technique is that we do not have to sort the cells beforehand. Recovering the cell types from the expression data alone is exactly the partitioning problem set up in the [clustering chapter](cluster.md), and we solve it here with the two algorithms introduced there, **k-means** and **Gaussian mixture models**.
+Clustering single cells is one of the applications that made unsupervised learning a routine tool in molecular biology. A single-cell experiment delivers a matrix of a few thousand cells that were deliberately *not* labelled — the whole point of the technique is that we do not have to sort the cells beforehand. Recovering the cell types from the expression data alone is exactly the partitioning problem set up in the [clustering chapter](cluster.md), and we solve it here with the two algorithms introduced there, **k-means** and **Gaussian mixture models**.
 
-We use the same dataset as in the [previous chapter](pca_pbmc.md): the **pbmc3k** set of roughly 2,700 peripheral blood mononuclear cells from a healthy donor, distributed by [10x Genomics](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0). What makes it valuable for teaching is that we have an independent way of checking the answer. Immunologists have spent decades establishing **marker genes** that identify blood cell types, so once the algorithm has produced a partition we can ask what each cluster expresses, and judge whether the clusters are real.
+We use the same dataset as in the chapter [PCA of single cells](pca_pbmc.md): the **pbmc3k** set of roughly 2,700 peripheral blood mononuclear cells from a healthy donor, distributed by [10x Genomics](https://www.10xgenomics.com/datasets/3-k-pbm-cs-from-a-healthy-donor-1-standard-1-1-0). What makes it valuable for teaching is that we have an independent way of checking the answer. Immunologists have spent decades establishing **marker genes** that identify blood cell types, so once the algorithm has produced a partition we can ask what each cluster expresses, and judge whether the clusters are real.
 
-The notebook is self-contained, so the loading and preprocessing steps of the previous chapter are repeated here without further comment; see that chapter for the reasoning behind each step.
+The notebook is self-contained, so the loading and preprocessing steps of the single-cell PCA chapter are repeated here without further comment; see that chapter for the reasoning behind each step.
 
 ## Loading and preprocessing the data
 
@@ -58,11 +58,12 @@ if not os.path.exists(matrix_dir):
     if not os.path.exists(archive):
         print("Downloading pbmc3k ...")
         response = requests.get(url, stream=True)
+        response.raise_for_status()
         with open(archive, "wb") as handle:
             for chunk in response.iter_content(chunk_size=1 << 16):
                 handle.write(chunk)
     with tarfile.open(archive, "r:gz") as tar:
-        tar.extractall(path=data_dir)
+        tar.extractall(path=data_dir, filter="data")
 
 counts = mmread(os.path.join(matrix_dir, "matrix.mtx")).T.tocsr()   # cells x genes
 genes = pd.read_csv(os.path.join(matrix_dir, "genes.tsv"), sep="\t",
@@ -70,7 +71,7 @@ genes = pd.read_csv(os.path.join(matrix_dir, "genes.tsv"), sep="\t",
 gene_names = genes["symbol"].to_numpy(dtype=str)
 ```
 
-Quality control: keep cells with 200--2,500 detected genes and less than 5% mitochondrial counts, and keep genes seen in at least three cells.
+Quality control: keep cells with 200–2,500 detected genes and less than 5% mitochondrial counts, and keep genes seen in at least three cells.
 
 ```{code-cell} ipython3
 total_counts = np.asarray(counts.sum(axis=1)).ravel()
@@ -102,7 +103,7 @@ X = np.clip((X - X.mean(axis=0)) / X.std(axis=0), -10, 10)
 
 ## Clustering in principal component space
 
-As argued at the end of the [previous chapter](pca_pbmc.md), we do not cluster the 1,000-dimensional standardised matrix directly. Both k-means and Gaussian mixture models rely on distances between cells (Euclidean distances for k-means, distances scaled by each component's variances for a mixture model), and in 1,000 dimensions those distances are dominated by counting noise. We therefore project the cells onto their first 15 principal components and cluster in that subspace.
+As argued at the end of the [single-cell PCA chapter](pca_pbmc.md), we do not cluster the 1,000-dimensional standardised matrix directly. Both k-means and Gaussian mixture models rely on distances between cells (Euclidean distances for k-means, distances scaled by each component's variances for a mixture model), and in 1,000 dimensions those distances are dominated by counting noise. We therefore project the cells onto their first 15 principal components and cluster in that subspace.
 
 ```{code-cell} ipython3
 from sklearn.decomposition import PCA
@@ -141,7 +142,7 @@ pd.DataFrame({"k": list(ks), "inertia": np.round(inertia),
               "silhouette": np.round(silhouette, 3)}).set_index("k")
 ```
 
-The silhouette score is highest at $k=2$. That is not an artefact: the deepest split in the data really is the myeloid/lymphoid division we saw along PC1, and a criterion that rewards well-separated compact clusters will find it. But a partition into two groups is a poor description of blood, where we know a handful of cell types are present. The score stays above 0.3 up to $k=5$ and then falls sharply, from 0.32 to 0.23, between $k=5$ and $k=6$, after which it is flat. The elbow plot bends in the same region: the reduction in inertia is large up to $k=4$--$5$ and modest thereafter. We therefore take $k=5$, the largest number of clusters that the data still supports well.
+The silhouette score is highest at $k=2$. That is not an artefact: the deepest split in the data really is the myeloid/lymphoid division we saw along PC1, and a criterion that rewards well-separated compact clusters will find it. But a partition into two groups is a poor description of blood, where we know a handful of cell types are present. The score stays above 0.3 up to $k=5$ and then falls sharply, from 0.32 to 0.22, between $k=5$ and $k=6$, after which it is flat. The elbow plot bends in the same region: the reduction in inertia is large up to $k=4$–$5$ and modest thereafter. We therefore take $k=5$, the largest number of clusters that the data still supports well.
 
 This tension is worth dwelling on. Clustering criteria measure *geometric* separation, whereas we are interested in *biological* categories, and the two need not agree. The criteria narrow the range of sensible choices; they do not make the choice for us.
 
@@ -153,7 +154,7 @@ labels = kmeans.labels_
 pd.Series(labels).value_counts().sort_index().rename("cells per cluster")
 ```
 
-We plot the clusters in the plane of the first two principal components, which we know from the previous chapter carries most of the lineage information.
+We plot the clusters in the plane of the first two principal components, which we know from the single-cell PCA chapter carries most of the lineage information.
 
 ```{code-cell} ipython3
 pc = pd.DataFrame(scores[:, :3], columns=["PC1", "PC2", "PC3"])
@@ -272,14 +273,14 @@ gmm_means.index.name = "component"
 gmm_means.round(2)
 ```
 
-The mixture model finds a partition of comparable quality but draws one of its boundaries elsewhere. It merges the two monocyte clusters that k-means kept apart, and instead splits the T cells in two — one component with high `CCR7` and no cytotoxic genes, the other with lower `CCR7` and a trace of `NKG7`, which corresponds to the classical distinction between naive and memory/effector T cells. A cross-tabulation shows where the two solutions agree and where they do not.
+The mixture model draws its boundaries differently. It merges the two monocyte clusters that k-means kept apart, and instead splits the T cells in two — one component with high `CCR7` and no cytotoxic genes, the other with lower `CCR7` and a trace of `NKG7`, which corresponds to the classical distinction between naive and memory/effector T cells. A cross-tabulation shows where the two solutions agree and where they do not.
 
 ```{code-cell} ipython3
 pd.crosstab(pd.Series(labels, name="k-means"),
             pd.Series(gmm_labels, name="GMM component"))
 ```
 
-The cross-tabulation also reveals something the marker table alone would not. The mixture model's cytotoxic component is *broad*: besides taking over most of the k-means NK cluster, it absorbs a tail of cells from every other cluster. That is a direct consequence of letting components have their own variances. A component fitted to a genuinely dispersed population acquires a large covariance, and a large covariance makes it the most probable origin for any cell that lies far from all the tight components. k-means, which treats every cluster as having the same spherical extent, cannot behave this way — the flip side of the drawback noted in the [theory chapter](cluster.md).
+The cross-tabulation also reveals something the marker table alone would not. The mixture model's cytotoxic component is *broad*: besides taking over most of the k-means NK cluster (281 of its 310 cells), it absorbs cells from every other cluster, including 97 of the 264 cells in k-means cluster 1, so that almost half of its 522 cells come from the other k-means clusters. That is a direct consequence of letting components have their own variances. A component fitted to a genuinely dispersed population acquires a large covariance, and a large covariance makes it the most probable origin for any cell that lies far from all the tight components. k-means, which treats every cluster as having the same spherical extent, cannot behave this way — the flip side of the drawback noted in the [theory chapter](cluster.md).
 
 Neither partition is "correct". Both are valid five-way divisions of a population that actually contains more than five biologically distinct types; which division an algorithm prefers depends on its assumptions about cluster shape. Presented with the same data, a working immunologist would use several such views side by side.
 
@@ -301,24 +302,24 @@ plt.show()
 print(f"{(confidence < 0.9).mean():.1%} of cells are assigned with probability below 0.9")
 ```
 
-The great majority of cells are assigned with near-certainty. The uncertain ones sit, as expected, along the interfaces between components: within the lymphoid cloud at low PC1, where the split between the two T cell components and the transition towards the cytotoxic cells are both gradual rather than sharp, and scattered through the myeloid cloud at high PC1. Notice that the uncertainty does not fall between monocytes and lymphocytes — those two are separated by empty space, and no cell is in doubt about which of them it belongs to.
+The great majority of cells are assigned with near-certainty. The uncertain ones sit along the interfaces between components. Within the lymphoid cloud at low PC1, the split between the two T cell components and the transition towards the cytotoxic cells are both gradual rather than sharp. In the myeloid cloud at high PC1, the uncertain cells lie mostly in its lower left part, and they are torn between the monocyte component and the broad cytotoxic component: the large-covariance effect described above.
 
 ## Discussion
 
 Clustering pbmc3k works remarkably well, and it is worth being clear about *why*, because the reasons do not carry over to every dataset.
 
-**We had a ground truth.** The decisive step in this chapter was not running k-means, which took a fraction of a second, but the marker-gene table that let us name the clusters. Peripheral blood is among the best-characterised tissues in biology, and each of our clusters could be matched to a cell type that immunologists had defined long before single-cell sequencing existed. Compare this with a clustering of bulk breast tumour samples: there the clusters can only be interpreted against clinical annotations such as receptor status, which reflect the tumour only indirectly. A clustering of bulk tumours partitions *patients*, and patients do not come in discrete kinds in the way that blood cells do.
+**We had a ground truth.** The decisive step in this chapter was not running k-means, which took a fraction of a second, but the marker-gene table that let us name the clusters. Peripheral blood is among the best-characterised tissues in biology, and each of our clusters could be matched to a cell type that immunologists had defined long before single-cell sequencing existed. In a less well-characterised tissue there may be no such marker panel, and a cluster can then only be interpreted through the genes that distinguish it from the others.
 
-**The groups were genuinely discrete.** A monocyte and a B cell are separate cell types with separate transcriptional programmes, and nothing lies between them; our clusters are therefore separated by empty space. Tumour samples, by contrast, vary continuously in tumour purity, immune infiltration and stromal content, so a clustering imposes boundaries on what is really a continuum. Even within our own data we saw a hint of this at the T cell/NK boundary, where the mixture model's responsibilities became uncertain.
+**The groups were genuinely discrete.** A monocyte and a B cell are separate cell types with separate transcriptional programmes, and nothing lies between them; our clusters are therefore separated by empty space. Where cells vary continuously, as they do along a differentiation trajectory, a clustering imposes boundaries on what is really a continuum. Even within our own data we saw a hint of this at the T cell/NK boundary, where the mixture model's responsibilities became uncertain.
 
 **Every cell was measured the same way.** All 2,638 cells come from one donor, one library and one sequencing run, so there are no batch effects to be mistaken for biology. Had we combined donors, the first principal component might well have separated donors rather than cell types.
 
-The limitations we ran into are equally instructive. The silhouette criterion preferred $k=2$ where biology calls for at least five; the rare platelet and dendritic cell populations were swallowed by their larger neighbours; and k-means and the Gaussian mixture model disagreed about which of two equally defensible partitions to report. In routine single-cell analysis these problems are handled by clustering at several resolutions and annotating each of them, rather than by searching for one true value of $k$. Clustering is exploratory rather than confirmatory: the algorithm proposes a partition, and the marker genes decide whether it means anything.
+In routine single-cell analysis, the problems we ran into, from the choice of $k$ to the rare populations and the disagreement between algorithms, are handled by clustering at several resolutions and annotating each of them, rather than by searching for one true value of $k$. Clustering is exploratory rather than confirmatory: the algorithm proposes a partition, and the marker genes decide whether it means anything.
 
 :::{dropdown} What you should know after reading this chapter
 You should be able to:
 1. Define the inertia $\sum_i \sum_{\mathbf{x} \in S_i} \lVert \mathbf{x}-\mathbf{m}_i \rVert^2$ and the silhouette score, and interpret elbow and silhouette plots when choosing $k$. Explain why these geometric criteria need not agree with the number of biological cell types.
 2. Explain why clusters that look well separated in a principal component plot are not by themselves evidence of real cell types, and interpret a heatmap of mean marker gene expression per cluster to annotate the clusters.
 3. Explain why k-means absorbs rare populations, such as the platelets, into larger clusters, and why a Gaussian mixture component with a large variance draws in outlying cells from the other clusters.
-4. Argue why clustering works well for these blood cells (known marker genes, discrete cell types, a single batch), and why a clustering of bulk tumour samples, which vary continuously, is harder to interpret.
+4. Argue why clustering works well for these blood cells (known marker genes, discrete cell types, a single batch), and why it is harder to interpret when marker genes are lacking, when cells vary continuously, or when several batches are combined.
 :::

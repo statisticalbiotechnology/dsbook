@@ -18,7 +18,7 @@ downloads:
     title: Run on Binder
 ---
 
-# $q$ Value calculations in a comparison of two mouse strains
+# $q$ value calculations in a comparison of two mouse strains
 
 <!-- launch-badges -->
 [![KTH JupyterHub](https://img.shields.io/badge/launch-KTH%20JupyterHub-F37626?logo=jupyter&logoColor=white)](https://nbserv.duckdns.org/hub/user-redirect/git-pull?repo=https://github.com/statisticalbiotechnology/dsbook&urlpath=lab/tree/dsbook/dsbook/statistics/qvalue.ipynb&branch=main)
@@ -29,11 +29,11 @@ downloads:
 
 ## Differential expression analysis with multiple testing
 
-This notebook continues from where the previous notebook on [hypothesis testing](./testing.md) ended.
+This chapter applies the methods of the [previous chapter](./multiple.md) to the analysis of the [chapter on differential expression in two mouse strains](./testing.ipynb).
 
 We again compare the striatum of the two inbred mouse strains C57BL/6J (B6, 10 mice) and DBA/2J (D2, 11 mice), from the RNA-seq experiment of [Bottomly et al. (2011)](https://doi.org/10.1371/journal.pone.0017820), using the gene count table prepared by the [ReCount](https://doi.org/10.1186/1471-2105-12-449) project.
 
-We first recreate the steps of the previous notebook. Since we will repeat the testing several times in this notebook, we write the $t$ test in a vectorised form that tests all genes in a single call, rather than looping over the rows of the table.
+We first recreate the steps of that chapter. Since we will repeat the testing several times in this chapter, we write the $t$ test in a vectorised form that tests all genes in a single call, rather than looping over the rows of the table.
 
 ```{code-cell} ipython3
 import os
@@ -75,7 +75,7 @@ def get_significance_two_groups(data, group_a, group_b):
 pvalues = get_significance_two_groups(expr, d2_samples, b6_samples)
 ```
 
-When plotting the $p$ value distribution below, we see an enrichment of low $p$ values. These are the tests of the genes that adhere to the alternative hypothesis. We also see a uniform distribution of the $p$ values in the higher end of the distribution i.e. $p$ values of 0.5-1.0. These are likely stemming from genes adhering to $H_0$
+When plotting the $p$ value distribution below, we see an enrichment of low $p$ values. Most of these come from genes that follow the alternative hypothesis. We also see a uniform distribution of the $p$ values in the higher end of the distribution, i.e. $p$ values of 0.5–1.0. These are likely stemming from genes that follow $H_0$.
 
 ```{code-cell} ipython3
 import seaborn as sns
@@ -86,37 +86,29 @@ plt.xlim(0,1.0);
 ```
 
 ### $q$ value estimation
-We define a function for the calculation of $\pi_0$. Here we use a different method than the one described in Storey&Tibshirani. The details of this method, known as the *bootstrap method*, are given in [Storey 2002](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/1467-9868.00346)
+We define a function for the calculation of $\pi_0$. Here we use a different method than the spline described by Storey & Tibshirani, namely the *bootstrap method* of [Storey (2002)](https://doi.org/10.1111/1467-9868.00346), which is outlined in a note in the [previous chapter](./multiple.md). As the method is based on random resampling, we fix the seed of the random number generator, so that the estimate is the same every time we run the analysis.
 
 ```{code-cell} ipython3
-import numpy as np
-import numpy.random as npr
-
-def bootstrap(invec):
-    idx = npr.randint(0, len(invec), len(invec))
-    return [invec[i] for i in idx]
-
-def estimatePi0(p, numBoot=100, numLambda=100, maxLambda=0.95):
-    p.sort()
-    n=len(p)
-    lambdas=np.linspace(maxLambda/numLambda,maxLambda,numLambda)
-    Wls=np.array([n-np.argmax(p>=l) for l in lambdas])
-    pi0s=np.array([Wls[i] / (n * (1 - lambdas[i])) for i in range(numLambda)])
-    minPi0=np.min(pi0s)
+def estimatePi0(p, numBoot=100, numLambda=100, maxLambda=0.95, seed=0):
+    "Bootstrap estimate of pi_0, the fraction of p values that stem from true null hypotheses."
+    rng = np.random.default_rng(seed)
+    p = np.asarray(p)
+    n = len(p)
+    lambdas = np.linspace(maxLambda/numLambda, maxLambda, numLambda)
+    # pi_0(lambda) = |{p_i > lambda}| / (n (1 - lambda)) for each lambda
+    pi0s = np.array([(p > l).sum() / (n * (1 - l)) for l in lambdas])
+    minPi0 = np.min(pi0s)
     mse = np.zeros(numLambda)
     for boot in range(numBoot):
-        pBoot = bootstrap(p)
-        pBoot.sort()
-        WlsBoot =np.array([n-np.argmax(pBoot>=l) for l in lambdas])
-        pi0sBoot =np.array([WlsBoot[i] / (n *(1 - lambdas[i])) for i in range(numLambda)])
-        mse = mse + np.square(pi0sBoot-minPi0)
-    minIx = np.argmin(mse)
-    return pi0s[minIx]
+        pBoot = rng.choice(p, n, replace=True)   # resample the p values with replacement
+        pi0sBoot = np.array([(pBoot > l).sum() / (n * (1 - l)) for l in lambdas])
+        mse = mse + np.square(pi0sBoot - minPi0)
+    return pi0s[np.argmin(mse)]
 ```
 
-Following Storey&Tibshirani, we subsequently first calculate, 
+Following Storey & Tibshirani, we first calculate
 
-$$ \hat{\rm FDR}(t) = \frac{\pi_0mt}{|\{p_i\le t\}|}, $$
+$$ \hat{\rm FDR}(t) = \frac{\hat{\pi}_0 m t}{|\{p_i\le t\}|}, $$
 
 and then make the $\hat{\rm FDR}(t)$ estimates monotone by taking the minimum over all thresholds at least as large as $p_i$, 
 
@@ -124,26 +116,24 @@ $$\hat{q}(p_i)=\min_{t \ge p_i}\hat{\rm FDR}(t).$$
 
 ```{code-cell} ipython3
 def qvalues(pvalues):
-    m = pvalues.shape[0] # The number of p-values
-    pvalues.sort_values("p",inplace=True) # sort the pvalues in ascending order
-    pi0 = estimatePi0(list(pvalues["p"].values))
-    print("pi_0 estimated to " + str(pi0))
-    
-    # calculate a FDR(t) as in Storey & Tibshirani
-    num_p = 0.0
-    for ix in pvalues.index:
-        num_p += 1.0
-        t = pvalues.loc[ix,"p"]
-        fdr = pi0*t*m/num_p
-        pvalues.loc[ix,"q"] = fdr
-    
-    # calculate a q(p) as the minimal FDR(t)
-    old_q=1.0
-    for ix in reversed(list(pvalues.index)):
-        q = min(old_q,pvalues.loc[ix,"q"])
-        old_q = q
-        pvalues.loc[ix,"q"] = q
-    return pvalues
+    "Return a copy of the table, sorted in ascending order of p value, with an added column of q values."
+    qv = pvalues.sort_values("p")   # a sorted copy; the input table is left unchanged
+    m = qv.shape[0]                 # the number of p values
+    p = qv["p"].values
+    pi0 = estimatePi0(p)
+    print(f"pi_0 estimated to {pi0:.3f}")
+
+    # calculate FDR(t) at each threshold t = p_(i), as in Storey & Tibshirani
+    fdr = [pi0 * p[i] * m / (i + 1) for i in range(m)]
+
+    # calculate q(p_i) as the minimal FDR(t) over all t >= p_i, walking from the largest p value down
+    q = np.zeros(m)
+    old_q = 1.0
+    for i in reversed(range(m)):
+        old_q = min(old_q, fdr[i])
+        q[i] = old_q
+    qv["q"] = q
+    return qv
 ```
 
 ```{code-cell} ipython3
@@ -154,7 +144,7 @@ The estimated $\pi_0$ of about 0.5 says that roughly half of the expressed genes
 
 Note that $\pi_0$ and the $q$ values answer different questions. $\pi_0$ estimates *how many* genes are differentially expressed in total, while a $q$ value tells us *which* genes we can single out with a controlled error rate. Many of the expression differences are too small to be pinned down gene by gene with ten mice per strain, even though their combined effect on the $p$ value distribution is clearly visible. (Bottomly et al. used a test designed for count data, and reported 1,727 differentially expressed genes at $q<0.01$ out of the 16,183 genes they tested.)
 
-We can list the differential genes, in descending order of significance.
+The table lists the genes in descending order of significance, together with their $q$ values.
 
 ```{code-cell} ipython3
 qv
@@ -164,19 +154,20 @@ qv
 A plot of the number of differentially expressed genes as a function of the $q$ value threshold shows how many genes we can report at each FDR level.
 
 ```{code-cell} ipython3
-sns.lineplot(x=pvalues["q"],y=list(range(1, pvalues.shape[0] + 1)),errorbar=None,lw=3)
-plt.xlim(0,0.1);
-plt.ylim(0, (pvalues["q"] < 0.1).sum());
+plt.plot(qv["q"], np.arange(1, qv.shape[0] + 1), lw=3)
+plt.xlim(0, 0.1)
+plt.ylim(0, (qv["q"] < 0.1).sum())
+plt.xlabel("$q$ value threshold")
 plt.ylabel("Number of differential genes");
 ```
 
 ## Volcano plots revisited
-We often see that Volcano plots are complemented with FDR thresholds. Here we complement the previous lecture's volcano plot with coloring indicating if transcripts are significantly differentially abundant at an FDR threshold of $0.01$.
+We often see that Volcano plots are complemented with FDR thresholds. Here we complement the volcano plot of the [mouse strain chapter](./testing.ipynb) with coloring indicating if genes are significantly differentially expressed at an FDR threshold of $0.01$.
 
 ```{code-cell} ipython3
 qv["Significant"] = qv["q"]<0.01
 less_than_FDR_1 = qv[qv["q"]<0.01]
-p_treshold = less_than_FDR_1.iloc[-1]["-log_p"]
+p_threshold = less_than_FDR_1.iloc[-1]["-log_p"]
 print(f"{len(less_than_FDR_1)} of {len(qv)} genes have q < 0.01")
 ```
 
@@ -186,9 +177,9 @@ import seaborn as sns
 
 sns.set_style("white")
 sns.set_context("talk")
-ax = sns.relplot(data=pvalues,x="log_FC",y="-log_p",hue="Significant",aspect=1.5,height=6)
-plt.axhline(p_treshold)
-ax.set(xlabel="$log_2(D2/B6)$", ylabel="$-log_{10}(p)$");
+ax = sns.relplot(data=qv,x="log_FC",y="-log_p",hue="Significant",aspect=1.5,height=6)
+plt.axhline(p_threshold)
+ax.set(xlabel=r"$\log_2(D2/B6)$", ylabel=r"$-\log_{10}(p)$");
 ```
 
 +++
@@ -199,7 +190,7 @@ A $p$ value histogram that is enriched near zero, and a $\pi_0$ well below one, 
 
 Most data sets cannot answer that question, because we never know which genes are truly differentially expressed. This data set lets us construct such a case. The ten B6 mice are inbred, i.e. genetically almost identical, and were all treated the same way. If we split them into two groups of five, we have built an experiment in which the null hypothesis is true for *every single gene*. Any finding is by construction a false positive.
 
-The B6 mice were sequenced on three different flow cells (the `experiment` column of the sample table in the previous notebook). To keep the comparison fair, we alternate the mice of each flow cell between the two groups, so that both groups contain mice from all three flow cells.
+The B6 mice were sequenced on three different flow cells (the `experiment` column of the sample table in the [mouse strain chapter](./testing.ipynb)). To keep the comparison fair, we alternate the mice of each flow cell between the two groups, so that both groups contain mice from all three flow cells.
 
 ```{code-cell} ipython3
 sns.set_context("notebook")
@@ -215,7 +206,7 @@ fig, ax = plt.subplots(1, 2, figsize=(13, 4.5), sharey=False)
 ax[0].hist(null_pvalues["p"], bins=bins, range=(0, 1), color="steelblue")
 ax[0].axhline(m / bins, color="k", ls="--", lw=1)
 ax[0].set_title("B6 vs B6, 5 vs 5 (all $H_0$)")
-ax[1].hist(pvalues["p"], bins=bins, range=(0, 1), color="indianred")
+ax[1].hist(qv["p"], bins=bins, range=(0, 1), color="indianred")
 ax[1].axhline(m / bins, color="k", ls="--", lw=1)
 ax[1].set_title("D2 vs B6, 11 vs 10")
 for a in ax:
@@ -223,7 +214,7 @@ for a in ax:
 plt.tight_layout();
 ```
 
-The difference is striking. The B6 against B6 comparison has no spike at all near zero, so the test does not manufacture findings out of nothing. The histogram is, however, not perfectly flat either: small $p$ values are *rarer* than the uniform distribution predicts (the dashed line marks the height $m/20$ of a uniform distribution), and intermediate ones more common. The reason is the flow cells. Each of our two groups contains mice from all three flow cells, so the differences between flow cells inflate the variance *within* each group, while they cancel out in the difference *between* the group means. The $t$ statistics therefore come out smaller than they should, and the $p$ values larger. In other words, the test becomes *conservative*. The same applies to the comparison between the strains, as Bottomly et al. spread the mice of both strains over all three flow cells, so we lose some power there too.
+The difference is striking. The B6 against B6 comparison has no spike at all near zero, so the test does not manufacture findings out of nothing. The histogram is, however, not perfectly flat either: small $p$ values are *rarer* than the uniform distribution predicts (the dashed line marks the height $m/20$ of a uniform distribution), and intermediate ones more common. The reason is the flow cells. Each of our two groups contains mice from all three flow cells, so the differences between flow cells inflate the variance *within* each group, while they largely cancel out in the difference *between* the group means (the split is 2/2/1 against 1/2/2 mice from the three flow cells, so the cancellation is not perfect). The $t$ statistics therefore come out smaller than they should, and the $p$ values larger. In other words, the test becomes *conservative*. The same applies to the comparison between the strains, as Bottomly et al. spread the mice of both strains over all three flow cells, so we lose some power there too.
 
 Running the same $q$ value machinery on this null experiment should therefore report no findings.
 
@@ -261,48 +252,43 @@ Now the histogram shows a clear spike of small $p$ values, $\pi_0$ is estimated 
 
 ## Spline estimation of $\pi_0$
 
-Storey and Tibshirani outline another procedure for estimating $\pi_0$ than the bootstrap procedure used above, i.e. using 
-$\hat{\pi_0}(\lambda) = \frac{|\{p>\lambda \}|}{m(1-\lambda)}$.
+Storey and Tibshirani estimate $\pi_0$ differently from the bootstrap procedure used above: they compute
+$\hat{\pi}_0(\lambda) = \frac{|\{p_i>\lambda \}|}{m(1-\lambda)}$ for a range of $\lambda$ values and smooth these estimates with a spline.
 
-Below, we almost follow the article's described procedure (please try to find the difference on how we select which lambdas we evaluate). Furthermore we fit a [cubic spline](https://en.wikipedia.org/wiki/Smoothing_spline) to these $\pi_0$ estimates.
+Below, we almost follow the article's described procedure (please try to find the difference in how we select which lambdas we evaluate). We fit a [smoothing cubic spline](https://en.wikipedia.org/wiki/Smoothing_spline) to the $\hat{\pi}_0(\lambda)$ estimates.
 
 ```{code-cell} ipython3
 from scipy.interpolate import UnivariateSpline
 
-m = pvalues.shape[0] # The number of p-values
-pvalues.sort_values("p",inplace=True,ascending=False) # sort the pvalues in descending order
-num_p = -1
-for ix in pvalues.index:
-    num_p += 1
-    lambda_p = pvalues.loc[ix,"p"]
-    pi0_hat = num_p/(m*(1-lambda_p))
-    pvalues.loc[ix,"pi0_hat"] = pi0_hat
+lambdas = qv["p"].values                 # the p values, sorted in ascending order
+m = len(lambdas)                         # the number of p values
+num_above = m - 1 - np.arange(m)         # the number of p values greater than each lambda
+pi0_hat = num_above / (m * (1 - lambdas))
 
-pvalues.sort_values("p",inplace=True) # sort the pvalues in ascending order
-s = UnivariateSpline(pvalues["p"],pvalues["pi0_hat"], k=3,s=10)
+s = UnivariateSpline(lambdas, pi0_hat, k=3, s=10)
 ```
 
-We plot the estimates (blue) as well as the spline fit (red) for two different intervals of $\lambda$. You will see the need of a smoother, particularly in the region near 1.0.
+We plot the estimates (blue) as well as the spline fit (red) for two different intervals of $\lambda$. You will see the need for a smoother, particularly in the region near 1.0.
 
 ```{code-cell} ipython3
-def plot_pi0_hat(p,s,xlow,xhigh,ylow,yhigh,ax):
-  sns.lineplot(x=pvalues["p"],y=pvalues["pi0_hat"],errorbar=None,lw=3, ax=ax, color='b')
-  sns.lineplot(x=pvalues["p"],y=s(pvalues["p"]),errorbar=None,lw=3,ax=ax, color='r')
-  ax.set_xlim(xlow,xhigh);
-  ax.set_ylim(ylow,yhigh);
-  ax.set_xlabel(r"$\lambda $");
-  ax.set_ylabel(r"$\pi_0(\lambda)$");
+def plot_pi0_hat(lambdas, pi0_hat, s, xlow, xhigh, ax):
+    ax.plot(lambdas, pi0_hat, lw=3, color='b')
+    ax.plot(lambdas, s(lambdas), lw=3, color='r')
+    ax.set_xlim(xlow, xhigh)
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel(r"$\lambda$")
+    ax.set_ylabel(r"$\hat{\pi}_0(\lambda)$")
 
-fig, ax = plt.subplots(1,2,figsize=(12, 4))
-plot_pi0_hat(pvalues,s,0,1,0,1.05,ax[0])
-plot_pi0_hat(pvalues,s,0.95,1,0,1.05,ax[1])
+fig, ax = plt.subplots(1, 2, figsize=(12, 4))
+plot_pi0_hat(lambdas, pi0_hat, s, 0, 1, ax[0])
+plot_pi0_hat(lambdas, pi0_hat, s, 0.95, 1, ax[1])
 ```
 
 We can obtain a final estimate by evaluating the spline for $\lambda=1$, and compare it to the bootstrapping estimate.
 
 ```{code-cell} ipython3
-print("Spline estimate of pi_0: " + str(s(1)))
-print("Bootstrap estimate of pi_0: " + str(estimatePi0(list(pvalues["p"].values))))
+print(f"Spline estimate of pi_0:    {float(s(1)):.3f}")
+print(f"Bootstrap estimate of pi_0: {estimatePi0(qv['p'].values):.3f}")
 ```
 
 :::{dropdown} What you should know after reading this chapter

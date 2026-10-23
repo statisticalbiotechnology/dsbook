@@ -27,7 +27,7 @@ downloads:
 
 ## Why we need a ground truth
 
-In the [previous section](./qvalue.md) we *estimated* false discovery rates. The B6 against B6
+In the [previous chapter](./qvalue.ipynb) we *estimated* false discovery rates. The B6 against B6
 comparison let us check that the procedure reports nothing when every gene follows the null
 hypothesis, but such a null experiment only checks the null side: it contains no true findings,
 and in the comparison of the two strains we do not know which genes are truly differentially
@@ -51,7 +51,7 @@ off a single data set, *if* we know the truth.
 ## The iPRG 2015 spike-in study
 
 We will use the benchmark set of the
-[ABRF Proteome Informatics Research Group](https://abrf.org/research-group/proteome-informatics-research-group-iprg),
+[ABRF Proteome Informatics Research Group](https://abrf.org/research-groups/proteomics-research-group-prg/proteomeinformatics/),
 described by
 [Choi et al., *J. Proteome Res.* 2017](https://doi.org/10.1021/acs.jproteome.6b00881), and
 deposited at MassIVE under accession
@@ -60,21 +60,21 @@ deposited at MassIVE under accession
 A tryptic digest of a *Saccharomyces cerevisiae* lysate was used as background, identical in
 all samples. Into it six proteins were spiked at four different combinations of concentrations,
 giving four sample groups, each analysed in triplicate on a Q-Exactive instrument: twelve
-LC-MS/MS runs in total. The amounts, in fmol per injection, were
+LC-MS/MS runs in total. Table 1 of Choi et al. lists the amounts, in fmol per injection:
 
-| Protein | Accession | Condition 1 | Condition 2 | Condition 3 | Condition 4 |
+| Name in the data set | Spiked protein | Condition 1 | Condition 2 | Condition 3 | Condition 4 |
 | --- | --- | --- | --- | --- | --- |
-| VAC2_YEAST | P44015 | 65 | 55 | 15 | 2 |
-| ISCB_YEAST | P55752 | 55 | 15 | 2 | 65 |
-| SFG2_YEAST | P44374 | 15 | 2 | 65 | 55 |
-| UTR6_YEAST | P44983 | 2 | 65 | 55 | 15 |
-| PGA4_YEAST | P44683 | 11 | 0.6 | 10 | 500 |
-| ZRT4_YEAST | P55249 | 10 | 500 | 11 | 0.6 |
+| VAC2_YEAST | Ovalbumin (chicken) | 65 | 55 | 15 | 2 |
+| ISCB_YEAST | Myoglobin (horse) | 55 | 15 | 2 | 65 |
+| SFG2_YEAST | Phosphorylase b (rabbit) | 15 | 2 | 65 | 55 |
+| UTR6_YEAST | β-Galactosidase (*E. coli*) | 2 | 65 | 55 | 15 |
+| PGA4_YEAST | Serum albumin (bovine) | 11 | 0.6 | 10 | 500 |
+| ZRT4_YEAST | Carbonic anhydrase (bovine) | 10 | 500 | 11 | 0.6 |
 
-The six accessions carry yeast-like protein names, but they are in fact *Haemophilus
-influenzae* proteins, so that participants in the study could not spot them by looking at the
-protein list. Every other protein in the experiment is a yeast protein and should, by
-construction, be unchanged.
+None of the six spiked proteins is a yeast protein. In the data set they carry disguised,
+yeast-like names and accession numbers, so that the participants in the study could not spot
+them by looking at the protein list. Every other protein in the experiment is a yeast protein
+and should, by construction, be unchanged.
 
 We start from the protein-level table that the [MSstats](https://msstats.org) pipeline
 produces after summarising the Skyline peptide intensities into one log$_2$ intensity per
@@ -149,7 +149,7 @@ factors of forty to five hundred, following the concentration table above.
 
 We now perform the analysis we would have performed without knowing the truth: a $t$ test of
 every protein between condition 1 and condition 2, as in the
-[differential expression](./testing.md) section. One detail differs. With only three replicates
+[differential expression](./testing.ipynb) chapter. One detail differs. With only three replicates
 per group we use the pooled-variance $t$ test rather than Welch's, since Welch's correction
 buys robustness against unequal variances at a price in degrees of freedom that we cannot
 afford at $n=3$.
@@ -185,7 +185,7 @@ print("fraction of background proteins with p < 0.05:",
       round((results.loc[~results["Spikein"], "p"] < 0.05).mean(), 3))
 ```
 
-The histogram is close to flat, if slightly depleted near zero, and the fraction of background
+The histogram is close to flat, if somewhat depleted near zero, and the fraction of background
 proteins below $p=0.05$ is a little under the 5% that a uniform null would give. The
 background is a proper — indeed mildly conservative — null. Five of the six spiked proteins
 sit at the extreme left edge.
@@ -196,7 +196,7 @@ negative, but not one that any method could reasonably be expected to avoid.
 ## $q$ values
 
 We estimate $\pi_0$ and the $q$ values with the same bootstrap procedure as in the
-[previous section](./qvalue.md), here imported from the book's `common` module rather than
+[previous chapter](./qvalue.ipynb), here imported from the book's `common` module rather than
 retyped.
 
 ```{code-cell} ipython3
@@ -208,7 +208,7 @@ results.head(8)
 
 The estimate $\hat{\pi}_0\approx 1$ says that essentially none of the proteins are
 differentially abundant, which is the correct answer: 6 out of 3025 is $0.2\%$. Contrast this
-with the comparison of the two mouse strains in the previous section, where $\hat{\pi}_0$ came
+with the comparison of the two mouse strains in the previous chapter, where $\hat{\pi}_0$ came
 out at about $0.5$.
 
 ## The payoff: estimated FDR against the true FDP
@@ -235,8 +235,9 @@ essentially zero. The first background protein enters at rank five, where the ob
 jumps to $1/5=0.2$ against an estimate of $0.04$. From then on the two curves track each other
 loosely, with the estimate rising the faster of the two: by the tenth acceptance it has already
 saturated at one, while the true FDP is only one half. Note also how *granular* the FDP
-is: with six true positives it can take only the values $0, 1/k, 2/k, \ldots$, so one unlucky
-background protein moves it by twenty percentage points. That granularity is a property of the
+is: among $k$ accepted proteins it can take only the values $0, 1/k, 2/k, \ldots$, and with only
+six true positives $k$ stays small in the interesting part of the list, so one unlucky background
+protein at rank five moves it by twenty percentage points. That granularity is a property of the
 benchmark, not of the method.
 
 To get a less noisy picture we repeat the analysis for all six pairs of conditions and record,
@@ -282,8 +283,8 @@ ax.legend(fontsize=11, title="conditions");
 Points on the dashed line are perfectly calibrated, points below it conservative and points
 above it anti-conservative. At the strictest settings the procedure makes almost no mistakes:
 five of the six comparisons have an FDP of exactly zero at $q\le0.02$, and four of them still
-do at $q\le0.1$. Further out the points drift above the line, to FDPs between $0.14$ and
-$0.33$ at $q\le0.2$. Part of that drift is unavoidable arithmetic rather than a real bias —
+do at $q\le0.1$. Further out the points scatter around and mostly above the line, with FDPs
+between $0.14$ and $0.33$ at $q\le0.2$. Part of that drift is unavoidable arithmetic rather than a real bias —
 one false discovery among five accepted proteins is already an FDP of $0.2$, so a benchmark
 with six true positives simply cannot resolve an FDR of $0.05$.
 
@@ -305,10 +306,13 @@ This is not a failure of the $q$ value machinery but of our assumption about the
 For condition 1 versus 3 more than one in ten of the yeast proteins falls below $p=0.05$,
 about twice what a uniform null would give, and the estimator is right to conclude that
 something is changing. The yeast background is simply not perfectly identical between those
-two sample groups: the four mixtures were prepared and acquired separately, and small
-differences in digestion, injected amount or acquisition order leave systematic traces in the
-quantities. No FDR estimator can protect against a null that is not a null, and the proteins
-it flags are not errors of statistics but of our labelling of the truth. A benchmark tells us
+two sample groups. All four samples were made from the same yeast digest and the twelve runs
+were acquired in random order, but each sample was spiked separately, and with only three runs
+per sample, randomisation cannot fully average out drift of the instrument. Small differences
+in the amount of digest that ended up in each sample, or in the conditions under which its runs
+were acquired, leave systematic traces in the quantities. No FDR estimator can protect against
+a null that is not a null, and the proteins it flags are not errors of statistics but of our
+labelling of the truth. A benchmark tells us
 about the whole pipeline — sample preparation, quantification, normalisation and statistics
 together — not only about the last step.
 
