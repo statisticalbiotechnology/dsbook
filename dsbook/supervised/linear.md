@@ -339,7 +339,7 @@ plt.show()
 
 ## Regression with Basis Functions
 
-A linear regression model can also fit non-linear relationships if we first expand each input into several features with *basis functions*, and then fit a model that is linear in those features.
+So far our model has been a straight line, but many relationships are curved. This section shows that the same recipe, choosing a model and minimizing its loss, also fits curved relationships. The trick is to turn each input $x$ into several new features, such as $x$, $x^2$ and $x^3$, and to fit a weighted sum of these features. The model is still linear in its parameters, so the fitting does not change; only the features do. The functions that create the features are called *basis functions*.
 
 ### Polynomial Basis Functions
 
@@ -378,11 +378,18 @@ plt.title("Polynomial Regression Fit")
 plt.show()
 ```
 
-### Gaussian Basis Functions
-
+:::{dropdown} Optional: Gaussian basis functions
 Another choice is **Gaussian basis functions**, also known as **radial basis functions (RBF)**. Each one is a bell-shaped bump around a center, so a weighted sum of them can follow localized, non-linear behavior in the data. Below, we use 11 Gaussian bases and let the optimizer fit not only their weights but also their centers and their common width. That makes the model non-linear in its parameters, but it is still fitted in exactly the same way, by minimizing the SSE.
 
+```{embed} #gaussian-fit
+:remove-input: false
+```
+:::
+
 ```{code-cell}
+:label: gaussian-fit
+:tags: [remove-cell]
+
 # Define a Gaussian basis function
 def gaussian_basis(x, centers, width):
     return np.exp(-0.5 * ((x[:, np.newaxis] - centers[np.newaxis, :]) / width)**2)
@@ -421,5 +428,5 @@ You should be able to:
 3. Define a residual. Calculate the residuals, the sum of squared errors (SSE) and the mean squared error (MSE) for a small dataset by hand.
 4. Explain least squares as minimizing a loss function, and state under which assumption about the errors it is the same as maximum likelihood estimation.
 5. Describe how gradient descent minimizes a loss: what the gradient is, the update rule $\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla \mathcal{L}(\boldsymbol{\beta})$, and the role of the learning rate $\eta$.
-6. Explain how polynomial and Gaussian basis functions let a regression model fit non-linear relationships, while the fitting procedure (minimizing a loss) stays the same.
+6. Explain how polynomial basis functions let a regression model fit non-linear relationships, while the fitting procedure (minimizing a loss) stays the same.
 :::
