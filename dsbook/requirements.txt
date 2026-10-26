@@ -9,6 +9,5 @@ requests
 matplotlib
 seaborn
 scikit-learn
-cptac>=1.5.13
 gseapy
 cobra
