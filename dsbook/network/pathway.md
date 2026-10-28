@@ -25,6 +25,10 @@ downloads:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/network/pathway.ipynb)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/network/pathway.ipynb)
 
+:::{note}
+This chapter's code cannot run in the browser with the power button at the top of the book's web page, as it needs the `gseapy` package, which cannot be installed in the browser. Use the launch buttons for the KTH JupyterHub, Colab or Binder instead.
+:::
+
 ## Introduction
 
 

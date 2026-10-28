@@ -27,6 +27,10 @@ downloads:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/supervised/supervisedML.ipynb)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/supervised/supervisedML.ipynb)
 
+:::{note}
+This chapter's code cannot run in the browser with the power button at the top of the book's web page, as it downloads a large dataset and needs more computing power than a browser offers. Use the launch buttons for the KTH JupyterHub, Colab or Binder instead.
+:::
+
 We begin by reading in the TCGA breast cancer dataset, in which we will compare progesterone receptor positive (PR+) with progesterone receptor negative (PR-) cancers.
 
 ```{code-cell} ipython3

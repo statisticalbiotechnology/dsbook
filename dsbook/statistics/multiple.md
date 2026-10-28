@@ -136,6 +136,16 @@ The MSE weighs the two problems in the choice of $\lambda$ against each other: a
 Below we simulate $p$ values for 1,000 hypotheses, half of which are **nulls** (no effect) and half **alternative hypotheses** (a true effect).
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 :tags: [hide-input]
 
 import numpy as np

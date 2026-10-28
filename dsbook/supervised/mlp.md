@@ -86,6 +86,16 @@ MLPs are trained using **backpropagation** and **gradient descent**. The process
 In this example, we'll use scikit-learn's `make_moons` to generate artificial data from two classes, shaped as two interleaving half-moons that are not linearly separable, and train an MLP to classify them.
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 # Import necessary libraries
 import numpy as np
 import seaborn as sns

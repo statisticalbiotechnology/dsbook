@@ -35,6 +35,27 @@ We again compare the striatum of the two inbred mouse strains C57BL/6J (B6, 10 m
 
 We first recreate the steps of that chapter. Since we will repeat the testing several times in this chapter, we write the $t$ test in a vectorised form that tests all genes in a single call, rather than looping over the rows of the table.
 
+```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and fetch the data from a copy in the book's
+# repository, as the ReCount server does not allow downloads from within a browser
+import sys
+if sys.platform == "emscripten":
+    import os
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+    from urllib.request import urlretrieve
+    repo = "https://raw.githubusercontent.com/statisticalbiotechnology/dsbook/main/dsbook/statistics/data/"
+    data_dir = "../data" if os.path.isdir("../data") else "data"
+    os.makedirs(data_dir, exist_ok=True)
+    for file_name in ["bottomly_count_table.txt", "bottomly_phenodata.txt"]:
+        if not os.path.exists(os.path.join(data_dir, file_name)):
+            urlretrieve(repo + file_name, os.path.join(data_dir, file_name))
+```
+
 ```{code-cell} ipython3
 import os
 import urllib.request

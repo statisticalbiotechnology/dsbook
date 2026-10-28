@@ -57,6 +57,16 @@ Where:
 Here we implement the ridge loss explicitly and minimize it numerically, so that the penalty term stays visible. In practice you would normally reach for scikit-learn's `Ridge` class. As data, we use 20 noisy points from a polynomial curve, and we fit a polynomial of degree 7 to them, with and without the penalty.
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 from scipy.optimize import minimize
 import numpy as np
 import seaborn as sns

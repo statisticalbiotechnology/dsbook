@@ -33,6 +33,27 @@ C57BL/6J (abbreviated B6) and DBA/2J (D2) are two of the most widely used labora
 
 The data set has since been reused in several comparisons of differential expression methods. We use the gene count table prepared by the [ReCount](https://doi.org/10.1186/1471-2105-12-449) project, which holds one read count per gene and sample, together with a table describing the samples. Both are downloaded once and cached. (The raw reads are available from the Sequence Read Archive under accession SRA026846.)
 
+```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and fetch the data from a copy in the book's
+# repository, as the ReCount server does not allow downloads from within a browser
+import sys
+if sys.platform == "emscripten":
+    import os
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+    from urllib.request import urlretrieve
+    repo = "https://raw.githubusercontent.com/statisticalbiotechnology/dsbook/main/dsbook/statistics/data/"
+    data_dir = "../data" if os.path.isdir("../data") else "data"
+    os.makedirs(data_dir, exist_ok=True)
+    for file_name in ["bottomly_count_table.txt", "bottomly_phenodata.txt"]:
+        if not os.path.exists(os.path.join(data_dir, file_name)):
+            urlretrieve(repo + file_name, os.path.join(data_dir, file_name))
+```
+
 ```{code-cell} ipython3
 ---
 slideshow:

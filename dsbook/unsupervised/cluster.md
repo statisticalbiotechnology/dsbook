@@ -58,6 +58,16 @@ These steps are repeated until the cluster assignments no longer change. Neither
 The figure below follows k-means through its first three iterations. The assignment steps are labelled E-steps and the recalculation steps M-steps, names that will make sense when we meet the EM algorithm below.
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 import numpy as np
 from sklearn.metrics import pairwise_distances_argmin
 from sklearn.datasets import make_blobs

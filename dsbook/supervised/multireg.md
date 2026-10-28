@@ -41,6 +41,18 @@ where $n_a$ is the number of times amino acid $a$ occurs in the peptide, and $\b
 We use a set of about 14,000 peptides, without modifications, whose retention times were measured on the same chromatography setup. The data come with the retention-time predictor [DeepLC](https://doi.org/10.1038/s41592-021-01301-5). The file lists each peptide's sequence and its observed retention time in seconds, which we convert to minutes.
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and let Python download files through the browser
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+```
+
+```{code-cell}
 import os
 import urllib.request
 

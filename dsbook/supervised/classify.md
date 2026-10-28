@@ -49,6 +49,16 @@ The **hinge loss** is commonly used in [support vector machines (SVMs)](./svm.md
 This loss penalizes any data points where the predicted value $f(\mathbf{x}_i)$ does not match the true label $y_i$ with a sufficient margin. If $y_i f(\mathbf{x}_i) \geq 1$, the prediction is correct with a margin and there is no penalty. If $y_i f(\mathbf{x}_i) < 1$, there is a penalty proportional to $1 - y_i f(\mathbf{x}_i)$. This means that misclassified points are penalized, but so are correctly classified points that lie too close to the decision boundary ($0 < y_i f(\mathbf{x}_i) < 1$).
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 :tags: [hide-input]
 
 import numpy as np

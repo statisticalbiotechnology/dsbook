@@ -25,6 +25,10 @@ downloads:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/statisticalbiotechnology/dsbook/blob/main/dsbook/network/gem_ecoli.ipynb)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/statisticalbiotechnology/dsbook/main?labpath=dsbook/network/gem_ecoli.ipynb)
 
+:::{note}
+This chapter's code cannot run in the browser with the power button at the top of the book's web page, as it needs the `cobra` package, which cannot be installed in the browser. Use the launch buttons for the KTH JupyterHub, Colab or Binder instead.
+:::
+
 ## Where do GEMs come from?
 
 In the previous chapter we wrote down the stoichiometric matrix of a five-metabolite toy model by hand. A genome-scale model has thousands of rows and columns, and the question of where they come from matters a lot for how far we can trust the predictions.

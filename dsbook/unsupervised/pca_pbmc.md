@@ -45,6 +45,29 @@ The data is distributed by 10x Genomics as a gzipped tar archive of about 7 MB c
 
 We download the archive once and cache it locally, exactly as we do for the TCGA sets elsewhere in this book.
 
+```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and fetch the data from a copy in the book's
+# repository, as the 10x Genomics server does not allow downloads from within a browser
+import sys
+if sys.platform == "emscripten":
+    import os
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+    from urllib.request import urlretrieve
+    archive = "../data/pbmc3k_filtered_gene_bc_matrices.tar.gz"
+    os.makedirs("../data", exist_ok=True)
+    if not os.path.exists(archive):
+        urlretrieve("https://raw.githubusercontent.com/statisticalbiotechnology/dsbook/main/dsbook/unsupervised/data/"
+                    "pbmc3k_filtered_gene_bc_matrices.tar.gz", archive)
+    # scipy's Matrix Market reader starts several threads, which the browser does not support
+    import scipy.io._fast_matrix_market
+    scipy.io._fast_matrix_market.PARALLELISM = 1
+```
+
 ```{code-cell} ipython3
 import os
 import sys

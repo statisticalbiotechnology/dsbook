@@ -92,6 +92,16 @@ Permutation testing is non-parametric, meaning it doesn’t assume a specific di
 We first test whether two samples have different means. Here we shuffle the group labels, and use the absolute difference between the two sample means as test statistic. As a large difference in either direction counts as extreme, this is a two-sided test (see below).
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt

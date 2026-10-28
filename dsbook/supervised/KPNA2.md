@@ -37,6 +37,18 @@ In this analysis, we use multiple regression to examine how well histologic grad
 
 We begin by reading the dataset and displaying its first rows.
 
+```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and let Python download files through the browser
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+```
+
 ```{code-cell} ipython3
 import pandas as pd
 import numpy as np

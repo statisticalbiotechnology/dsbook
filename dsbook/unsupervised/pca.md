@@ -142,6 +142,18 @@ Since the variance described by a component is proportional to $S_i^2$, the frac
 ## An example of reconstruction with PCA, Eigenfaces
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we let Python download files through the browser
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("pyodide-http")
+    import pyodide_http
+    pyodide_http.patch_all()
+```
+
+```{code-cell}
 import matplotlib.pyplot as plt
 from numpy.random import RandomState
 

@@ -62,6 +62,16 @@ e_i = y_i - f(\mathbf{x}_i)
 Residuals give us a way to evaluate how well the model fits the data. A residual close to zero means that the model's prediction is close to the observed value, while a residual far from zero indicates a larger error.
 
 ```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), seaborn is not preinstalled, so we install it first
+import sys
+if sys.platform == "emscripten":
+    import micropip
+    await micropip.install("seaborn")
+```
+
+```{code-cell}
 :tags: [hide-input]
 
 import numpy as np
@@ -72,10 +82,12 @@ from scipy.optimize import minimize
 # Seaborn settings
 sns.set_theme(style="whitegrid")
 
+N = 30  # Number of data points
+
 # Generating random data
 rng = np.random.RandomState(0)
-x = rng.rand(30)
-y_linear = 2 * x - 0.5 + 0.2*rng.randn(30)
+x = rng.rand(N)
+y_linear = 2 * x - 0.5 + 0.2*rng.randn(N)
 
 # Define a generic loss function for linear models
 def loss(params, model_function, x, y):
@@ -141,7 +153,7 @@ Minimizing the SSE gives the same parameters as minimizing the more commonly rep
 
 ### Fit a Linear Model to Data
 
-A general pattern in machine learning is to use an optimizer to minimize a loss function. Here, we define the SSE loss explicitly and minimize it with the `scipy.optimize.minimize` function. Nothing in this procedure is specific to straight lines, so later in this chapter we use the same code to fit non-linear models.
+A general pattern in machine learning is to use an optimizer to minimize a loss function. Here, we define the SSE loss explicitly and minimize it with the `scipy.optimize.minimize` function. Nothing in this procedure is specific to straight lines, so later in this chapter we use the same code to fit non-linear models. Try changing the number of data points `N` in the code, and see how the fitted slope and intercept change.
 
 ```{code-cell}
 from scipy.optimize import minimize
@@ -152,10 +164,12 @@ import matplotlib.pyplot as plt
 # Seaborn settings
 sns.set_theme(style="whitegrid")
 
+N = 50  # Number of data points
+
 # Generating random data
 rng = np.random.RandomState(0) # Any number can be used as seed for the random number generator
-x = rng.rand(50)
-y_linear = 2 * x - 0.5 + 0.2*rng.randn(50)
+x = rng.rand(N)
+y_linear = 2 * x - 0.5 + 0.2*rng.randn(N)
 
 # Define a generic loss function for both linear and polynomial models
 def loss(params, model_function, x, y):
@@ -343,7 +357,7 @@ So far our model has been a straight line, but many relationships are curved. Th
 
 ### Polynomial Basis Functions
 
-A common choice is **polynomial basis functions**: from each input $x$ we create the terms $x^2$, $x^3$, and so on, which let the model capture curved patterns. Instead of fitting a linear model $y = a x + b$, we then fit a polynomial of degree $n$. This transforms the input space into a higher-dimensional space where the relationship between $x$ and $y$ may be linear, even if it appears non-linear in the original space. Below, we fit a polynomial of degree 7, which has 8 parameters.
+A common choice is **polynomial basis functions**: from each input $x$ we create the terms $x^2$, $x^3$, and so on, which let the model capture curved patterns. Instead of fitting a linear model $y = a x + b$, we then fit a polynomial of degree $n$. This transforms the input space into a higher-dimensional space where the relationship between $x$ and $y$ may be linear, even if it appears non-linear in the original space. Below, we fit a polynomial of degree 7, which has 8 parameters, to 50 data points. Try changing the number of data points `N` and the degree of the polynomial `degree` in the code, and see how the fit changes.
 
 ```{code-cell}
 import seaborn as sns
@@ -353,19 +367,24 @@ import numpy as np
 # Seaborn settings
 sns.set_theme(style="whitegrid")
 
+N = 50      # Number of data points
+degree = 7  # Degree of the polynomial
+
 # Generating random data
 rng = np.random.RandomState(1)
-x = rng.rand(50)
-y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(50)
+x = rng.rand(N)
+y_non_linear = np.sin(10.*x) + 0.1 * rng.randn(N)
 
-# Define the polynomial model function
-def polynomial_model(x, params, degree=7):
+# Define the polynomial model function, where the degree is given by the number of parameters
+def polynomial_model(x, params):
+    degree = len(params) - 1
     x_poly = np.vstack([x**i for i in range(degree + 1)]).T
     return np.dot(x_poly, params)
 
 
-# Optimize the parameters of our model using the same SSE loss function as before
-result_poly = minimize_loss(loss, polynomial_model, x, y_non_linear, 8)
+# Optimize the parameters of our model using the same SSE loss function as before.
+# A polynomial of degree n has n+1 parameters
+result_poly = minimize_loss(loss, polynomial_model, x, y_non_linear, degree + 1)
 
 poly_params = result_poly.x
 
@@ -374,22 +393,16 @@ yfit_poly = polynomial_model(xfit, poly_params)
 
 sns.scatterplot(x=x, y=y_non_linear)
 plt.plot(xfit, yfit_poly, color='r')
+plt.ylim(-2, 2)  # Fixed range, so that overfitted curves don't hide the data
 plt.title("Polynomial Regression Fit")
 plt.show()
 ```
 
-:::{dropdown} Optional: Gaussian basis functions
-Another choice is **Gaussian basis functions**, also known as **radial basis functions (RBF)**. Each one is a bell-shaped bump around a center, so a weighted sum of them can follow localized, non-linear behavior in the data. Below, we use 11 Gaussian bases and let the optimizer fit not only their weights but also their centers and their common width. That makes the model non-linear in its parameters, but it is still fitted in exactly the same way, by minimizing the SSE.
+### Optional: Gaussian Basis Functions
 
-```{embed} #gaussian-fit
-:remove-input: false
-```
-:::
+This last part of the chapter is optional reading. Another choice is **Gaussian basis functions**, also known as **radial basis functions (RBF)**. Each one is a bell-shaped bump around a center, so a weighted sum of them can follow localized, non-linear behavior in the data. Below, we use 11 Gaussian bases and let the optimizer fit not only their weights but also their centers and their common width. That makes the model non-linear in its parameters, but it is still fitted in exactly the same way, by minimizing the SSE.
 
 ```{code-cell}
-:label: gaussian-fit
-:tags: [remove-cell]
-
 # Define a Gaussian basis function
 def gaussian_basis(x, centers, width):
     return np.exp(-0.5 * ((x[:, np.newaxis] - centers[np.newaxis, :]) / width)**2)
@@ -397,18 +410,18 @@ def gaussian_basis(x, centers, width):
 # Define the Gaussian model
 def gaussian_model(x, params):
     # Split the params into weights, centers and common width of the bases
-    N = len(params)//2
-    weights = params[:N]
-    centers = params[N:2*N]
+    n_bases = len(params)//2
+    weights = params[:n_bases]
+    centers = params[n_bases:2*n_bases]
     width = params[-1]
     # Calculate the values of each basis for each x
     basis = gaussian_basis(x, centers, width)
     return np.dot(basis, weights)
 
-N = 11  # Number of Gaussian bases to fit to our data
+n_bases = 11  # Number of Gaussian bases to fit to our data
 
 # Optimize the parameters of our model using the same SSE loss function as before
-result_gaussian = minimize_loss(loss, gaussian_model, x, y_non_linear, N*2+1)
+result_gaussian = minimize_loss(loss, gaussian_model, x, y_non_linear, n_bases*2+1)
 gaussian_params = result_gaussian.x
 
 yfit_gauss = gaussian_model(xfit, gaussian_params)
@@ -416,6 +429,7 @@ yfit_gauss = gaussian_model(xfit, gaussian_params)
 # Plot the Gaussian fit
 sns.scatterplot(x=x, y=y_non_linear)
 plt.plot(xfit, yfit_gauss, color='r')
+plt.ylim(-2, 2)
 plt.show()
 ```
 

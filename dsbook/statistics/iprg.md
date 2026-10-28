@@ -80,6 +80,26 @@ We start from the protein-level table that the [MSstats](https://msstats.org) pi
 produces after summarising the Skyline peptide intensities into one log$_2$ intensity per
 protein and run.
 
+```{code-cell}
+:tags: [hide-cell]
+
+# When the page runs in the browser (JupyterLite), we install seaborn, and fetch the files that this chapter reads from the book's repository
+import sys
+if sys.platform == "emscripten":
+    import os
+    import micropip
+    await micropip.install(["seaborn", "pyodide-http"])
+    import pyodide_http
+    pyodide_http.patch_all()
+    from urllib.request import urlretrieve
+    repo = "https://raw.githubusercontent.com/statisticalbiotechnology/dsbook/main/dsbook/"
+    for remote, local in [("common/qvalue.py", "../common/qvalue.py"),
+                          ("statistics/data/iprg2015_protein_runsummary.csv", "data/iprg2015_protein_runsummary.csv")]:
+        if not os.path.exists(local):
+            os.makedirs(os.path.dirname(local), exist_ok=True)
+            urlretrieve(repo + remote, local)
+```
+
 ```{code-cell} ipython3
 import pandas as pd
 import numpy as np
