@@ -329,7 +329,7 @@ The updates for $a$ and $b$ are then:
 
 ## Scikit-learn
 
-Defining a loss function explicitly and handing it to a general-purpose optimizer is a good way to explain how machine learning works, but it is not how linear regression is usually done in practice. The least-squares problem has an [analytical solution](https://en.wikipedia.org/wiki/Least_squares#Solving_the_least_squares_problem), which software packages use instead. In practice, we use a package such as [scikit-learn](https://scikit-learn.org/), one of the most popular machine learning libraries in Python, which implements a wide range of supervised and unsupervised methods.
+Defining a loss function explicitly and handing it to a general-purpose optimizer is a good way to explain how machine learning works, but it is not how linear regression is usually done in practice. The least-squares problem has an [analytical solution](https://en.wikipedia.org/wiki/Simple_linear_regression#Formulation_and_computation), which software packages use instead. In practice, we use a package such as [scikit-learn](https://scikit-learn.org/), one of the most popular machine learning libraries in Python, which implements a wide range of supervised and unsupervised methods.
 
 ### Linear Regression using Scikit-learn
 
