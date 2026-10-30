@@ -211,66 +211,157 @@ By default, `scipy.optimize.minimize` uses the [BFGS algorithm](https://en.wikip
 
 ### Concept of Gradient Descent
 
-The basic idea of gradient descent is to update the parameters in the opposite direction of the gradient of the loss function with respect to the parameters. This is because the gradient points in the direction of the steepest ascent, and we want to go in the opposite direction to find the minimum.
+The basic idea of gradient descent is to start from a guess of the parameters, and then repeatedly change them by a small step in the direction that decreases the loss. That direction is given by the derivative of the loss or, when the model has several parameters, by its gradient. We first look at a model with a single parameter, where the ordinary derivative is enough, and then extend the same code to two parameters.
 
-Below, we use gradient descent to find the optimal $a$ and $b$ for a linear regression model, and draw its steps on a contour plot of the loss as a function of $a$ and $b$.
+#### Gradient Descent with One Parameter
+
+If we fix the intercept at $b = 0$, the model becomes a line through the origin, $f(x) = a x$, with the slope $a$ as its only parameter. The loss is then a function of $a$ alone,
+
+```{math}
+\mathcal{L}(a) = \sum_{i=1}^N (y_i - a x_i)^2 ,
+```
+
+and its derivative with respect to $a$ is
+
+```{math}
+\frac{d\mathcal{L}}{da} = -2 \sum_{i=1}^N x_i (y_i - a x_i) .
+```
+
+The derivative is the slope of the loss curve at the current value of $a$. If it is positive, the loss increases with $a$, so we should decrease $a$. If it is negative, we should increase $a$. Gradient descent therefore takes a step against the derivative,
+
+```{math}
+a_{\text{new}} = a - \eta \frac{d\mathcal{L}}{da} ,
+```
+
+where the **learning rate** $\eta$ is a small positive number that sets the step size. Near the minimum, the loss curve flattens and the derivative approaches zero, so the steps become smaller.
+
+Below, we write a general `gradient_descent` function, which takes a function that calculates the derivative, a starting guess, the learning rate and the number of steps. We use it to fit the slope, starting from $a = 0$.
 
 ```{code-cell}
-:tags: [hide-input]
-
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import minimize
 
-# Loss evaluated on a grid of (a, b) values
-def compute_loss(a, b, x, y):
-    # Add an axis to a and b so that they broadcast against the data points
-    return np.sum((y - (a[..., np.newaxis] * x + b[..., np.newaxis]))**2, axis=-1)
-
-# Define the gradient of the loss function
-def compute_gradient(a, b, x, y):
-    grad_a = -2 * np.sum(x * (y - (a * x + b)))
-    grad_b = -2 * np.sum(y - (a * x + b))
-    return grad_a, grad_b
-
-# Gradient descent parameters
-learning_rate = 0.01
-n_iterations = 100
-
-# Initial guess
-a, b = 0.0, 0.0
-
-# Data
+# Data: 30 points from a noisy line with slope 2 and intercept -0.5, as earlier in the chapter
 rng = np.random.RandomState(0)
-x_ = np.array(rng.rand(30))
-y_ = np.array(2 * x_ - 0.5 + 0.2*rng.randn(30))
+x_ = rng.rand(30)
+y_ = 2 * x_ - 0.5 + 0.2*rng.randn(30)
 
-# Store the steps
-steps_a = [a]
-steps_b = [b]
+# Gradient descent: start from an initial guess, and repeatedly take a step against the gradient.
+# The function works for any number of parameters
+def gradient_descent(gradient, params, learning_rate, n_iterations):
+    steps = [params]
+    for i in range(n_iterations):
+        params = params - learning_rate * gradient(params)
+        steps.append(params)
+    return np.array(steps)
 
-# Gradient descent loop
-for i in range(n_iterations):
-    grad_a, grad_b = compute_gradient(a, b, x_, y_)
-    a -= learning_rate * grad_a
-    b -= learning_rate * grad_b
-    steps_a.append(a)
-    steps_b.append(b)
+# One parameter: the slope a of a line through the origin, f(x) = a x
+def loss_1d(a):
+    return np.sum((y_ - a * x_)**2)
+
+def derivative_1d(a):
+    return -2 * np.sum(x_ * (y_ - a * x_))
+
+learning_rate = 0.01
+n_iterations = 20
+steps_1d = gradient_descent(derivative_1d, 0.0, learning_rate, n_iterations)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+# Left: the loss as a function of a, with the steps of gradient descent
+a_values = np.linspace(-0.5, 3.0, 200)
+ax1.plot(a_values, [loss_1d(a) for a in a_values], color='gray', label='Loss')
+# The derivative is the slope of the tangent to the loss curve
+a0 = steps_1d[0]
+tangent_a = np.array([a0 - 0.4, a0 + 0.6])
+ax1.plot(tangent_a, loss_1d(a0) + derivative_1d(a0) * (tangent_a - a0), color='black', linestyle=':',
+         label='Tangent at the start (slope = derivative)')
+ax1.plot(steps_1d, [loss_1d(a) for a in steps_1d], 'o--', color='red', label=f'Gradient descent ({n_iterations} steps)')
+ax1.set_xlabel('Slope (a)')
+ax1.set_ylabel('Loss')
+ax1.legend()
+
+# Right: the data, with the line of each step
+ax2.scatter(x_, y_, label='Data')
+for a in steps_1d[:-1]:
+    ax2.plot([0, 1], [0, a], color='red', alpha=0.2)
+ax2.plot([0, 1], [0, steps_1d[-1]], color='red', label=f'Line after {n_iterations} steps')
+ax2.set_xlabel('x')
+ax2.set_ylabel('y')
+ax2.legend()
+plt.show()
 
 # The minimum of the same loss, found with scipy's optimizer
-slope_min, intercept_min = minimize_loss(loss, linear_model, x_, y_, 2).x
+a_min = minimize(loss_1d, 0.0).x[0]
+print(f"After {n_iterations} steps: slope {steps_1d[-1]:.3f}")
+print(f"Minimum of the loss: slope {a_min:.3f}")
+```
 
-# Create a grid for contour plot
+In the left panel, gradient descent starts at $a = 0$, where the loss curve is steep, so the first step is large. The steps then shrink as the curve flattens towards the minimum. In the right panel, the line turns towards the data with each step. Because it is forced through the origin, it cannot follow the data very well, as the data were generated with an intercept of $-0.5$.
+
+Try changing the learning rate. With `learning_rate = 0.07`, the steps overshoot the minimum and jump back and forth across it, and with `learning_rate = 0.09`, every step lands further away from the minimum than the previous one.
+
+#### Gradient Descent with Two Parameters
+
+If we also let the intercept vary, we get back the full model $f(x) = a x + b$, whose loss $\mathcal{L}(a, b)$ depends on two parameters. Instead of a single derivative, we now have one **partial derivative** per parameter. The partial derivative with respect to $a$ is the ordinary derivative with respect to $a$, calculated as if $b$ were a constant, and vice versa:
+
+```{math}
+\frac{\partial \mathcal{L}}{\partial a} = -2 \sum_{i=1}^N x_i \left( y_i - (a x_i + b) \right) , \qquad
+\frac{\partial \mathcal{L}}{\partial b} = -2 \sum_{i=1}^N \left( y_i - (a x_i + b) \right) .
+```
+
+With $b = 0$, the first of them is the derivative from the one-parameter case. Together, the partial derivatives form the **gradient**, a vector that points in the direction in which the loss increases most steeply:
+
+```{math}
+\nabla \mathcal{L}(a, b) = \begin{bmatrix} \frac{\partial \mathcal{L}}{\partial a} \\ \frac{\partial \mathcal{L}}{\partial b} \end{bmatrix} .
+```
+
+Gradient descent takes a step against the gradient, which means that each parameter is updated with its own partial derivative:
+
+```{math}
+\begin{bmatrix} a_{\text{new}} \\ b_{\text{new}} \end{bmatrix} = \begin{bmatrix} a \\ b \end{bmatrix} - \eta \begin{bmatrix} \frac{\partial \mathcal{L}}{\partial a} \\ \frac{\partial \mathcal{L}}{\partial b} \end{bmatrix} .
+```
+
+The same holds for any number of parameters. If we collect the parameters in a vector $\boldsymbol{\beta}$, the update rule is
+
+```{math}
+\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla \mathcal{L}(\boldsymbol{\beta}) .
+```
+
+In the code, only the loss and its derivative change: the derivative becomes a gradient function that returns both partial derivatives, and the starting guess becomes a vector $(a, b) = (0, 0)$. The `gradient_descent` function is the same as before. We draw its steps on a contour plot of the loss as a function of $a$ and $b$.
+
+```{code-cell}
+# Two parameters: the slope a and the intercept b, f(x) = a x + b
+def loss_2d(params):
+    a, b = params
+    return np.sum((y_ - (a * x_ + b))**2)
+
+# The gradient holds one partial derivative per parameter
+def gradient_2d(params):
+    a, b = params
+    residuals = y_ - (a * x_ + b)
+    return np.array([-2 * np.sum(x_ * residuals),  # Partial derivative with respect to a
+                     -2 * np.sum(residuals)])      # Partial derivative with respect to b
+
+# The same gradient descent function as for one parameter
+n_iterations = 100
+steps_2d = gradient_descent(gradient_2d, np.array([0.0, 0.0]), learning_rate, n_iterations)
+
+# The minimum of the same loss, found with scipy's optimizer
+slope_min, intercept_min = minimize(loss_2d, np.array([0.0, 0.0])).x
+
+# Loss evaluated on a grid of (a, b) values
 a_values = np.linspace(-0.5, 3.0, 100)
 b_values = np.linspace(-1, 0.5, 100)
-a_grid, b_grid = np.meshgrid(a_values, b_values)
-loss_grid = compute_loss(a_grid, b_grid, x_, y_)
+loss_grid = np.array([[loss_2d((a, b)) for a in a_values] for b in b_values])
 
 # Plotting the contour plot of the loss function
 plt.figure(figsize=(10, 6))
-plt.contourf(a_grid, b_grid, loss_grid, levels=50, cmap='viridis')
+plt.contourf(a_values, b_values, loss_grid, levels=50, cmap='viridis')
 plt.colorbar(label='Loss magnitude')
-plt.scatter(steps_a, steps_b, color='red', s=50, label=f'Gradient descent ({n_iterations} steps)')
-plt.plot(steps_a, steps_b, color='white', linestyle='--', linewidth=1)
+plt.scatter(steps_2d[:, 0], steps_2d[:, 1], color='red', s=50, label=f'Gradient descent ({n_iterations} steps)')
+plt.plot(steps_2d[:, 0], steps_2d[:, 1], color='white', linestyle='--', linewidth=1)
 plt.scatter([slope_min], [intercept_min], color='white', edgecolor='black', s=60, label='Minimum of the loss')
 plt.title('Contour plot of the loss function with Gradient Descent Steps')
 plt.xlabel('Slope (a)')
@@ -279,53 +370,11 @@ plt.legend()
 plt.show()
 
 # Output the parameters
-print(f"After {n_iterations} steps: slope {a:.3f}, intercept {b:.3f}")
+print(f"After {n_iterations} steps: slope {steps_2d[-1, 0]:.3f}, intercept {steps_2d[-1, 1]:.3f}")
 print(f"Minimum of the loss: slope {slope_min:.3f}, intercept {intercept_min:.3f}")
 ```
 
 After 100 steps, gradient descent is still some distance from the minimum: the loss forms a long, narrow valley, and the steps shrink as they follow its nearly flat floor.
-
-````{note}
-### Mathematical Formulation of Gradient Descent
-
-To understand gradient descent mathematically, let’s start with a simple one-dimensional case. Suppose we have a function $f(\beta)$ and want to find its minimum. The derivative of $f$ with respect to $\beta$, denoted as $f'(\beta)$, gives the slope of the function at any point $\beta$. Gradient descent updates $\beta$ iteratively in the opposite direction of $f'(\beta)$ to move toward the minimum:
-
-```{math}
-\beta_{\text{new}} = \beta - \eta f'(\beta)
-```
-
-where $\eta$, the learning rate, is a small positive number that sets the step size. This process continues until $f'(\beta) \approx 0$, indicating that we have reached a local minimum.
-
-#### Extending to Multiple Dimensions
-
-In higher dimensions, we consider a multivariable function $\mathcal{L}(\boldsymbol{\beta})$, where $\boldsymbol{\beta} = \begin{bmatrix} \beta_1 \\ \beta_2 \\ \vdots \\ \beta_n \end{bmatrix}$ represents the parameters of the model in column vector form, and $\mathcal{L}$ is the loss function we aim to minimize. Instead of a single derivative, we use the **gradient**, denoted $\nabla \mathcal{L}(\boldsymbol{\beta})$, which is a column vector of partial derivatives with respect to each parameter:
-
-```{math}
-\nabla \mathcal{L}(\boldsymbol{\beta}) = \begin{bmatrix} \frac{\partial \mathcal{L}}{\partial \beta_1} \\ \frac{\partial \mathcal{L}}{\partial \beta_2} \\ \vdots \\ \frac{\partial \mathcal{L}}{\partial \beta_n} \end{bmatrix}
-```
-
-Each component $\frac{\partial \mathcal{L}}{\partial \beta_i}$ represents the rate of change of $\mathcal{L}$ with respect to $\beta_i$. The gradient $\nabla \mathcal{L}(\boldsymbol{\beta})$ points in the direction of the steepest increase of $\mathcal{L}$; therefore, moving in the opposite direction of $\nabla \mathcal{L}(\boldsymbol{\beta})$ decreases $\mathcal{L}$.
-
-The gradient descent update rule for multiple parameters is:
-
-```{math}
-\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla \mathcal{L}(\boldsymbol{\beta})
-```
-
-#### Applying Gradient Descent to Linear Regression
-
-In our linear regression model, we minimize the sum of squared errors $\mathcal{L}(a, b)$ for the parameters $a$ (slope) and $b$ (intercept). The gradient of $\mathcal{L}$ with respect to $a$ and $b$ consists of the partial derivatives $\frac{\partial \mathcal{L}}{\partial a}$ and $\frac{\partial \mathcal{L}}{\partial b}$, which we can express in column vector form, in the same order as $\boldsymbol{\beta} = (b, a)^T$, as:
-
-```{math}
-\nabla \mathcal{L}(a, b) = \begin{bmatrix} \frac{\partial \mathcal{L}}{\partial b} \\ \frac{\partial \mathcal{L}}{\partial a} \end{bmatrix} = \begin{bmatrix} -2 \sum_i \left( y_i - (a x_i + b) \right) \\ -2 \sum_i x_i \left( y_i - (a x_i + b) \right) \end{bmatrix}
-```
-
-The updates for $a$ and $b$ are then:
-
-```{math}
-\begin{bmatrix} b_{\text{new}} \\ a_{\text{new}} \end{bmatrix} = \begin{bmatrix} b \\ a \end{bmatrix} - \eta \begin{bmatrix} \frac{\partial \mathcal{L}}{\partial b} \\ \frac{\partial \mathcal{L}}{\partial a} \end{bmatrix}
-```
-````
 
 ## Scikit-learn
 
@@ -441,6 +490,6 @@ You should be able to:
 2. Write a linear model as $f(\mathbf{x}_i') = \mathbf{x}_i'^T \boldsymbol{\beta}$, and explain how adding a constant 1 to the input vector handles the intercept.
 3. Define a residual. Calculate the residuals, the sum of squared errors (SSE) and the mean squared error (MSE) for a small dataset by hand.
 4. Explain least squares as minimizing a loss function, and state under which assumption about the errors it is the same as maximum likelihood estimation.
-5. Describe how gradient descent minimizes a loss: what the gradient is, the update rule $\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla \mathcal{L}(\boldsymbol{\beta})$, and the role of the learning rate $\eta$.
+5. Describe how gradient descent minimizes a loss: how the derivative of the loss gives the step for a single parameter, how the gradient extends this to several parameters, the update rule $\boldsymbol{\beta}_{\text{new}} = \boldsymbol{\beta} - \eta \nabla \mathcal{L}(\boldsymbol{\beta})$, and the role of the learning rate $\eta$.
 6. Explain how polynomial basis functions let a regression model fit non-linear relationships, while the fitting procedure (minimizing a loss) stays the same.
 :::
