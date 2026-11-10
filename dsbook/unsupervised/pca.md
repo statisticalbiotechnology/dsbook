@@ -247,7 +247,7 @@ plt.show()
 
 In this example, we reconstruct facial images from a low-dimensional representation. The Olivetti faces dataset contains 400 photos of 40 people, each of 64 × 64 = 4,096 pixels. Each photo is a sample and each pixel a variable. PCA needs every pixel to have mean zero across the photos. scikit-learn's `PCA` subtracts these means itself, so the explicit global centering in the code is not needed for the PCA, but it makes the plotted faces show deviations from the average face. The local centering subtracts each photo's own mean, which removes differences in overall brightness between the photos.
 
-The principal components of this dataset are called eigenfaces. Each eigenface is a pattern over all 4,096 pixels that captures a direction of large variation between the faces (e.g., eyes, nose, or general facial structure). An eigenface plays the role of the gene-specific vector $\mathbf{u}$: it holds one value per pixel. The matching photo-specific scores play the role of the sample-specific vector $\mathbf{v}$: they say how much of each eigenface is present in each photo.
+The principal components of this dataset are called eigenfaces. Each eigenface is a pattern over all 4,096 pixels that captures a direction of large variation between the faces (e.g., eyes, nose, or general facial structure). An eigenface plays the role of the gene-specific vector $\mathbf{u}$: it holds one value per pixel. The matching photo-specific scores, which `pca.transform` returns, play the role of the sample-specific vector $\mathbf{v}$: they say how much of each eigenface is present in each photo. Note that scikit-learn scales only the eigenfaces to unit length, and puts the magnitude of each component in the scores, so the scores of component $i$ equal $S_i\mathbf{v}^{(i)}$ rather than $\mathbf{v}^{(i)}$.
 
 Projecting a face onto the 20 eigenfaces turns its 4,096 pixel values into 20 scores. The reconstruction (`inverse_transform`) reverses the process by adding up the eigenfaces, weighted by the face's scores. The reconstructed faces are blurred but still recognizable, although each of them is described by 20 numbers instead of 4,096. The last plot shows why they are not perfect: the first eigenface explains 18% of the variance and the 20 eigenfaces together about 70%, so the remaining 30% of the variation, the finer detail, is lost.
 
@@ -267,7 +267,6 @@ from urllib.request import urlretrieve
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 
 IN_COLAB = 'google.colab' in sys.modules
 data_dir = "data/" if IN_COLAB else "../data/"
@@ -290,28 +289,30 @@ with zipfile.ZipFile(os.path.join(data_dir, "baltic_metabarcoding_data.zip")) as
     counts = pd.read_csv(archive.open("metabarcoding_data/16S/seqtab_16S.txt"), sep="\t")
     taxa = pd.read_csv(archive.open("metabarcoding_data/16S/taxa_16S.txt"), sep="\t")
 
-# Keep the 16S samples of the monthly sampling, and turn the table so that each sample is a row
+# Keep the 16S samples of the monthly sampling
 meta = meta[meta["target gene"].str.contains("16S", na=False) & meta["test_type"].isna()]
-counts = counts[meta.index].T
+counts = counts[meta.index]
 # Remove samples with fewer than 5,000 reads
-counts = counts[counts.sum(axis=1) >= 5000]
-meta = meta.loc[counts.index]
-print(f"{counts.shape[0]} samples from {meta['station_name'].nunique()} stations, and {counts.shape[1]} ASVs")
+counts = counts.loc[:, counts.sum() >= 5000]
+meta = meta.loc[counts.columns]
+print(f"{counts.shape[1]} samples from {meta['station_name'].nunique()} stations, and {counts.shape[0]} ASVs")
 ```
 
 The total number of reads differs a lot between the samples, so we first divide the counts of each sample by its total, which gives the relative abundance of each ASV. Most of the ASVs are rare, and we keep only the 1,000 most abundant ones, which together account for about 90% of the reads. The relative abundances span several orders of magnitude, and without a transformation, a few dominant ASVs would decide the whole analysis. We therefore take the logarithm of the relative abundances, after adding a small pseudocount of $10^{-5}$ to avoid taking the logarithm of zero.
 
-Note that each sample is a row and each ASV a column, which is the orientation that scikit-learn expects. This is the transpose of the genes $\times$ samples matrices used earlier in this chapter, so the roles of $\mathbf{U}$ and $\mathbf{V}$ are swapped: the sample-specific scores are now found in $\mathbf{U}$, and the ASV-specific loadings in $\mathbf{V}$. The `PCA` class centers the data itself.
+The table is arranged like the genes $\times$ samples matrices earlier in this chapter: each ASV is a row and each sample a column, so the ASVs play the role of the genes. We center each ASV by subtracting its mean over the samples, and decompose the matrix with SVD, $\mathbf{X} = \mathbf{U}\mathbf{S}\mathbf{V}^{\textsf{T}}$. The columns of $\mathbf{U}$ are then the ASV-specific vectors $\mathbf{u}^{(i)}$, the rows of $\mathbf{V}^{\textsf{T}}$ are the sample-specific vectors $\mathbf{v}^{(i)}$, and both have unit length.
 
 ```{code-cell}
 # Relative abundances of the 1,000 most abundant ASVs, on a logarithmic scale
-rel = counts.div(counts.sum(axis=1), axis=0)
-top = rel.mean().sort_values(ascending=False).index[:1000]
-print(f"The 1,000 most abundant ASVs account for {rel[top].sum(axis=1).mean():.0%} of the reads")
-X = np.log10(rel[top] + 1e-5)
+rel = counts / counts.sum()
+top = rel.mean(axis=1).sort_values(ascending=False).index[:1000]
+print(f"The 1,000 most abundant ASVs account for {rel.loc[top].sum().mean():.0%} of the reads")
+X = np.log10(rel.loc[top] + 1e-5)
 
-pca = PCA(n_components=3)
-scores = pca.fit_transform(X)
+# Center each ASV, and decompose the ASVs x samples matrix
+X = X.sub(X.mean(axis=1), axis=0)
+U, S, Vt = np.linalg.svd(X, full_matrices=False)
+R2 = S**2 / np.sum(S**2)
 
 # Variables measured in each sample, which we compare to the scores below
 salinity = meta["salinity_average"]
@@ -319,22 +320,23 @@ latitude = meta["geographic location (latitude)"]
 temperature = meta["temperature_water_CTD_0-1m"]
 date = pd.to_datetime(meta["collection date"])
 
-# The sign of a principal component is arbitrary. We choose the signs so that the scores of
-# the three components increase with salinity, latitude and water temperature, respectively
+# The sign of a principal component is arbitrary, as flipping both u and v leaves their product unchanged.
+# We choose the signs so that the scores of the first three components, the rows of Vt,
+# increase with salinity, latitude and water temperature, respectively
 for i, values in enumerate([salinity, latitude, temperature]):
     measured = values.notna().to_numpy()
-    if np.corrcoef(scores[measured, i], values[measured])[0, 1] < 0:
-        scores[:, i] *= -1
-        pca.components_[i] *= -1
+    if np.corrcoef(Vt[i, measured], values[measured])[0, 1] < 0:
+        U[:, i] *= -1
+        Vt[i] *= -1
 
-print("Explained variance ratio of components:", pca.explained_variance_ratio_.round(3))
+print("Fraction of the variance explained by the first components:", R2[:3].round(3))
 
 # Score plot of the first two components, colored by salinity
 plt.figure(figsize=(8, 6))
-plt.scatter(scores[:, 0], scores[:, 1], c=salinity, cmap='viridis', s=15)
+plt.scatter(Vt[0], Vt[1], c=salinity, cmap='viridis', s=15)
 plt.colorbar(label='Salinity')
-plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.0%} of the variance)')
-plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.0%} of the variance)')
+plt.xlabel(f'PC1 ({R2[0]:.0%} of the variance)')
+plt.ylabel(f'PC2 ({R2[1]:.0%} of the variance)')
 plt.title('Bacterial communities of the Baltic Sea')
 plt.show()
 ```
@@ -345,16 +347,16 @@ The first component separates the samples into two groups. The salty samples fro
 fig, axes = plt.subplots(1, 3, figsize=(16, 4.5))
 for ax, values, i, label in [(axes[0], salinity, 0, 'Salinity'), (axes[1], latitude, 1, 'Latitude (°N)')]:
     measured = values.notna().to_numpy()
-    r = np.corrcoef(scores[measured, i], values[measured])[0, 1]
-    ax.scatter(values, scores[:, i], s=15)
+    r = np.corrcoef(Vt[i, measured], values[measured])[0, 1]
+    ax.scatter(values, Vt[i], s=15)
     ax.set_xlabel(label)
     ax.set_ylabel(f'PC{i + 1}')
     ax.set_title(f'PC{i + 1} against {label.split()[0].lower()}, r = {r:.2f}')
 
 # The third component against the sampling date, colored by water temperature
 measured = temperature.notna().to_numpy()
-r = np.corrcoef(scores[measured, 2], temperature[measured])[0, 1]
-points = axes[2].scatter(date, scores[:, 2], c=temperature, cmap='coolwarm', s=15)
+r = np.corrcoef(Vt[2, measured], temperature[measured])[0, 1]
+points = axes[2].scatter(date, Vt[2], c=temperature, cmap='coolwarm', s=15)
 fig.colorbar(points, ax=axes[2], label='Water temperature (°C)')
 axes[2].set_xlabel('Sampling date')
 axes[2].set_ylabel('PC3')
@@ -372,10 +374,10 @@ Each of the first three components reflects an environmental gradient:
 
 PCA was never told the salinity, location or date of the samples. It found these gradients from the composition of the bacterial communities alone, and we only compared the components with the measured variables afterwards. This is typical for unsupervised learning: the method finds the major patterns in the data, and it is up to us to interpret them.
 
-The loadings tell us which ASVs drive a component. Below, we list the ASVs with the largest positive and negative loadings on the first component, together with their taxonomy.
+The loadings, the entries of the ASV-specific vectors $\mathbf{u}^{(i)}$, tell us which ASVs drive a component. Below, we list the ASVs with the largest positive and negative loadings on the first component, together with their taxonomy.
 
 ```{code-cell}
-loadings = pd.DataFrame(pca.components_.T, index=top, columns=['PC1', 'PC2', 'PC3'])
+loadings = pd.DataFrame(U[:, :3], index=top, columns=['PC1', 'PC2', 'PC3'])
 loadings = loadings.join(taxa[['Class', 'Order', 'Genus']])
 print("ASVs most abundant in salty water (largest positive loadings on PC1):")
 print(loadings.sort_values('PC1', ascending=False).head(5)[['PC1', 'Class', 'Order', 'Genus']].round(3).to_string())
