@@ -43,6 +43,14 @@ A [projection](https://en.wikipedia.org/wiki/Projection_(linear_algebra)) is a t
 
 - What if we could do the opposite? I.e., given a matrix $\mathbf{X}$, what would be the vectors $\mathbf{u}$ and $\mathbf{v}$ that best represent $\mathbf{X}$ so that $\mathbf{X} \approx \mathbf{u} \mathbf{v}^{\textsf{T}}$? This is, in essence, what you do with principal component analysis (PCA).
 
+Here, *best* has the same meaning as for [least squares regression](../supervised/linear.md): PCA chooses the $\mathbf{u}$ and $\mathbf{v}$ that minimize the sum of squared residuals between $\mathbf{X}$ and its approximation,
+
+```{math}
+\mathcal{L}(\mathbf{u}, \mathbf{v}) = \sum_{i=1}^{N} \sum_{j=1}^{M} \left( X_{ij} - u_i v_j \right)^2 .
+```
+
+For the best approximation, the total sum of squares of $\mathbf{X}$ splits into the part that the approximation describes and the squared residuals that it leaves. For centered data, where the sum of squares measures the variance, minimizing the squared residuals is therefore the same as maximizing the variance that the component describes. The two are just different descriptions of the same principal component. Unlike in regression, no variable plays the role of a dependent variable $y$. Regression measures the residuals vertically, along $y$ only, whereas PCA measures them perpendicular to the component.
+
 
 ### A scenario where this might be useful
 
@@ -88,7 +96,7 @@ $\mathbf{u}$ (one entry per gene) and $\mathbf{v}$ (one entry per sample) then o
 
 ## More than one principal component
 
-- Once the first component is removed from $\mathbf{X}$, the residuals $\mathbf{X} - S_1\mathbf{u}^{(1)} \mathbf{v}^{(1)\textsf{T}}$ can in turn be decomposed. The vectors $\mathbf{u}^{(2)}$ and $\mathbf{v}^{(2)}$ that best describe this residual matrix form the second principal component, while the original pair forms the first.
+- Once the first component is removed from $\mathbf{X}$, the residuals $\mathbf{X} - S_1\mathbf{u}^{(1)} \mathbf{v}^{(1)\textsf{T}}$ can in turn be decomposed. The vectors $\mathbf{u}^{(2)}$ and $\mathbf{v}^{(2)}$ that best describe this residual matrix, again in the sense of the smallest sum of squared residuals, form the second principal component, while the original pair forms the first.
 
 - In this manner, we can derive as many principal components as there are rows or columns (whichever is smaller) in $\mathbf{X}$. For plotting, we usually look at the first two or three components; for further analysis, such as the clustering of single cells later in this part of the book, we often keep more.
 
@@ -243,9 +251,143 @@ The principal components of this dataset are called eigenfaces. Each eigenface i
 
 Projecting a face onto the 20 eigenfaces turns its 4,096 pixel values into 20 scores. The reconstruction (`inverse_transform`) reverses the process by adding up the eigenfaces, weighted by the face's scores. The reconstructed faces are blurred but still recognizable, although each of them is described by 20 numbers instead of 4,096. The last plot shows why they are not perfect: the first eigenface explains 18% of the variance and the 20 eigenfaces together about 70%, so the remaining 30% of the variation, the finer detail, is lost.
 
+## An example from microbial ecology: bacteria in the Baltic Sea
+
+The Baltic Sea is one of the largest bodies of brackish water on Earth. Rivers bring in fresh water, while salt water from the North Sea only enters through the narrow straits around Denmark. The salinity therefore falls from above 30 in the Skagerrak to about 2 in the northern Bothnian Bay (salinity is measured in practical salinity units, which roughly correspond to grams of salt per kilogram of water). The water also changes strongly with the seasons, from ice-cold winters to summer temperatures around 20 °C.
+
+[Latz et al. (2024)](https://doi.org/10.1038/s41597-023-02825-5) sampled surface water every month between January 2019 and February 2020, at 22 stations along this gradient, as part of the Swedish national marine monitoring program. They identified the bacteria in each sample by sequencing a part of the bacterial 16S rRNA gene. Identical reads are grouped into **amplicon sequence variants (ASVs)**, which roughly correspond to bacterial species or strains. Each sample is thus described by the number of reads of each ASV, and the salinity, water temperature and sampling date of each sample were recorded as well. The data are available from the [SciLifeLab Data Repository](https://doi.org/10.17044/scilifelab.20751373) under a CC BY 4.0 license.
+
+We download the data, and keep the samples from the monthly sampling (the dataset also contains samples used to test the protocol) that have at least 5,000 reads.
+
+```{code-cell}
+import os
+import sys
+import zipfile
+from urllib.request import urlretrieve
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+
+IN_COLAB = 'google.colab' in sys.modules
+data_dir = "data/" if IN_COLAB else "../data/"
+os.makedirs(data_dir, exist_ok=True)
+
+# The data of Latz et al. (2024), from the SciLifeLab Data Repository
+files = {"baltic_metadata.txt": "https://ndownloader.figshare.com/files/41414001",
+         "baltic_metabarcoding_data.zip": "https://ndownloader.figshare.com/files/41414010"}
+for name, url in files.items():
+    path = os.path.join(data_dir, name)
+    if not os.path.exists(path):
+        print(f"Downloading {name} ...")
+        urlretrieve(url, path)
+
+# Information on each sample, such as its salinity, temperature and sampling date. The second line holds the units
+meta = pd.read_csv(os.path.join(data_dir, "baltic_metadata.txt"), sep="\t", skiprows=[1], encoding="latin-1",
+                   index_col="sample_alias/library_name")
+# Read counts of each ASV (rows) in each sample (columns), and the taxonomy of each ASV
+with zipfile.ZipFile(os.path.join(data_dir, "baltic_metabarcoding_data.zip")) as archive:
+    counts = pd.read_csv(archive.open("metabarcoding_data/16S/seqtab_16S.txt"), sep="\t")
+    taxa = pd.read_csv(archive.open("metabarcoding_data/16S/taxa_16S.txt"), sep="\t")
+
+# Keep the 16S samples of the monthly sampling, and turn the table so that each sample is a row
+meta = meta[meta["target gene"].str.contains("16S", na=False) & meta["test_type"].isna()]
+counts = counts[meta.index].T
+# Remove samples with fewer than 5,000 reads
+counts = counts[counts.sum(axis=1) >= 5000]
+meta = meta.loc[counts.index]
+print(f"{counts.shape[0]} samples from {meta['station_name'].nunique()} stations, and {counts.shape[1]} ASVs")
+```
+
+The total number of reads differs a lot between the samples, so we first divide the counts of each sample by its total, which gives the relative abundance of each ASV. Most of the ASVs are rare, and we keep only the 1,000 most abundant ones, which together account for about 90% of the reads. The relative abundances span several orders of magnitude, and without a transformation, a few dominant ASVs would decide the whole analysis. We therefore take the logarithm of the relative abundances, after adding a small pseudocount of $10^{-5}$ to avoid taking the logarithm of zero.
+
+Note that each sample is a row and each ASV a column, which is the orientation that scikit-learn expects. This is the transpose of the genes $\times$ samples matrices used earlier in this chapter, so the roles of $\mathbf{U}$ and $\mathbf{V}$ are swapped: the sample-specific scores are now found in $\mathbf{U}$, and the ASV-specific loadings in $\mathbf{V}$. The `PCA` class centers the data itself.
+
+```{code-cell}
+# Relative abundances of the 1,000 most abundant ASVs, on a logarithmic scale
+rel = counts.div(counts.sum(axis=1), axis=0)
+top = rel.mean().sort_values(ascending=False).index[:1000]
+print(f"The 1,000 most abundant ASVs account for {rel[top].sum(axis=1).mean():.0%} of the reads")
+X = np.log10(rel[top] + 1e-5)
+
+pca = PCA(n_components=3)
+scores = pca.fit_transform(X)
+
+# Variables measured in each sample, which we compare to the scores below
+salinity = meta["salinity_average"]
+latitude = meta["geographic location (latitude)"]
+temperature = meta["temperature_water_CTD_0-1m"]
+date = pd.to_datetime(meta["collection date"])
+
+# The sign of a principal component is arbitrary. We choose the signs so that the scores of
+# the three components increase with salinity, latitude and water temperature, respectively
+for i, values in enumerate([salinity, latitude, temperature]):
+    measured = values.notna().to_numpy()
+    if np.corrcoef(scores[measured, i], values[measured])[0, 1] < 0:
+        scores[:, i] *= -1
+        pca.components_[i] *= -1
+
+print("Explained variance ratio of components:", pca.explained_variance_ratio_.round(3))
+
+# Score plot of the first two components, colored by salinity
+plt.figure(figsize=(8, 6))
+plt.scatter(scores[:, 0], scores[:, 1], c=salinity, cmap='viridis', s=15)
+plt.colorbar(label='Salinity')
+plt.xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.0%} of the variance)')
+plt.ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.0%} of the variance)')
+plt.title('Bacterial communities of the Baltic Sea')
+plt.show()
+```
+
+The first component separates the samples into two groups. The salty samples from the Kattegat and the Skagerrak lie to the right, and the brackish samples from the Baltic Sea itself, with salinities below 10, to the left. The second component spreads out the brackish samples. To see what the components capture, we plot the scores of each sample against the variables that were measured along with it.
+
+```{code-cell}
+fig, axes = plt.subplots(1, 3, figsize=(16, 4.5))
+for ax, values, i, label in [(axes[0], salinity, 0, 'Salinity'), (axes[1], latitude, 1, 'Latitude (°N)')]:
+    measured = values.notna().to_numpy()
+    r = np.corrcoef(scores[measured, i], values[measured])[0, 1]
+    ax.scatter(values, scores[:, i], s=15)
+    ax.set_xlabel(label)
+    ax.set_ylabel(f'PC{i + 1}')
+    ax.set_title(f'PC{i + 1} against {label.split()[0].lower()}, r = {r:.2f}')
+
+# The third component against the sampling date, colored by water temperature
+measured = temperature.notna().to_numpy()
+r = np.corrcoef(scores[measured, 2], temperature[measured])[0, 1]
+points = axes[2].scatter(date, scores[:, 2], c=temperature, cmap='coolwarm', s=15)
+fig.colorbar(points, ax=axes[2], label='Water temperature (°C)')
+axes[2].set_xlabel('Sampling date')
+axes[2].set_ylabel('PC3')
+axes[2].set_title(f'PC3 over the year, r(temperature) = {r:.2f}')
+axes[2].tick_params(axis='x', labelrotation=45)
+plt.tight_layout()
+plt.show()
+```
+
+Each of the first three components reflects an environmental gradient:
+
+1. **PC1 follows salinity.** It is the largest source of variation, as the bacterial communities of the salty Kattegat and Skagerrak differ strongly from those of the brackish Baltic Sea.
+2. **PC2 follows latitude.** Within the brackish Baltic Sea, it separates the northern Bothnian Sea and Bothnian Bay, where rivers supply fresh water rich in humic substances, from the southern basins.
+3. **PC3 follows the time of year.** Its scores are high in summer and low in winter, in all parts of the sea, and closely follow the water temperature.
+
+PCA was never told the salinity, location or date of the samples. It found these gradients from the composition of the bacterial communities alone, and we only compared the components with the measured variables afterwards. This is typical for unsupervised learning: the method finds the major patterns in the data, and it is up to us to interpret them.
+
+The loadings tell us which ASVs drive a component. Below, we list the ASVs with the largest positive and negative loadings on the first component, together with their taxonomy.
+
+```{code-cell}
+loadings = pd.DataFrame(pca.components_.T, index=top, columns=['PC1', 'PC2', 'PC3'])
+loadings = loadings.join(taxa[['Class', 'Order', 'Genus']])
+print("ASVs most abundant in salty water (largest positive loadings on PC1):")
+print(loadings.sort_values('PC1', ascending=False).head(5)[['PC1', 'Class', 'Order', 'Genus']].round(3).to_string())
+print("\nASVs most abundant in brackish water (largest negative loadings on PC1):")
+print(loadings.sort_values('PC1').head(5)[['PC1', 'Class', 'Order', 'Genus']].round(3).to_string())
+```
+
+The ASVs with large positive loadings belong to typical marine bacteria, such as *Pelagibacter* of the SAR11 clade, the most abundant bacteria in the oceans, and *Planktomarina*. The ASVs with large negative loadings belong to the Acidimicrobiia and Nanopelagicales, groups that are common in fresh and brackish water. The list also contains an ASV of the SAR11 genus IMCC9063, which shows that different lineages of SAR11 prefer salty and brackish water.
+
 :::{dropdown} What you should know after reading this chapter
 You should be able to:
-1. Calculate the outer product $\mathbf{u}\mathbf{v}^{\textsf{T}}$ of two small vectors by hand, and explain how PCA does the reverse by finding the vectors $\mathbf{u}$ and $\mathbf{v}$ for which $\mathbf{X} \approx \mathbf{u}\mathbf{v}^{\textsf{T}}$.
+1. Calculate the outer product $\mathbf{u}\mathbf{v}^{\textsf{T}}$ of two small vectors by hand, and explain how PCA does the reverse by finding the vectors $\mathbf{u}$ and $\mathbf{v}$ for which $\mathbf{X} \approx \mathbf{u}\mathbf{v}^{\textsf{T}}$, in the sense that they minimize the sum of squared residuals. Explain why this is the same as maximizing the variance that the component describes, and how the residuals of PCA differ from those of regression.
 2. Interpret $\mathbf{u}$ as gene-specific effects and $\mathbf{v}$ as sample-specific effects of a genes $\times$ samples matrix. Explain that $\mathbf{u}^{(1)}$ is, up to a scaling factor, the projection of $\mathbf{X}$ on $\mathbf{v}^{(1)}$, and vice versa.
 3. Explain why the magnitude of a component can be moved freely between $\mathbf{u}$ and $\mathbf{v}$, and how scaling both to unit length, $\|\mathbf{u}\| = \|\mathbf{v}\| = 1$, puts the whole magnitude in the singular value $S$.
 4. Describe how the second and later principal components are found by decomposing the residual $\mathbf{X} - S_1\mathbf{u}^{(1)}\mathbf{v}^{(1)\textsf{T}}$, and state how many components a matrix can have at most.
