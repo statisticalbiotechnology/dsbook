@@ -147,6 +147,112 @@ where
 
 Since the variance described by a component is proportional to $S_i^2$, the fraction of the variance explained by component $i$ is $R^2_i=\frac{S^2_i}{\sum_j S^2_j}$. Without centering, the first component would mostly describe the mean, and this ratio would be a fraction of the sum of squares rather than of the variance.
 
+## A minimal example to calculate by hand
+
+Before we turn to real data, we go through all the steps of PCA for a dataset that is small enough to calculate by hand: three genes, measured in three samples taken 0, 12 and 24 hours after a treatment.
+
+|        | 0 h | 12 h | 24 h | Mean |
+|--------|-----|------|------|------|
+| Gene 1 | 5   | 2    | 11   | 6    |
+| Gene 2 | 3   | 6    | 15   | 8    |
+| Gene 3 | 2   | 14   | 14   | 10   |
+
+**Step 1: Center the data.** We subtract each gene's mean from its three values, so that each row of $\mathbf{X}$ sums to zero:
+
+```{math}
+\mathbf{X} = \begin{bmatrix} -1 & -4 & 5 \\ -5 & -2 & 7 \\ -8 & 4 & 4 \end{bmatrix}.
+```
+
+**Step 2: Find the first component.** Finding $\mathbf{u}$ and $\mathbf{v}$ is the part that we leave to the computer, which does it iteratively, e.g. by starting from a guess and alternating the two projections below until the vectors stop changing. For this matrix, the sample-specific vector is
+
+```{math}
+\mathbf{v}^{(1)} = \frac{1}{\sqrt{2}} \begin{bmatrix} -1 \\ 0 \\ 1 \end{bmatrix} \approx \begin{bmatrix} -0.71 \\ 0 \\ 0.71 \end{bmatrix}.
+```
+
+We return to what this vector tells us about the data in step 4. Given $\mathbf{v}^{(1)}$, the rest is simple arithmetic. Projecting $\mathbf{X}$ on $\mathbf{v}^{(1)}$ means taking each gene's value at 24 h minus its value at 0 h, and dividing by $\sqrt{2}$:
+
+```{math}
+\mathbf{X}\mathbf{v}^{(1)} = \frac{1}{\sqrt{2}} \begin{bmatrix} 5-(-1) \\ 7-(-5) \\ 4-(-8) \end{bmatrix} = \frac{1}{\sqrt{2}} \begin{bmatrix} 6 \\ 12 \\ 12 \end{bmatrix} = S_1\mathbf{u}^{(1)}.
+```
+
+The vector $[6, 12, 12]^{\textsf{T}}$ has length $\sqrt{36 + 144 + 144} = 18$, so the singular value is $S_1 = 18/\sqrt{2} \approx 12.7$, and the gene-specific vector of unit length is $\mathbf{u}^{(1)} = [6, 12, 12]^{\textsf{T}}/18 = [1/3, 2/3, 2/3]^{\textsf{T}}$. The projection also works in the other direction. Weighting the three genes by $1/3$, $2/3$ and $2/3$ gives, for each sample,
+
+```{math}
+\mathbf{X}^{\textsf{T}}\mathbf{u}^{(1)} = \frac{1}{3}\begin{bmatrix} -1 - 10 - 16 \\ -4 - 4 + 8 \\ 5 + 14 + 8 \end{bmatrix} = \begin{bmatrix} -9 \\ 0 \\ 9 \end{bmatrix} = S_1\mathbf{v}^{(1)}.
+```
+
+**Step 3: Approximate $\mathbf{X}$ with the first component.** The outer product of the two vectors, scaled by $S_1$, is
+
+```{math}
+S_1\mathbf{u}^{(1)}\mathbf{v}^{(1)\textsf{T}} = \frac{1}{\sqrt{2}}\begin{bmatrix} 6 \\ 12 \\ 12 \end{bmatrix} \frac{1}{\sqrt{2}}\begin{bmatrix} -1 & 0 & 1 \end{bmatrix} = \begin{bmatrix} 3 \\ 6 \\ 6 \end{bmatrix}\begin{bmatrix} -1 & 0 & 1 \end{bmatrix} = \begin{bmatrix} -3 & 0 & 3 \\ -6 & 0 & 6 \\ -6 & 0 & 6 \end{bmatrix},
+```
+
+and it leaves the residuals
+
+```{math}
+\mathbf{X} - S_1\mathbf{u}^{(1)}\mathbf{v}^{(1)\textsf{T}} = \begin{bmatrix} 2 & -4 & 2 \\ 1 & -2 & 1 \\ -2 & 4 & -2 \end{bmatrix}.
+```
+
+**Step 4: Connect the vectors to the data.** The table below shows the centered data together with the two vectors, in the same layout as the illustration of PCA above: $\mathbf{u}^{(1)}$ as an extra column, with one entry per gene, and $\mathbf{v}^{(1)}$ as an extra row, with one entry per sample.
+
+|                              | 0 h     | 12 h | 24 h   | $\mathbf{u}^{(1)}$ |
+|------------------------------|---------|------|--------|--------------------|
+| Gene 1                       | $-1$    | $-4$ | $5$    | $1/3$              |
+| Gene 2                       | $-5$    | $-2$ | $7$    | $2/3$              |
+| Gene 3                       | $-8$    | $4$  | $4$    | $2/3$              |
+| $\mathbf{v}^{(1)\textsf{T}}$ | $-0.71$ | $0$  | $0.71$ | $S_1 = 12.7$       |
+
+- **$\mathbf{v}^{(1)}$ describes the samples.** It is a pattern over the samples that the genes share: below the gene's mean at 0 h, at the mean at 12 h, and above it at 24 h. In other words, the main variation in the data is an increase over time. The entries of $\mathbf{v}^{(1)}$ are the scores of the samples, which place each sample along this time trend.
+- **$\mathbf{u}^{(1)}$ describes the genes.** It says how strongly each gene follows the pattern in $\mathbf{v}^{(1)}$: genes 2 and 3 follow it twice as strongly as gene 1. All three entries are positive, so all three genes increase over time. A gene that decreased over time would have a negative entry.
+- **Each value is approximated by a product.** The approximation of a value is $S_1$ times its gene's entry in $\mathbf{u}^{(1)}$ times its sample's entry in $\mathbf{v}^{(1)}$. For gene 2 at 24 h, that is $12.7 \cdot \tfrac{2}{3} \cdot 0.71 = 6$, close to the measured 7.
+
+If we add the gene means back, we can compare the approximation with the original measurements:
+
+|                       | 0 h | 12 h | 24 h |
+|-----------------------|-----|------|------|
+| Gene 1, measured      | 5   | 2    | 11   |
+| Gene 1, approximated  | 3   | 6    | 9    |
+| Gene 2, measured      | 3   | 6    | 15   |
+| Gene 2, approximated  | 2   | 8    | 14   |
+| Gene 3, measured      | 2   | 14   | 14   |
+| Gene 3, approximated  | 4   | 10   | 16   |
+
+The first component thus summarizes the whole dataset in one sentence: the expression of all three genes increases steadily over the 24 hours, by 3 units per 12 hours for gene 1 and by 6 units per 12 hours for genes 2 and 3. Gene 2 fits this summary well. Genes 1 and 3 deviate at 12 h: gene 1 dips before it rises, while gene 3 rises early and then levels off.
+
+**Step 5: Calculate the explained variance.** The sums of squares of the three matrices are
+
+```{math}
+\begin{aligned}
+\text{data:} \quad & 1 + 16 + 25 + 25 + 4 + 49 + 64 + 16 + 16 = 216,\\
+\text{first component:} \quad & 9 + 0 + 9 + 36 + 0 + 36 + 36 + 0 + 36 = 162 = S_1^2,\\
+\text{residuals:} \quad & 4 + 16 + 4 + 1 + 4 + 1 + 4 + 16 + 4 = 54.
+\end{aligned}
+```
+
+As described at the start of this chapter, the sum of squares of the data splits into the part that the component describes and the part that it leaves, $216 = 162 + 54$. The first component thus explains $R^2_1 = 162/216 = 75\%$ of the variance.
+
+**Step 6: The second component.** Each row of the residual matrix is a multiple of $[1, -2, 1]$, so the residual matrix is itself an outer product, $[2, 1, -2]^{\textsf{T}}[1, -2, 1]$, and forms the second component. It describes the deviations from the steady increase of the first component. Its sample-specific vector $\mathbf{v}^{(2)} \propto [1, -2, 1]^{\textsf{T}}$ singles out the 12 h sample, and its gene-specific vector $\mathbf{u}^{(2)} \propto [2, 1, -2]^{\textsf{T}}$ gives the direction and size of each gene's deviation there: gene 3 lies above the trend at 12 h, while genes 1 and 2 lie below it, gene 1 the most. It explains the remaining $54/216 = 25\%$ of the variance, and together, the two components reproduce $\mathbf{X}$ exactly. A third component is not needed: after centering, each row sums to zero, which leaves three samples only two dimensions to vary in.
+
+The SVD in NumPy gives the same result:
+
+```{code-cell}
+import numpy as np
+
+raw = np.array([[5, 2, 11],
+                [3, 6, 15],
+                [2, 14, 14]])
+X = raw - raw.mean(axis=1, keepdims=True)  # Center each gene
+U, S, Vt = np.linalg.svd(X)
+
+print("Centered data:\n", X)
+print("u1 =", U[:, 0].round(3))
+print("v1 =", Vt[0].round(3))
+print("Singular values:", S.round(3))
+print("Explained variance:", (S**2 / np.sum(S**2)).round(3))
+```
+
+NumPy returns $\mathbf{u}^{(1)}$ and $\mathbf{v}^{(1)}$ with flipped signs. This is the same component, as flipping the signs of both vectors leaves their product $\mathbf{u}^{(1)}\mathbf{v}^{(1)\textsf{T}}$ unchanged. The third singular value is zero, as there is no variation left for a third component.
+
 ## An example of reconstruction with PCA, Eigenfaces
 
 ```{code-cell}
