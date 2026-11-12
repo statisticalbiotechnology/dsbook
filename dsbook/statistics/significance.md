@@ -227,12 +227,17 @@ When the data really are normally distributed, the $t$-test is the most **powerf
 
 A **one-sided test** is used when we want to determine if there is a difference in a specific direction (e.g., whether one group mean is greater than the other). In contrast, a **two-sided test** checks if there is any difference between the groups, regardless of direction (i.e., whether one mean is greater or less than the other). A two-sided test is more conservative because it tests for deviations in both directions, while a one-sided test focuses on a predetermined outcome.
 
-Below, we repeat the permutation test on the same two samples as before, but now test one-sidedly whether `sample2` has a larger mean than `sample1`. The test statistic is $\Delta = \bar{x}_2 - \bar{x}_1$, the mean of `sample2` minus the mean of `sample1`, without taking absolute values:
+Below, we repeat the permutation test on the same two samples as before, but now test one-sidedly whether `sample2` has a larger mean than `sample1`. We need to tell apart two differences:
+
+- $\delta = \mu_2 - \mu_1$ is the true difference between the means of the populations that the samples come from. It is unknown, and it is what the hypotheses are about. We write a hypothesis with a colon, e.g. $H_0: \delta \le 0$, which reads "the null hypothesis that $\delta \le 0$".
+- $\Delta = \bar{x}_2 - \bar{x}_1$ is the difference between the means of the two samples, without taking absolute values. It is our test statistic, and $\Delta_{\text{obs}}$ is the value that we observe in our data.
+
+A $p$ value is then a probability of the test statistic given $H_0$, e.g. $p = \Pr(\Delta \ge \Delta_{\text{obs}} \mid H_0)$, i.e. the probability of a difference at least as large as the observed one in a world where $H_0$ is true. It is not a probability of $H_0$ itself.
 
 ```{code-cell}
 import numpy as np
 import matplotlib.pyplot as plt
-from IPython.display import display, Markdown, Math
+from IPython.display import display, Math
 
 rng = np.random.RandomState(0)
 
@@ -264,13 +269,13 @@ plt.ylabel("Frequency")
 plt.legend()
 plt.show()
 
-display(Markdown(rf"Observed difference in means: {observed_diff:.4f}"))
-display(Math(rf"p (H_0: \Delta \le 0): {ge_p_value:.4f}"))
-display(Math(rf"p (H_0: \Delta \ge 0): {le_p_value:.4f}"))
-display(Math(rf"p (H_0: \Delta = 0): {two_p_value:.4f}"))
+display(Math(rf"\Delta_{{\text{{obs}}}} = \bar{{x}}_2 - \bar{{x}}_1 = {observed_diff:.4f}"))
+display(Math(rf"H_0: \delta \le 0, \quad p = \Pr(\Delta \ge \Delta_{{\text{{obs}}}} \mid H_0) = {ge_p_value:.4f}"))
+display(Math(rf"H_0: \delta \ge 0, \quad p = \Pr(\Delta \le \Delta_{{\text{{obs}}}} \mid H_0) = {le_p_value:.4f}"))
+display(Math(rf"H_0: \delta = 0, \quad p = \Pr(|\Delta| \ge |\Delta_{{\text{{obs}}}}| \mid H_0) = {two_p_value:.4f}"))
 ```
 
-The one-sided test of $H_0: \Delta \le 0$ against $H_1: \Delta > 0$ uses only the right tail of the null distribution: its $p$ value is the fraction of permutations where `perm_sample2 - perm_sample1` is at least as large as the observed difference. As the observed difference lies in the predicted direction, this $p$ value (0.009) is about half of the two-sided one (0.022), which counts extreme differences in both tails. Had we instead predicted that `sample2` has the smaller mean, i.e. tested $H_0: \Delta \ge 0$, the $p$ value would have been close to 1. The direction of a one-sided test must therefore be decided before looking at the data; choosing it afterwards halves the $p$ value without justification.
+The one-sided test of $H_0: \delta \le 0$ against $H_1: \delta > 0$ uses only the right tail of the null distribution: its $p$ value, $\Pr(\Delta \ge \Delta_{\text{obs}} \mid H_0)$, is the fraction of permutations where `perm_sample2 - perm_sample1` is at least as large as the observed difference. As the observed difference lies in the predicted direction, this $p$ value (0.009) is about half of the two-sided one (0.022), which counts extreme differences in both tails. Had we instead predicted that `sample2` has the smaller mean, i.e. tested $H_0: \delta \ge 0$, the $p$ value would have been close to 1. The direction of a one-sided test must therefore be decided before looking at the data; choosing it afterwards halves the $p$ value without justification.
 
 When testing whether a drug is effective, the research question is directional, which can motivate a one-sided test. Note, however, that regulators of clinical trials usually require either a two-sided test at $\alpha = 0.05$ or a one-sided test at $\alpha = 0.025$, which amounts to the same evidence threshold, partly because a harmful effect of the drug is also important to detect. In differential gene expression analysis, you want to find both up- and downregulated genes, making a two-sided test the natural choice.
 
